@@ -3,7 +3,8 @@
 var O = Object.prototype,
     EXPORTS = {
         each: each,
-        assign: assign
+        assign: assign,
+        contains: contains
     };
     
 function assign(target, source, defaults) {
@@ -41,6 +42,10 @@ function each(subject, handler, scope) {
     }
     
     return subject;
+}
+
+function contains(subject, property) {
+    return O.hasOwnProperty.call(subject, property);
 }
 
 module.exports = EXPORTS;

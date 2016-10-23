@@ -200,7 +200,7 @@
         };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECTED = __webpack_require__(2), validSignature = DETECTED.validSignature, O = Object.prototype, toString = O.toString;
+        var DETECTED = __webpack_require__(2), validSignature = DETECTED.validSignature, O = Object.prototype, toString = O.toString, isSignature = validSignature ? objectSignature : ieObjectSignature;
         function objectSignature(subject) {
             return toString.call(subject);
         }
@@ -211,6 +211,9 @@
                 return "[object Undefined]";
             }
             return toString.call(subject);
+        }
+        function isType(subject, type) {
+            return isSignature(subject) === type;
         }
         function isObject(subject) {
             return toString.call(subject) === "[object Object]";
@@ -239,18 +242,20 @@
             return subject instanceof Date;
         }
         module.exports = {
-            signature: validSignature ? objectSignature : ieObjectSignature,
+            signature: isSignature,
             object: validSignature ? isObject : ieIsObject,
             string: isString,
             number: isNumber,
             scalar: isScalar,
-            date: isDate
+            date: isDate,
+            type: isType
         };
     }, function(module, exports) {
         "use strict";
         var O = Object.prototype, EXPORTS = {
             each: each,
-            assign: assign
+            assign: assign,
+            contains: contains
         };
         function assign(target, source, defaults) {
             var onAssign = apply, eachProperty = each;
@@ -277,6 +282,9 @@
                 }
             }
             return subject;
+        }
+        function contains(subject, property) {
+            return O.hasOwnProperty.call(subject, property);
         }
         module.exports = EXPORTS;
     }, function(module, exports, __webpack_require__) {

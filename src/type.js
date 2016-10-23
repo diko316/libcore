@@ -3,7 +3,9 @@
 var DETECTED = require('./detect.js'),
     validSignature = DETECTED.validSignature,
     O = Object.prototype,
-    toString = O.toString;
+    toString = O.toString,
+    isSignature = validSignature ?
+                    objectSignature : ieObjectSignature;
 
 /** is object signature **/
 function objectSignature(subject) {
@@ -18,6 +20,10 @@ function ieObjectSignature(subject) {
         return '[object Undefined]';
     }
     return toString.call(subject);
+}
+
+function isType(subject, type) {
+    return isSignature(subject) === type;
 }
 
 /** is object **/
@@ -61,8 +67,7 @@ function isDate(subject) {
 
 
 module.exports = {
-    signature: validSignature ?
-                    objectSignature : ieObjectSignature,
+    signature: isSignature,
     
     object: validSignature ?
                 isObject : ieIsObject,
@@ -73,5 +78,7 @@ module.exports = {
     
     scalar: isScalar,
     
-    date: isDate
+    date: isDate,
+    
+    type: isType
 };
