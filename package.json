@@ -1,0 +1,49 @@
+{
+  "name": "libcore",
+  "version": "0.0.1",
+  "description": "Kicks-start helpers for cross-browser libraries and different versions of nodejs",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prestart": "node_modules/.bin/webpack --hide-modules",
+    "start": "node webpack.dev.server.js",
+    "build": "BUILD_MODE=production && node_modules/.bin/webpack --hide-modules",
+    "build-optimized": "BUILD_MODE=compressed && node_modules/.bin/webpack --hide-modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://diko316@github.com/diko316/libcore.git"
+  },
+  "keywords": [
+    "Cross-browser",
+    "Browser",
+    "Nodejs",
+    "Helper"
+  ],
+  "author": "Diko Tech Slave",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diko316/libcore/issues"
+  },
+  "homepage": "https://github.com/diko316/libcore#readme",
+  "devDependencies": {
+    "css-loader": "^0.25.0",
+    "eslint": "^3.6.0",
+    "eslint-loader": "^1.5.0",
+    "express": "^4.14.0",
+    "es3ify-webpack-plugin": "0.0.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.9.0",
+    "html-loader": "^0.4.4",
+    "html-webpack-plugin": "^2.22.0",
+    "json-loader": "^0.5.4",
+    "less": "^2.7.1",
+    "less-loader": "^2.2.3",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.13.2",
+    "webpack-dev-middleware": "^1.8.2",
+    "webpack-dev-server": "^1.16.1",
+    "webpack-hot-middleware": "^2.12.2"
+  }
+}
