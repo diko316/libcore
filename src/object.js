@@ -35,7 +35,7 @@ function each(subject, handler, scope) {
     
     for (name in subject) {
         if (hasOwn.call(subject, name)) {
-            if (handler.call(scope, subject[name], name) === false) {
+            if (handler.call(scope, subject[name], name, subject) === false) {
                 break;
             }
         }
