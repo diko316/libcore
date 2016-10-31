@@ -14,6 +14,10 @@ OBJECT.assign(EXPORTS, OBJECT);
 OBJECT.assign(EXPORTS, ARRAY);
 OBJECT.assign(EXPORTS, PROCESSOR);
 
+TYPE.chain =
+    OBJECT.chain =
+    ARRAY.chain =
+    PROCESSOR.chain = EXPORTS;
 
 // promise polyfill
 EXPORTS.Promise = require("./promise.js");
