@@ -29,6 +29,7 @@
         OBJECT.assign(EXPORTS, OBJECT);
         OBJECT.assign(EXPORTS, ARRAY);
         OBJECT.assign(EXPORTS, PROCESSOR);
+        TYPE.chain = OBJECT.chain = ARRAY.chain = PROCESSOR.chain = EXPORTS;
         EXPORTS.Promise = __webpack_require__(8);
         module.exports = EXPORTS;
     }, function(module, exports, __webpack_require__) {
@@ -38,6 +39,7 @@
                 browser: BROWSER,
                 userAgent: BROWSER ? ROOT.navigator.userAgent : nodeUserAgent(),
                 validSignature: toString.call(null) !== objectSignature || toString.call(void 0) !== objectSignature,
+                ajax: ROOT.XMLHttpRequest,
                 indexOfSupport: "indexOf" in A
             };
             function nodeUserAgent() {
@@ -45,11 +47,17 @@
                 return str.join("");
             }
             function empty() {}
+            function setImmediate(handler) {
+                return setTimeout(handler, 1);
+            }
             if (!ROOT.console) {
                 ROOT.console = {
                     log: empty,
                     warn: empty
                 };
+            }
+            if (!(ROOT.setImmediate instanceof Function)) {
+                ROOT.setImmediate = setImmediate;
             }
             module.exports = EXPORTS;
             ROOT = win = doc = null;
@@ -459,11 +467,8 @@
     }, function(module, exports, __webpack_require__) {
         (function(global, setImmediate) {
             "use strict";
-            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), FUNCTION = Function, slice = Array.prototype.slice, G = global, useImmediate = G.setImmediate instanceof FUNCTION, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
+            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), FUNCTION = Function, slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
             function emptyFn() {}
-            function immediate(handler) {
-                return useImmediate ? setImmediate(handler) : setTimeout(handler, 1);
-            }
             function isPromise(object) {
                 return TYPE.object(object) && object.then instanceof FUNCTION;
             }
@@ -605,7 +610,7 @@
                     if (success === null) {
                         list[list.length] = run;
                     } else {
-                        immediate(function() {
+                        setImmediate(function() {
                             run(success, state[INDEX_DATA]);
                         });
                     }

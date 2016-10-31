@@ -17,7 +17,7 @@ var ROOT = global,
         validSignature: toString.call(null) !== objectSignature ||
                         toString.call(void(0)) !== objectSignature,
                         
-        
+        ajax: ROOT.XMLHttpRequest,
         indexOfSupport: 'indexOf' in A
     };
     
@@ -43,12 +43,21 @@ function empty() {
     
 }
 
+function setImmediate(handler) {
+    return setTimeout(handler, 1);
+}
+
 // console polyfill so that IE 8 will not have fatal errors
 if (!ROOT.console) {
     ROOT.console = {
         log: empty,
         warn: empty
     };
+}
+
+// set immediate polyfill
+if (!(ROOT.setImmediate instanceof Function)) {
+    ROOT.setImmediate = setImmediate;
 }
 
 

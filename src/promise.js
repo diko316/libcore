@@ -5,17 +5,11 @@ var TYPE = require("./type.js"),
     FUNCTION = Function,
     slice = Array.prototype.slice,
     G = global,
-    useImmediate = G.setImmediate instanceof FUNCTION,
     INDEX_STATUS = 0,
     INDEX_DATA = 1,
     INDEX_PENDING = 2;
     
 function emptyFn() {
-}
-
-function immediate(handler) {
-    return (useImmediate ?
-                setImmediate(handler) : setTimeout(handler, 1));
 }
 
 function isPromise(object) {
@@ -213,7 +207,7 @@ Promise.prototype = {
             list[list.length] = run;
         }
         else {
-            immediate(function () {
+            setImmediate(function () {
                 run(success, state[INDEX_DATA]);
             });            
         }
@@ -234,7 +228,7 @@ OBJECT.assign(Promise, {
     resolve: resolve
 });
 
-// Polyfill
+// Polyfill if no promise
 if (!(G.Promise instanceof FUNCTION)) {
     G.Promise = Promise;
 }
