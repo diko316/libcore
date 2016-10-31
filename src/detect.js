@@ -39,6 +39,19 @@ function nodeUserAgent() {
     return str.join('');
 }
 
+function empty() {
+    
+}
+
+// console polyfill so that IE 8 will not have fatal errors
+if (!ROOT.console) {
+    ROOT.console = {
+        log: empty,
+        warn: empty
+    };
+}
+
+
 module.exports = EXPORTS;
 
 ROOT = win = doc = null;

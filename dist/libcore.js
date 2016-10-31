@@ -22,12 +22,14 @@
         module.exports = __webpack_require__(1);
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECT = __webpack_require__(2), TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), ARRAY = __webpack_require__(6), EXPORTS = {
+        var DETECT = __webpack_require__(2), TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), ARRAY = __webpack_require__(6), PROCESSOR = __webpack_require__(7), EXPORTS = {
             env: DETECT
         };
         OBJECT.assign(EXPORTS, TYPE);
         OBJECT.assign(EXPORTS, OBJECT);
         OBJECT.assign(EXPORTS, ARRAY);
+        OBJECT.assign(EXPORTS, PROCESSOR);
+        EXPORTS.Promise = __webpack_require__(8);
         module.exports = EXPORTS;
     }, function(module, exports, __webpack_require__) {
         (function(global) {
@@ -41,6 +43,13 @@
             function nodeUserAgent() {
                 var PROCESS = __webpack_require__(3), VERSIONS = PROCESS.versions, str = [ "Node ", VERSIONS.node, "(", PROCESS.platform, "; V8 ", VERSIONS.v8 || "unknown", "; arch ", PROCESS.arch, ")" ];
                 return str.join("");
+            }
+            function empty() {}
+            if (!ROOT.console) {
+                ROOT.console = {
+                    log: empty,
+                    warn: empty
+                };
             }
             module.exports = EXPORTS;
             ROOT = win = doc = null;
@@ -383,6 +392,304 @@
             differenceList: difference
         });
         module.exports = EXPORTS;
+    }, function(module, exports, __webpack_require__) {
+        "use strict";
+        var TYPE = __webpack_require__(4), NAME_RE = /^((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, EXPORTS = {
+            register: set,
+            run: run
+        };
+        function set(name, handler) {
+            var parsed = parseName(name), list = RUNNERS;
+            var access, items;
+            if (parsed && handler instanceof Function) {
+                name = parsed[1];
+                access = ":" + name;
+                if (!(access in list)) {
+                    list[access] = {
+                        name: name,
+                        before: [],
+                        after: []
+                    };
+                }
+                items = list[access][getPositionAccess(parsed[0])];
+                items[items.length] = handler;
+            }
+            return EXPORTS.chain;
+        }
+        function run(name, args, scope) {
+            var runners = get(name);
+            var c, l;
+            if (runners) {
+                if (typeof scope === "undefined") {
+                    scope = null;
+                }
+                if (!(args instanceof Array)) {
+                    args = [];
+                }
+                for (c = -1, l = runners.length; l--; ) {
+                    runners[++c].apply(scope, args);
+                }
+            }
+            return EXPORTS.chain;
+        }
+        function get(name) {
+            var list = RUNNERS, parsed = parseName(name);
+            var access;
+            if (parsed) {
+                access = ":" + parsed[1];
+                if (access in list) {
+                    return list[access][getPositionAccess(parsed[0])];
+                }
+            }
+            return void 0;
+        }
+        function getPositionAccess(input) {
+            return input === POSITION_BEFORE ? "before" : "after";
+        }
+        function parseName(name) {
+            var match = TYPE.string(name) && name.match(NAME_RE);
+            var position;
+            if (match) {
+                position = match[1] && match[2] === "before" ? POSITION_BEFORE : POSITION_AFTER;
+                return [ position, match[3] ];
+            }
+            return void 0;
+        }
+        module.exports = EXPORTS.chain = EXPORTS;
+    }, function(module, exports, __webpack_require__) {
+        (function(global, setImmediate) {
+            "use strict";
+            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), FUNCTION = Function, slice = Array.prototype.slice, G = global, useImmediate = G.setImmediate instanceof FUNCTION, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
+            function emptyFn() {}
+            function immediate(handler) {
+                return useImmediate ? setImmediate(handler) : setTimeout(handler, 1);
+            }
+            function isPromise(object) {
+                return TYPE.object(object) && object.then instanceof FUNCTION;
+            }
+            function createPromise(instance) {
+                var Class = Promise;
+                if (!(instance instanceof Class)) {
+                    emptyFn.prototype = Class.prototype;
+                    instance = new emptyFn();
+                }
+                instance.__state = [ null, void 0, [], null, null ];
+                return instance;
+            }
+            function resolveValue(data, callback) {
+                function resolve(data) {
+                    try {
+                        callback(true, data);
+                    } catch (error) {
+                        callback(false, error);
+                    }
+                }
+                if (isPromise(data)) {
+                    data.then(resolve, function(error) {
+                        callback(false, error);
+                    });
+                } else {
+                    resolve(data);
+                }
+            }
+            function finalizeValue(promise, success, data) {
+                var state = promise.__state, list = state[INDEX_PENDING];
+                state[INDEX_STATUS] = success;
+                state[INDEX_DATA] = data;
+                for (;list.length; ) {
+                    list[0](success, data);
+                    list.splice(0, 1);
+                }
+            }
+            function Promise(tryout) {
+                var instance = createPromise(this), finalized = false;
+                function onFinalize(success, data) {
+                    finalizeValue(instance, success, data);
+                }
+                function resolve(data) {
+                    if (!finalized) {
+                        finalized = true;
+                        resolveValue(data, onFinalize);
+                    }
+                }
+                function reject(error) {
+                    if (!finalized) {
+                        finalized = true;
+                        onFinalize(false, error);
+                    }
+                }
+                try {
+                    tryout(resolve, reject);
+                } catch (error) {
+                    reject(error);
+                }
+                return instance;
+            }
+            function resolve(data) {
+                return new Promise(function(resolve) {
+                    resolve(data);
+                });
+            }
+            function reject(reason) {
+                return new Promise(function() {
+                    arguments[1](reason);
+                });
+            }
+            function all(promises) {
+                var total;
+                promises = slice.call(promises, 0);
+                total = promises.length;
+                if (!total) {
+                    return resolve([]);
+                }
+                return new Promise(function(resolve, reject) {
+                    var list = promises, remaining = total, stopped = false, l = remaining, c = 0, result = [];
+                    function process(index, item) {
+                        function finalize(success, data) {
+                            var found = result;
+                            if (stopped) {
+                                return;
+                            }
+                            if (!success) {
+                                reject(data);
+                                stopped = true;
+                                return;
+                            }
+                            found[index] = data;
+                            if (!--remaining) {
+                                resolve(found);
+                            }
+                        }
+                        resolveValue(item, finalize);
+                    }
+                    for (result.length = l; l--; c++) {
+                        process(c, list[c]);
+                    }
+                });
+            }
+            function race(promises) {
+                promises = slice.call(promises, 0);
+                return new Promise(function(resolve, reject) {
+                    var stopped = false, tryResolve = resolveValue, list = promises, c = -1, l = list.length;
+                    function onFulfill(success, data) {
+                        if (!stopped) {
+                            stopped = true;
+                            (success ? resolve : reject)(data);
+                        }
+                    }
+                    for (;l--; ) {
+                        tryResolve(list[++c], onFulfill);
+                    }
+                });
+            }
+            Promise.prototype = {
+                constructor: Promise,
+                then: function(onFulfill, onReject) {
+                    var me = this, F = FUNCTION, state = me.__state, success = state[INDEX_STATUS], list = state[INDEX_PENDING], instance = createPromise();
+                    function run(success, data) {
+                        var handle = success ? onFulfill : onReject;
+                        if (handle instanceof F) {
+                            try {
+                                data = handle(data);
+                                resolveValue(data, function(success, data) {
+                                    finalizeValue(instance, success, data);
+                                });
+                                return;
+                            } catch (error) {
+                                data = error;
+                                success = false;
+                            }
+                        }
+                        finalizeValue(instance, success, data);
+                    }
+                    if (success === null) {
+                        list[list.length] = run;
+                    } else {
+                        immediate(function() {
+                            run(success, state[INDEX_DATA]);
+                        });
+                    }
+                    return instance;
+                },
+                "catch": function(onReject) {
+                    return this.then(null, onReject);
+                }
+            };
+            OBJECT.assign(Promise, {
+                all: all,
+                race: race,
+                reject: reject,
+                resolve: resolve
+            });
+            if (!(G.Promise instanceof FUNCTION)) {
+                G.Promise = Promise;
+            }
+            module.exports = Promise;
+            G = null;
+        }).call(exports, function() {
+            return this;
+        }(), __webpack_require__(9).setImmediate);
+    }, function(module, exports, __webpack_require__) {
+        (function(setImmediate, clearImmediate) {
+            var nextTick = __webpack_require__(3).nextTick;
+            var apply = Function.prototype.apply;
+            var slice = Array.prototype.slice;
+            var immediateIds = {};
+            var nextImmediateId = 0;
+            exports.setTimeout = function() {
+                return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+            };
+            exports.setInterval = function() {
+                return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+            };
+            exports.clearTimeout = exports.clearInterval = function(timeout) {
+                timeout.close();
+            };
+            function Timeout(id, clearFn) {
+                this._id = id;
+                this._clearFn = clearFn;
+            }
+            Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+            Timeout.prototype.close = function() {
+                this._clearFn.call(window, this._id);
+            };
+            exports.enroll = function(item, msecs) {
+                clearTimeout(item._idleTimeoutId);
+                item._idleTimeout = msecs;
+            };
+            exports.unenroll = function(item) {
+                clearTimeout(item._idleTimeoutId);
+                item._idleTimeout = -1;
+            };
+            exports._unrefActive = exports.active = function(item) {
+                clearTimeout(item._idleTimeoutId);
+                var msecs = item._idleTimeout;
+                if (msecs >= 0) {
+                    item._idleTimeoutId = setTimeout(function onTimeout() {
+                        if (item._onTimeout) item._onTimeout();
+                    }, msecs);
+                }
+            };
+            exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
+                var id = nextImmediateId++;
+                var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+                immediateIds[id] = true;
+                nextTick(function onNextTick() {
+                    if (immediateIds[id]) {
+                        if (args) {
+                            fn.apply(null, args);
+                        } else {
+                            fn.call(null);
+                        }
+                        exports.clearImmediate(id);
+                    }
+                });
+                return id;
+            };
+            exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
+                delete immediateIds[id];
+            };
+        }).call(exports, __webpack_require__(9).setImmediate, __webpack_require__(9).clearImmediate);
     } ]);
 });
 
