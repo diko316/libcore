@@ -9,10 +9,18 @@ var ROOT = global,
     objectSignature = '[object Object]',
     BROWSER = !!doc && !!win &&
                 win.self === (doc.defaultView || doc.parentWindow),
+    NODEVERSIONS = BROWSER ? false :
+                    (function () {
+                        return require("process").versions || false;
+                    })(),
+                    
     EXPORTS = {
         browser: BROWSER,
+        nodejs: NODEVERSIONS && !!NODEVERSIONS.node,
         userAgent: BROWSER ?
-                        ROOT.navigator.userAgent : nodeUserAgent(),
+                        ROOT.navigator.userAgent :
+                        NODEVERSIONS ?
+                            nodeUserAgent() : 'Unknown',
                         
         validSignature: toString.call(null) !== objectSignature ||
                         toString.call(void(0)) !== objectSignature,
@@ -25,7 +33,7 @@ var ROOT = global,
 
 function nodeUserAgent() {
     var PROCESS = require("process"),
-        VERSIONS = PROCESS.versions,
+        VERSIONS = NODEVERSIONS,
         str = ['Node ',
                 VERSIONS.node,
                 '(',

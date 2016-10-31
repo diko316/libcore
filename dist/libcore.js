@@ -35,15 +35,18 @@
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var ROOT = global, doc = ROOT.document, win = ROOT.window, O = Object.prototype, toString = O.toString, A = Array.prototype, objectSignature = "[object Object]", BROWSER = !!doc && !!win && win.self === (doc.defaultView || doc.parentWindow), EXPORTS = {
+            var ROOT = global, doc = ROOT.document, win = ROOT.window, O = Object.prototype, toString = O.toString, A = Array.prototype, objectSignature = "[object Object]", BROWSER = !!doc && !!win && win.self === (doc.defaultView || doc.parentWindow), NODEVERSIONS = BROWSER ? false : function() {
+                return __webpack_require__(3).versions || false;
+            }(), EXPORTS = {
                 browser: BROWSER,
-                userAgent: BROWSER ? ROOT.navigator.userAgent : nodeUserAgent(),
+                nodejs: NODEVERSIONS && !!NODEVERSIONS.node,
+                userAgent: BROWSER ? ROOT.navigator.userAgent : NODEVERSIONS ? nodeUserAgent() : "Unknown",
                 validSignature: toString.call(null) !== objectSignature || toString.call(void 0) !== objectSignature,
                 ajax: ROOT.XMLHttpRequest,
                 indexOfSupport: "indexOf" in A
             };
             function nodeUserAgent() {
-                var PROCESS = __webpack_require__(3), VERSIONS = PROCESS.versions, str = [ "Node ", VERSIONS.node, "(", PROCESS.platform, "; V8 ", VERSIONS.v8 || "unknown", "; arch ", PROCESS.arch, ")" ];
+                var PROCESS = __webpack_require__(3), VERSIONS = NODEVERSIONS, str = [ "Node ", VERSIONS.node, "(", PROCESS.platform, "; V8 ", VERSIONS.v8 || "unknown", "; arch ", PROCESS.arch, ")" ];
                 return str.join("");
             }
             function empty() {}
@@ -272,8 +275,10 @@
         var O = Object.prototype, EXPORTS = {
             each: each,
             assign: assign,
-            contains: contains
+            contains: contains,
+            buildInstance: buildInstance
         };
+        function empty() {}
         function assign(target, source, defaults) {
             var onAssign = apply, eachProperty = each;
             if (defaults) {
@@ -302,6 +307,10 @@
         }
         function contains(subject, property) {
             return O.hasOwnProperty.call(subject, property);
+        }
+        function buildInstance(Class) {
+            empty.prototype = Class.prototype;
+            return new empty();
         }
         module.exports = EXPORTS;
     }, function(module, exports, __webpack_require__) {
@@ -468,15 +477,13 @@
         (function(global, setImmediate) {
             "use strict";
             var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), FUNCTION = Function, slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
-            function emptyFn() {}
             function isPromise(object) {
                 return TYPE.object(object) && object.then instanceof FUNCTION;
             }
             function createPromise(instance) {
                 var Class = Promise;
                 if (!(instance instanceof Class)) {
-                    emptyFn.prototype = Class.prototype;
-                    instance = new emptyFn();
+                    instance = OBJECT.buildInstance(Class);
                 }
                 instance.__state = [ null, void 0, [], null, null ];
                 return instance;
@@ -616,7 +623,7 @@
                     }
                     return instance;
                 },
-                "catch": function(onReject) {
+                catch: function(onReject) {
                     return this.then(null, onReject);
                 }
             };

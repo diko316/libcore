@@ -4,9 +4,13 @@ var O = Object.prototype,
     EXPORTS = {
         each: each,
         assign: assign,
-        contains: contains
+        contains: contains,
+        buildInstance: buildInstance
     };
+function empty() {
     
+}
+
 function assign(target, source, defaults) {
     var onAssign = apply,
         eachProperty = each;
@@ -46,6 +50,11 @@ function each(subject, handler, scope) {
 
 function contains(subject, property) {
     return O.hasOwnProperty.call(subject, property);
+}
+
+function buildInstance(Class) {
+    empty.prototype = Class.prototype;
+    return new empty();
 }
 
 module.exports = EXPORTS;

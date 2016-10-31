@@ -22,5 +22,4 @@ TYPE.chain =
 // promise polyfill
 EXPORTS.Promise = require("./promise.js");
 
-
 module.exports = EXPORTS;

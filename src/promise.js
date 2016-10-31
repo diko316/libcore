@@ -8,9 +8,6 @@ var TYPE = require("./type.js"),
     INDEX_STATUS = 0,
     INDEX_DATA = 1,
     INDEX_PENDING = 2;
-    
-function emptyFn() {
-}
 
 function isPromise(object) {
     return TYPE.object(object) &&
@@ -20,8 +17,7 @@ function isPromise(object) {
 function createPromise(instance) {
     var Class = Promise;
     if (!(instance instanceof Class)) {
-        emptyFn.prototype = Class.prototype;
-        instance = new emptyFn();
+        instance = OBJECT.buildInstance(Class);
     }
     
     instance.__state = [null,
