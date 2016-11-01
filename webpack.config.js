@@ -19,7 +19,7 @@ var PATH = require('path'),
                 LIB_VERSION: JSON.stringify(DEFINITION.version)
             }),
             new webpack.NoErrorsPlugin(),
-            new ExtractTextPlugin('styles.css')
+            new ExtractTextPlugin(libName + '.css')
         ];
 
 var name;
@@ -49,7 +49,7 @@ case "compressed":
     delete entry[libName];
     
     // replace with minified plugin
-    plugins[1] = new ExtractTextPlugin('styles.min.css');
+    plugins[1] = new ExtractTextPlugin(libName + '.min.css');
     plugins.splice(0, 0,
                 new webpack.optimize.UglifyJsPlugin({
                     
