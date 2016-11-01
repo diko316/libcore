@@ -1,13 +1,16 @@
 'use strict';
 
 var TYPE = require('./type.js'),
+    G = global,
     NAME_RE = /^((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
     POSITION_BEFORE = 1,
     POSITION_AFTER = 2,
     RUNNERS = {},
     EXPORTS = {
         register: set,
-        run: run
+        run: run,
+        setAsync: G.setImmediate,
+        clearAsync: G.clearImmediate
     };
     
 
@@ -97,5 +100,17 @@ function parseName(name) {
     
 }
 
+function timeoutAsync(handler) {
+    return setTimeout(handler, 1);
+}
 
+function clearTimeoutAsync(id) {
+    return clearTimeout(id);
+}
+
+// set immediate polyfill
+if (!(G.setImmediate instanceof Function)) {
+    EXPORTS.setAsync = timeoutAsync;
+    EXPORTS.clearAsync = clearTimeoutAsync;
+}
 module.exports = EXPORTS.chain = EXPORTS;

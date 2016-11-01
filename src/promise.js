@@ -2,6 +2,7 @@
 
 var TYPE = require("./type.js"),
     OBJECT = require("./object.js"),
+    PROCESSOR = require("./processor.js"),
     FUNCTION = Function,
     slice = Array.prototype.slice,
     G = global,
@@ -203,7 +204,7 @@ Promise.prototype = {
             list[list.length] = run;
         }
         else {
-            setImmediate(function () {
+            PROCESSOR.setAsync(function () {
                 run(success, state[INDEX_DATA]);
             });            
         }

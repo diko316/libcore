@@ -59,27 +59,12 @@ function empty() {
     
 }
 
-function setImmediate(handler) {
-    return setTimeout(handler, 1);
-}
-
-function clearImmediate(id) {
-    return clearTimeout(id);
-}
-
 // console polyfill so that IE 8 will not have fatal errors
 if (!ROOT.console) {
     for (c = 0, l = CONSOLE_NAMES.length; l--; c++) {
         CONSOLE[CONSOLE_NAMES[c]] = empty;
     }
 }
-
-// set immediate polyfill
-if (!(ROOT.setImmediate instanceof Function)) {
-    ROOT.setImmediate = setImmediate;
-    ROOT.clearImmediate = clearImmediate;
-}
-
 
 module.exports = EXPORTS;
 

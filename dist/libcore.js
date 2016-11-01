@@ -51,20 +51,10 @@
                 return str.join("");
             }
             function empty() {}
-            function setImmediate(handler) {
-                return setTimeout(handler, 1);
-            }
-            function clearImmediate(id) {
-                return clearTimeout(id);
-            }
             if (!ROOT.console) {
                 for (c = 0, l = CONSOLE_NAMES.length; l--; c++) {
                     CONSOLE[CONSOLE_NAMES[c]] = empty;
                 }
-            }
-            if (!(ROOT.setImmediate instanceof Function)) {
-                ROOT.setImmediate = setImmediate;
-                ROOT.clearImmediate = clearImmediate;
             }
             module.exports = EXPORTS;
             ROOT = win = doc = null;
@@ -414,73 +404,89 @@
         });
         module.exports = EXPORTS;
     }, function(module, exports, __webpack_require__) {
-        "use strict";
-        var TYPE = __webpack_require__(4), NAME_RE = /^((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, EXPORTS = {
-            register: set,
-            run: run
-        };
-        function set(name, handler) {
-            var parsed = parseName(name), list = RUNNERS;
-            var access, items;
-            if (parsed && handler instanceof Function) {
-                name = parsed[1];
-                access = ":" + name;
-                if (!(access in list)) {
-                    list[access] = {
-                        name: name,
-                        before: [],
-                        after: []
-                    };
-                }
-                items = list[access][getPositionAccess(parsed[0])];
-                items[items.length] = handler;
-            }
-            return EXPORTS.chain;
-        }
-        function run(name, args, scope) {
-            var runners = get(name);
-            var c, l;
-            if (runners) {
-                if (typeof scope === "undefined") {
-                    scope = null;
-                }
-                if (!(args instanceof Array)) {
-                    args = [];
-                }
-                for (c = -1, l = runners.length; l--; ) {
-                    runners[++c].apply(scope, args);
-                }
-            }
-            return EXPORTS.chain;
-        }
-        function get(name) {
-            var list = RUNNERS, parsed = parseName(name);
-            var access;
-            if (parsed) {
-                access = ":" + parsed[1];
-                if (access in list) {
-                    return list[access][getPositionAccess(parsed[0])];
-                }
-            }
-            return void 0;
-        }
-        function getPositionAccess(input) {
-            return input === POSITION_BEFORE ? "before" : "after";
-        }
-        function parseName(name) {
-            var match = TYPE.string(name) && name.match(NAME_RE);
-            var position;
-            if (match) {
-                position = match[1] && match[2] === "before" ? POSITION_BEFORE : POSITION_AFTER;
-                return [ position, match[3] ];
-            }
-            return void 0;
-        }
-        module.exports = EXPORTS.chain = EXPORTS;
-    }, function(module, exports, __webpack_require__) {
-        (function(global, setImmediate) {
+        (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), FUNCTION = Function, slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
+            var TYPE = __webpack_require__(4), G = global, NAME_RE = /^((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, EXPORTS = {
+                register: set,
+                run: run,
+                setAsync: G.setImmediate,
+                clearAsync: G.clearImmediate
+            };
+            function set(name, handler) {
+                var parsed = parseName(name), list = RUNNERS;
+                var access, items;
+                if (parsed && handler instanceof Function) {
+                    name = parsed[1];
+                    access = ":" + name;
+                    if (!(access in list)) {
+                        list[access] = {
+                            name: name,
+                            before: [],
+                            after: []
+                        };
+                    }
+                    items = list[access][getPositionAccess(parsed[0])];
+                    items[items.length] = handler;
+                }
+                return EXPORTS.chain;
+            }
+            function run(name, args, scope) {
+                var runners = get(name);
+                var c, l;
+                if (runners) {
+                    if (typeof scope === "undefined") {
+                        scope = null;
+                    }
+                    if (!(args instanceof Array)) {
+                        args = [];
+                    }
+                    for (c = -1, l = runners.length; l--; ) {
+                        runners[++c].apply(scope, args);
+                    }
+                }
+                return EXPORTS.chain;
+            }
+            function get(name) {
+                var list = RUNNERS, parsed = parseName(name);
+                var access;
+                if (parsed) {
+                    access = ":" + parsed[1];
+                    if (access in list) {
+                        return list[access][getPositionAccess(parsed[0])];
+                    }
+                }
+                return void 0;
+            }
+            function getPositionAccess(input) {
+                return input === POSITION_BEFORE ? "before" : "after";
+            }
+            function parseName(name) {
+                var match = TYPE.string(name) && name.match(NAME_RE);
+                var position;
+                if (match) {
+                    position = match[1] && match[2] === "before" ? POSITION_BEFORE : POSITION_AFTER;
+                    return [ position, match[3] ];
+                }
+                return void 0;
+            }
+            function timeoutAsync(handler) {
+                return setTimeout(handler, 1);
+            }
+            function clearTimeoutAsync(id) {
+                return clearTimeout(id);
+            }
+            if (!(G.setImmediate instanceof Function)) {
+                EXPORTS.setAsync = timeoutAsync;
+                EXPORTS.clearAsync = clearTimeoutAsync;
+            }
+            module.exports = EXPORTS.chain = EXPORTS;
+        }).call(exports, function() {
+            return this;
+        }());
+    }, function(module, exports, __webpack_require__) {
+        (function(global) {
+            "use strict";
+            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), PROCESSOR = __webpack_require__(7), FUNCTION = Function, slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
             function isPromise(object) {
                 return TYPE.object(object) && object.then instanceof FUNCTION;
             }
@@ -621,7 +627,7 @@
                     if (success === null) {
                         list[list.length] = run;
                     } else {
-                        setImmediate(function() {
+                        PROCESSOR.setAsync(function() {
                             run(success, state[INDEX_DATA]);
                         });
                     }
@@ -644,68 +650,7 @@
             G = null;
         }).call(exports, function() {
             return this;
-        }(), __webpack_require__(9).setImmediate);
-    }, function(module, exports, __webpack_require__) {
-        (function(setImmediate, clearImmediate) {
-            var nextTick = __webpack_require__(3).nextTick;
-            var apply = Function.prototype.apply;
-            var slice = Array.prototype.slice;
-            var immediateIds = {};
-            var nextImmediateId = 0;
-            exports.setTimeout = function() {
-                return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
-            };
-            exports.setInterval = function() {
-                return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
-            };
-            exports.clearTimeout = exports.clearInterval = function(timeout) {
-                timeout.close();
-            };
-            function Timeout(id, clearFn) {
-                this._id = id;
-                this._clearFn = clearFn;
-            }
-            Timeout.prototype.unref = Timeout.prototype.ref = function() {};
-            Timeout.prototype.close = function() {
-                this._clearFn.call(window, this._id);
-            };
-            exports.enroll = function(item, msecs) {
-                clearTimeout(item._idleTimeoutId);
-                item._idleTimeout = msecs;
-            };
-            exports.unenroll = function(item) {
-                clearTimeout(item._idleTimeoutId);
-                item._idleTimeout = -1;
-            };
-            exports._unrefActive = exports.active = function(item) {
-                clearTimeout(item._idleTimeoutId);
-                var msecs = item._idleTimeout;
-                if (msecs >= 0) {
-                    item._idleTimeoutId = setTimeout(function onTimeout() {
-                        if (item._onTimeout) item._onTimeout();
-                    }, msecs);
-                }
-            };
-            exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
-                var id = nextImmediateId++;
-                var args = arguments.length < 2 ? false : slice.call(arguments, 1);
-                immediateIds[id] = true;
-                nextTick(function onNextTick() {
-                    if (immediateIds[id]) {
-                        if (args) {
-                            fn.apply(null, args);
-                        } else {
-                            fn.call(null);
-                        }
-                        exports.clearImmediate(id);
-                    }
-                });
-                return id;
-            };
-            exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
-                delete immediateIds[id];
-            };
-        }).call(exports, __webpack_require__(9).setImmediate, __webpack_require__(9).clearImmediate);
+        }());
     } ]);
 });
 
