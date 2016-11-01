@@ -37,7 +37,7 @@
             "use strict";
             var ROOT = global, doc = ROOT.document, win = ROOT.window, O = Object.prototype, toString = O.toString, A = Array.prototype, objectSignature = "[object Object]", BROWSER = !!doc && !!win && win.self === (doc.defaultView || doc.parentWindow), NODEVERSIONS = BROWSER ? false : function() {
                 return __webpack_require__(3).versions || false;
-            }(), EXPORTS = {
+            }(), CONSOLE = {}, CONSOLE_NAMES = [ "log", "info", "warn", "error", "assert" ], EXPORTS = {
                 browser: BROWSER,
                 nodejs: NODEVERSIONS && !!NODEVERSIONS.node,
                 userAgent: BROWSER ? ROOT.navigator.userAgent : NODEVERSIONS ? nodeUserAgent() : "Unknown",
@@ -45,6 +45,7 @@
                 ajax: ROOT.XMLHttpRequest,
                 indexOfSupport: "indexOf" in A
             };
+            var c, l;
             function nodeUserAgent() {
                 var PROCESS = __webpack_require__(3), VERSIONS = NODEVERSIONS, str = [ "Node ", VERSIONS.node, "(", PROCESS.platform, "; V8 ", VERSIONS.v8 || "unknown", "; arch ", PROCESS.arch, ")" ];
                 return str.join("");
@@ -53,14 +54,17 @@
             function setImmediate(handler) {
                 return setTimeout(handler, 1);
             }
+            function clearImmediate(id) {
+                return clearTimeout(id);
+            }
             if (!ROOT.console) {
-                ROOT.console = {
-                    log: empty,
-                    warn: empty
-                };
+                for (c = 0, l = CONSOLE_NAMES.length; l--; c++) {
+                    CONSOLE[CONSOLE_NAMES[c]] = empty;
+                }
             }
             if (!(ROOT.setImmediate instanceof Function)) {
                 ROOT.setImmediate = setImmediate;
+                ROOT.clearImmediate = clearImmediate;
             }
             module.exports = EXPORTS;
             ROOT = win = doc = null;
