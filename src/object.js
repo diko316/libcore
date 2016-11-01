@@ -4,6 +4,7 @@ var O = Object.prototype,
     EXPORTS = {
         each: each,
         assign: assign,
+        rehash: assignProperties,
         contains: contains,
         buildInstance: buildInstance
     };
@@ -28,6 +29,19 @@ function apply(value, name) {
     /*jshint validthis:true */
     this[name] = value;
 }
+
+function assignProperties(target, source, access) {
+    var context = [target, source];
+    each(access, applyProperties, context);
+    context = context[0] = context[1] =  null;
+    return EXPORTS;
+}
+
+function applyProperties(value, name) {
+    /*jshint validthis:true */
+    this[0][name] = this[1][value];
+}
+
 
 function each(subject, handler, scope) {
     var hasOwn = O.hasOwnProperty;
