@@ -2,7 +2,8 @@
 
 var TYPE = require('./type.js'),
     G = global,
-    NAME_RE = /^(([^\.]+\.)?(before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
+    // 1 = namespace, 4 = position, 5 = item
+    NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
     POSITION_BEFORE = 1,
     POSITION_AFTER = 2,
     RUNNERS = {},
@@ -86,15 +87,16 @@ function getPositionAccess(input) {
 
 function parseName(name) {
     var match = TYPE.string(name) && name.match(NAME_RE);
-    var position, prefix;
+    var position, namespace;
+    
+    
+    
     
     if (match) {
-        prefix = match[1];
-        position = prefix && match[3] === 'before' ?
-                    POSITION_BEFORE :
-                    POSITION_AFTER;
-                    
-        return [position, (prefix ? match[2] : '') + match[3]];
+        namespace = match[1];
+        position = match[4] === 'before' ? POSITION_BEFORE : POSITION_AFTER;
+        //console.log('parsed ', name, ' = ', [position, (namespace || '') + match[5]]);
+        return [position, (namespace || '') + match[5]];
         
     }
     
@@ -128,6 +130,7 @@ function createRunInNamespace(ns) {
 
 function createRegisterInNamespace(ns) {
     function nsRun(name, handler) {
+        console.log('registering: ', ns + name);
         return set(ns + name, handler);
     }
     return nsRun;

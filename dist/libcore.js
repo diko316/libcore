@@ -574,7 +574,7 @@
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(4), G = global, NAME_RE = /^(([^\.]+\.)?(before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, EXPORTS = {
+            var TYPE = __webpack_require__(4), G = global, NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, EXPORTS = {
                 register: set,
                 run: run,
                 middleware: middlewareNamespace,
@@ -631,11 +631,11 @@
             }
             function parseName(name) {
                 var match = TYPE.string(name) && name.match(NAME_RE);
-                var position, prefix;
+                var position, namespace;
                 if (match) {
-                    prefix = match[1];
-                    position = prefix && match[3] === "before" ? POSITION_BEFORE : POSITION_AFTER;
-                    return [ position, (prefix ? match[2] : "") + match[3] ];
+                    namespace = match[1];
+                    position = match[4] === "before" ? POSITION_BEFORE : POSITION_AFTER;
+                    return [ position, (namespace || "") + match[5] ];
                 }
                 return void 0;
             }
@@ -662,6 +662,7 @@
             }
             function createRegisterInNamespace(ns) {
                 function nsRun(name, handler) {
+                    console.log("registering: ", ns + name);
                     return set(ns + name, handler);
                 }
                 return nsRun;

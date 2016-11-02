@@ -8,3 +8,4 @@ module.exports = libcore;
 
 require("./test/promise.js");
 require("./test/object.js");
+require("./test/middleware.js");
