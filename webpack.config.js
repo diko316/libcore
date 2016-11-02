@@ -14,10 +14,10 @@ var PATH = require('path'),
     DISABLE_HOT_IE = true,
     //DISABLE_HOT_IE = false,
     plugins = [
-            new webpack.DefinePlugin({
-                LIB_NAME: JSON.stringify(libName),
-                LIB_VERSION: JSON.stringify(DEFINITION.version)
-            }),
+            //new webpack.DefinePlugin({
+            //    LIB_NAME: JSON.stringify(libName),
+            //    LIB_VERSION: JSON.stringify(DEFINITION.version)
+            //}),
             new webpack.NoErrorsPlugin(),
             new ExtractTextPlugin(libName + '.css')
         ];

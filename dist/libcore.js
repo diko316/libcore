@@ -30,13 +30,13 @@
         OBJECT.assign(EXPORTS, ARRAY);
         OBJECT.assign(EXPORTS, PROCESSOR);
         OBJECT.assign(EXPORTS, __webpack_require__(8));
-        TYPE.chain = OBJECT.chain = ARRAY.chain = PROCESSOR.chain = EXPORTS;
+        PROCESSOR.chain = EXPORTS;
         EXPORTS.Promise = __webpack_require__(9);
         module.exports = EXPORTS["default"] = EXPORTS;
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var ROOT = global, doc = ROOT.document, win = ROOT.window, O = Object.prototype, toString = O.toString, A = Array.prototype, objectSignature = "[object Object]", BROWSER = !!doc && !!win && win.self === (doc.defaultView || doc.parentWindow), NODEVERSIONS = BROWSER ? false : function() {
+            var ROOT = global, doc = ROOT.document, win = ROOT.window, toString = Object.prototype.toString, objectSignature = "[object Object]", BROWSER = !!doc && !!win && win.self === (doc.defaultView || doc.parentWindow), NODEVERSIONS = BROWSER ? false : function() {
                 return __webpack_require__(3).versions || false;
             }(), CONSOLE = {}, CONSOLE_NAMES = [ "log", "info", "warn", "error", "assert" ], EXPORTS = {
                 browser: BROWSER,
@@ -44,7 +44,7 @@
                 userAgent: BROWSER ? ROOT.navigator.userAgent : NODEVERSIONS ? nodeUserAgent() : "Unknown",
                 validSignature: toString.call(null) !== objectSignature || toString.call(void 0) !== objectSignature,
                 ajax: ROOT.XMLHttpRequest,
-                indexOfSupport: "indexOf" in A
+                indexOfSupport: "indexOf" in Array.prototype
             };
             var c, l;
             function nodeUserAgent() {
@@ -215,7 +215,7 @@
         };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECTED = __webpack_require__(2), validSignature = DETECTED.validSignature, O = Object.prototype, toString = O.toString, isSignature = validSignature ? objectSignature : ieObjectSignature;
+        var DETECTED = __webpack_require__(2), validSignature = DETECTED.validSignature, OBJECT_SIGNATURE = "[object Object]", OBJECT = Object, O = OBJECT.prototype, toString = O.toString, isSignature = validSignature ? objectSignature : ieObjectSignature;
         function objectSignature(subject) {
             return toString.call(subject);
         }
@@ -231,10 +231,16 @@
             return isSignature(subject) === type;
         }
         function isObject(subject) {
-            return toString.call(subject) === "[object Object]";
+            return toString.call(subject) === OBJECT_SIGNATURE;
         }
         function ieIsObject(subject) {
-            return subject !== null && subject !== void 0 && typeof subject === "object" && subject instanceof O.constructor;
+            return subject !== null && subject !== void 0 && toString.call(subject) === OBJECT_SIGNATURE;
+        }
+        function isNativeObject(subject) {
+            return toString.call(subject) === OBJECT_SIGNATURE && subject instanceof OBJECT;
+        }
+        function ieIsNativeObject(subject) {
+            return subject !== null && subject !== void 0 && toString.call(subject) === OBJECT_SIGNATURE && subject instanceof OBJECT;
         }
         function isString(subject, allowEmpty) {
             return typeof subject === "string" && (allowEmpty === true || subject.length !== 0);
@@ -253,29 +259,34 @@
             }
             return false;
         }
+        function isFunction(subject) {
+            return toString.call(subject) === "[object Function]";
+        }
+        function isArray(subject) {
+            return toString.call(subject) === "[object Array]";
+        }
         function isDate(subject) {
-            return subject instanceof Date;
+            return toString.call(subject) === "[object Date]";
+        }
+        function isRegExp(subject) {
+            return toString.call(subject) === "[object RegExp]";
         }
         module.exports = {
             signature: isSignature,
             object: validSignature ? isObject : ieIsObject,
+            nativeObject: validSignature ? isNativeObject : ieIsNativeObject,
             string: isString,
             number: isNumber,
             scalar: isScalar,
+            array: isArray,
+            method: isFunction,
             date: isDate,
+            regex: isRegExp,
             type: isType
         };
-    }, function(module, exports) {
+    }, function(module, exports, __webpack_require__) {
         "use strict";
-        var O = Object.prototype, ARRAY = Array, REGEX = RegExp, OHasOwn = O.hasOwnProperty, OToString = O.toString, EXPORTS = {
-            each: each,
-            assign: assign,
-            rehash: assignProperties,
-            contains: contains,
-            buildInstance: buildInstance,
-            clone: clone,
-            compare: compare
-        };
+        var O = Object.prototype, TYPE = __webpack_require__(4), OHasOwn = O.hasOwnProperty;
         function empty() {}
         function assign(target, source, defaults) {
             var onAssign = apply, eachProperty = each;
@@ -292,7 +303,7 @@
             var context = [ target, source ];
             each(access, applyProperties, context);
             context = context[0] = context[1] = null;
-            return EXPORTS;
+            return target;
         }
         function applyProperties(value, name) {
             this[0][name] = this[1][value];
@@ -323,22 +334,22 @@
         function contains(subject, property) {
             return OHasOwn.call(subject, property);
         }
+        function clear(subject) {
+            each(subject, applyClear, null, true);
+            return subject;
+        }
+        function applyClear() {
+            delete arguments[2][arguments[1]];
+        }
         function buildInstance(Class) {
             empty.prototype = Class.prototype;
             return new empty();
-        }
-        function isNativeObject(data) {
-            var OBJECT = O, CONSTRUCTOR = OBJECT.constructor;
-            if (data !== null && data !== void 0 && data instanceof CONSTRUCTOR && OToString.call(data) === "[object Object]") {
-                return OHasOwn.call(data, "constructor") || data.constructor === CONSTRUCTOR;
-            }
-            return false;
         }
         function compare(object1, object2) {
             return compareLookback(object1, object2, []);
         }
         function compareLookback(object1, object2, references) {
-            var isNative = isNativeObject, A = ARRAY, R = REGEX, D = Date, me = compareLookback, depth = references.length;
+            var T = TYPE, isNative = T.nativeObject, isArray = T.array, isRegex = T.regex, isDate = T.date, me = compareLookback, depth = references.length;
             var name, len;
             switch (true) {
               case object1 === object2:
@@ -366,8 +377,8 @@
                 references.length = depth;
                 return true;
 
-              case object1 instanceof A:
-                if (!(object2 instanceof A)) {
+              case isArray(object1):
+                if (!isArray(object2)) {
                     return false;
                 }
                 if (references.lastIndexOf(object1) !== -1 && references.lastIndexOf(object2) !== -1) {
@@ -387,36 +398,36 @@
                 references.length = depth;
                 return true;
 
-              case object1 instanceof R:
-                return object2 instanceof R && object1.source === object2.source;
+              case isRegex(object1):
+                return isRegex(object2) && object1.source === object2.source;
 
-              case object1 instanceof D:
-                return object2 instanceof D && object1.toString() === object2.toString();
+              case isDate(object1):
+                return isDate(object2) && object1.toString() === object2.toString();
             }
             return false;
         }
         function clone(data, deep) {
-            var D = Date, R = REGEX, isNative = isNativeObject(data);
+            var T = TYPE, isNative = T.nativeObject(data);
             deep = deep === true;
-            if (isNative || data instanceof ARRAY) {
+            if (isNative || T.array(data)) {
                 return deep ? (isNative ? cloneObject : cloneArray)(data, [], []) : isNative ? assignAll({}, data) : data.slice(0);
             }
-            if (data instanceof R) {
-                return new R(data.source, data.flags);
-            } else if (data instanceof D) {
-                return new D(data.getFullYear(), data.getMonth(), data.getDate(), data.getHours(), data.getMinutes(), data.getSeconds(), data.getMilliseconds());
+            if (T.regex(data)) {
+                return new RegExp(data.source, data.flags);
+            } else if (T.date(data)) {
+                return new Date(data.getFullYear(), data.getMonth(), data.getDate(), data.getHours(), data.getMinutes(), data.getSeconds(), data.getMilliseconds());
             }
             return data;
         }
         function cloneObject(data, parents, cloned) {
-            var depth = parents.length, A = ARRAY, ca = cloneArray, co = cloneObject, recreated = {};
+            var depth = parents.length, T = TYPE, isNativeObject = T.nativeObject, isArray = T.array, ca = cloneArray, co = cloneObject, recreated = {};
             var name, value, index, isNative;
             parents[depth] = data;
             cloned[depth] = recreated;
             for (name in data) {
                 value = data[name];
                 isNative = isNativeObject(value);
-                if (isNative || value instanceof A) {
+                if (isNative || isArray(value)) {
                     index = parents.lastIndexOf(value);
                     value = index === -1 ? (isNative ? co : ca)(value, parents, cloned) : cloned[index];
                 } else {
@@ -428,14 +439,14 @@
             return recreated;
         }
         function cloneArray(data, parents, cloned) {
-            var depth = parents.length, A = ARRAY, ca = cloneArray, co = cloneObject, recreated = [], c = 0, l = data.length;
+            var depth = parents.length, T = TYPE, isNativeObject = T.nativeObject, isArray = T.array, ca = cloneArray, co = cloneObject, recreated = [], c = 0, l = data.length;
             var value, index, isNative;
             parents[depth] = data;
             cloned[depth] = recreated;
             for (;l--; c++) {
                 value = data[c];
                 isNative = isNativeObject(value);
-                if (isNative || value instanceof A) {
+                if (isNative || isArray(value)) {
                     index = parents.lastIndexOf(value);
                     value = index === -1 ? (isNative ? co : ca)(value, parents, cloned) : cloned[index];
                 } else {
@@ -446,10 +457,19 @@
             parents.length = cloned.length = depth;
             return recreated;
         }
-        module.exports = EXPORTS;
+        module.exports = {
+            each: each,
+            assign: assign,
+            rehash: assignProperties,
+            contains: contains,
+            buildInstance: buildInstance,
+            clone: clone,
+            compare: compare,
+            clear: clear
+        };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(5), A = Array.prototype, EXPORTS = {};
+        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(5), A = Array.prototype;
         function indexOf(subject) {
             var array = this, l = array.length, c = -1;
             for (;l--; ) {
@@ -537,12 +557,11 @@
                 lastIndexOf: lastIndexOf
             });
         }
-        OBJECT.assign(EXPORTS, {
+        module.exports = {
             unionList: union,
             intersectList: intersect,
             differenceList: difference
-        });
-        module.exports = EXPORTS;
+        };
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
@@ -682,6 +701,10 @@
                 }
                 return this;
             },
+            clear: function() {
+                OBJECT.clear(this.data);
+                return this;
+            },
             clone: function() {
                 var list = this.data;
                 return OBJECT.clone(list, true);
@@ -693,9 +716,10 @@
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), PROCESSOR = __webpack_require__(7), FUNCTION = Function, slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
+            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), PROCESSOR = __webpack_require__(7), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
             function isPromise(object) {
-                return TYPE.object(object) && object.then instanceof FUNCTION;
+                var T = TYPE;
+                return T.object(object) && T.method(object.then);
             }
             function createPromise(instance) {
                 var Class = Promise;
@@ -814,10 +838,10 @@
             Promise.prototype = {
                 constructor: Promise,
                 then: function(onFulfill, onReject) {
-                    var me = this, F = FUNCTION, state = me.__state, success = state[INDEX_STATUS], list = state[INDEX_PENDING], instance = createPromise();
+                    var me = this, state = me.__state, success = state[INDEX_STATUS], list = state[INDEX_PENDING], instance = createPromise();
                     function run(success, data) {
                         var handle = success ? onFulfill : onReject;
-                        if (handle instanceof F) {
+                        if (TYPE.method(handle)) {
                             try {
                                 data = handle(data);
                                 resolveValue(data, function(success, data) {
@@ -850,7 +874,7 @@
                 reject: reject,
                 resolve: resolve
             });
-            if (!(G.Promise instanceof FUNCTION)) {
+            if (!TYPE.method(G.Promise)) {
                 G.Promise = Promise;
             }
             module.exports = Promise;

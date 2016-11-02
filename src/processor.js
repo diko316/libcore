@@ -112,7 +112,7 @@ function middlewareNamespace(name) {
             list[access] = {
                                 run: createRunInNamespace(access),
                                 register: createRegisterInNamespace(access)
-                        };
+                            };
         }
         return list[access];
     }

@@ -3,7 +3,6 @@
 var TYPE = require("./type.js"),
     OBJECT = require("./object.js"),
     PROCESSOR = require("./processor.js"),
-    FUNCTION = Function,
     slice = Array.prototype.slice,
     G = global,
     INDEX_STATUS = 0,
@@ -11,8 +10,8 @@ var TYPE = require("./type.js"),
     INDEX_PENDING = 2;
 
 function isPromise(object) {
-    return TYPE.object(object) &&
-            object.then instanceof FUNCTION;
+    var T = TYPE;
+    return T.object(object) && T.method(object.then);
 }
 
 function createPromise(instance) {
@@ -174,7 +173,6 @@ Promise.prototype = {
     constructor: Promise,
     then: function (onFulfill, onReject) {
         var me = this,
-            F = FUNCTION,
             state = me.__state,
             success = state[INDEX_STATUS],
             list = state[INDEX_PENDING],
@@ -182,7 +180,7 @@ Promise.prototype = {
             
         function run(success, data) {
             var handle = success ? onFulfill : onReject;
-            if (handle instanceof F) {
+            if (TYPE.method(handle)) {
                 try {
                     data = handle(data);
                     resolveValue(
@@ -226,7 +224,7 @@ OBJECT.assign(Promise, {
 });
 
 // Polyfill if no promise
-if (!(G.Promise instanceof FUNCTION)) {
+if (!TYPE.method(G.Promise)) {
     G.Promise = Promise;
 }
 

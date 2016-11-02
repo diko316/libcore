@@ -2,7 +2,9 @@
 
 var DETECTED = require('./detect.js'),
     validSignature = DETECTED.validSignature,
-    O = Object.prototype,
+    OBJECT_SIGNATURE = '[object Object]',
+    OBJECT = Object,
+    O = OBJECT.prototype,
     toString = O.toString,
     isSignature = validSignature ?
                     objectSignature : ieObjectSignature;
@@ -28,14 +30,25 @@ function isType(subject, type) {
 
 /** is object **/
 function isObject(subject) {
-    return toString.call(subject) === '[object Object]';
+    return toString.call(subject) === OBJECT_SIGNATURE;
 }
 
 function ieIsObject(subject) {
     return subject !== null &&
             subject !== void(0) &&
-            typeof subject === 'object' &&
-            subject instanceof O.constructor;
+            toString.call(subject) === OBJECT_SIGNATURE;
+}
+
+function isNativeObject(subject) {
+    return toString.call(subject) === OBJECT_SIGNATURE &&
+            subject instanceof OBJECT;
+}
+
+function ieIsNativeObject(subject) {
+    return subject !== null &&
+            subject !== void(0) &&
+            toString.call(subject) === OBJECT_SIGNATURE &&
+            subject instanceof OBJECT;
 }
 
 /** is string **/
@@ -60,9 +73,24 @@ function isScalar(subject) {
     return false;
 }
 
+/** is function **/
+function isFunction(subject) {
+    return toString.call(subject) === '[object Function]';
+}
+
+/** is array **/
+function isArray(subject) {
+    return toString.call(subject) === '[object Array]';
+}
+
 /** is date **/
 function isDate(subject) {
-    return subject instanceof Date;
+    return toString.call(subject) === '[object Date]';
+}
+
+/** is regexp **/
+function isRegExp(subject) {
+    return toString.call(subject) === '[object RegExp]';
 }
 
 
@@ -72,13 +100,22 @@ module.exports = {
     object: validSignature ?
                 isObject : ieIsObject,
     
+    nativeObject: validSignature ?
+                    isNativeObject : ieIsNativeObject,
+    
     string: isString,
     
     number: isNumber,
     
     scalar: isScalar,
     
+    array: isArray,
+    
+    method: isFunction,
+    
     date: isDate,
+    
+    regex: isRegExp,
     
     type: isType
 };

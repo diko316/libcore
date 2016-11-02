@@ -15,10 +15,7 @@ OBJECT.assign(EXPORTS, ARRAY);
 OBJECT.assign(EXPORTS, PROCESSOR);
 OBJECT.assign(EXPORTS, require('./registry.js'));
 
-TYPE.chain =
-    OBJECT.chain =
-    ARRAY.chain =
-    PROCESSOR.chain = EXPORTS;
+PROCESSOR.chain = EXPORTS;
 
 // promise polyfill
 EXPORTS.Promise = require("./promise.js");

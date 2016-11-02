@@ -2,10 +2,7 @@
 
 var DETECT = require('./detect.js'),
     OBJECT = require('./object.js'),
-    A = Array.prototype,
-    EXPORTS = {
-        
-    };
+    A = Array.prototype;
     
     
 function indexOf(subject) {
@@ -139,10 +136,9 @@ if (!DETECT.indexOfSupport) {
     });
 }
 
-OBJECT.assign(EXPORTS, {
+module.exports = {
     unionList: union,
     intersectList: intersect,
     differenceList: difference
-});
+};
 
-module.exports = EXPORTS;

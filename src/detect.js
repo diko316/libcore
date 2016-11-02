@@ -3,9 +3,7 @@
 var ROOT = global,
     doc = ROOT.document,
     win = ROOT.window,
-    O = Object.prototype,
-    toString = O.toString,
-    A = Array.prototype,
+    toString = Object.prototype.toString,
     objectSignature = '[object Object]',
     BROWSER = !!doc && !!win &&
                 win.self === (doc.defaultView || doc.parentWindow),
@@ -33,7 +31,7 @@ var ROOT = global,
                         toString.call(void(0)) !== objectSignature,
                         
         ajax: ROOT.XMLHttpRequest,
-        indexOfSupport: 'indexOf' in A
+        indexOfSupport: 'indexOf' in Array.prototype
     };
     
 var c, l;
@@ -60,6 +58,7 @@ function empty() {
 }
 
 // console polyfill so that IE 8 will not have fatal errors
+//      for not openning dev tool window
 if (!ROOT.console) {
     for (c = 0, l = CONSOLE_NAMES.length; l--; c++) {
         CONSOLE[CONSOLE_NAMES[c]] = empty;

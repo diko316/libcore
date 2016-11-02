@@ -1,19 +1,9 @@
 'use strict';
 
 var O = Object.prototype,
-    ARRAY = Array,
-    REGEX = RegExp,
-    OHasOwn = O.hasOwnProperty,
-    OToString = O.toString,
-    EXPORTS = {
-        each: each,
-        assign: assign,
-        rehash: assignProperties,
-        contains: contains,
-        buildInstance: buildInstance,
-        clone: clone,
-        compare: compare
-    };
+    TYPE = require("./type.js"),
+    OHasOwn = O.hasOwnProperty;
+    
 function empty() {
     
 }
@@ -43,7 +33,7 @@ function assignProperties(target, source, access) {
     var context = [target, source];
     each(access, applyProperties, context);
     context = context[0] = context[1] =  null;
-    return EXPORTS;
+    return target;
 }
 
 function applyProperties(value, name) {
@@ -90,6 +80,17 @@ function contains(subject, property) {
     return OHasOwn.call(subject, property);
 }
 
+
+function clear(subject) {
+    each(subject, applyClear, null, true);
+    return subject;
+}
+
+function applyClear() {
+    delete arguments[2][arguments[1]];
+}
+
+
 /**
  * Object Classing
  */
@@ -101,34 +102,16 @@ function buildInstance(Class) {
 /**
  * Object comparison
  */
-function isNativeObject(data) {
-    var OBJECT = O,
-        CONSTRUCTOR = OBJECT.constructor;
-    
-    if (data !== null && data !== void(0) &&
-        data instanceof CONSTRUCTOR &&
-        OToString.call(data) === '[object Object]') {
-        
-        return OHasOwn.call(data, 'constructor') ||
-                data.constructor === CONSTRUCTOR;
-        
-    }
-    
-    return false;
-}
-
-/**
- * compare properties only
- */
 function compare(object1, object2) {
     return compareLookback(object1, object2, []);
 }
 
 function compareLookback(object1, object2, references) {
-    var isNative = isNativeObject,
-        A = ARRAY,
-        R = REGEX,
-        D = Date,
+    var T = TYPE,
+        isNative = T.nativeObject,
+        isArray = T.array,
+        isRegex = T.regex,
+        isDate = T.date,
         me = compareLookback,
         depth = references.length;
     var name, len;
@@ -173,8 +156,8 @@ function compareLookback(object1, object2, references) {
         return true;
     
     // array comparison
-    case object1 instanceof A:
-        if (!(object2 instanceof A)) {
+    case isArray(object1):
+        if (!isArray(object2)) {
             return false;
         }
         
@@ -206,14 +189,12 @@ function compareLookback(object1, object2, references) {
         
     
     // RegExp compare
-    case object1 instanceof R:
-        return object2 instanceof R &&
-                    object1.source === object2.source;
+    case isRegex(object1):
+        return isRegex(object2) && object1.source === object2.source;
     
     // Date compare
-    case object1 instanceof D:
-        return object2 instanceof D &&
-                    object1.toString() === object2.toString();
+    case isDate(object1):
+        return isDate(object2) && object1.toString() === object2.toString();
     }
     
     return false;
@@ -223,13 +204,12 @@ function compareLookback(object1, object2, references) {
  * Object clone
  */
 function clone(data, deep) {
-    var D = Date,
-        R = REGEX,
-        isNative = isNativeObject(data);
+    var T = TYPE,
+        isNative = T.nativeObject(data);
     
     deep = deep === true;
     
-    if (isNative || data instanceof ARRAY) {
+    if (isNative || T.array(data)) {
         return deep ?
                     
                     (isNative ? cloneObject : cloneArray)(data, [], []) :
@@ -237,11 +217,11 @@ function clone(data, deep) {
                     (isNative ? assignAll({}, data) : data.slice(0));
     }
     
-    if (data instanceof R) {
-        return new R(data.source, data.flags);
+    if (T.regex(data)) {
+        return new RegExp(data.source, data.flags);
     }
-    else if (data instanceof D) {
-        return new D(data.getFullYear(),
+    else if (T.date(data)) {
+        return new Date(data.getFullYear(),
                     data.getMonth(),
                     data.getDate(),
                     data.getHours(),
@@ -257,7 +237,9 @@ function clone(data, deep) {
 
 function cloneObject(data, parents, cloned) {
     var depth = parents.length,
-        A = ARRAY,
+        T = TYPE,
+        isNativeObject = T.nativeObject,
+        isArray = T.array,
         ca = cloneArray,
         co = cloneObject,
         recreated = {};
@@ -272,7 +254,7 @@ function cloneObject(data, parents, cloned) {
         value = data[name];
         isNative = isNativeObject(value);
         
-        if (isNative || value instanceof A) {
+        if (isNative || isArray(value)) {
             index = parents.lastIndexOf(value);
             value = index === -1 ?
                         (isNative ? co : ca)(value, parents, cloned) :
@@ -291,7 +273,9 @@ function cloneObject(data, parents, cloned) {
 
 function cloneArray(data, parents, cloned) {
     var depth = parents.length,
-        A = ARRAY,
+        T = TYPE,
+        isNativeObject = T.nativeObject,
+        isArray = T.array,
         ca = cloneArray,
         co = cloneObject,
         recreated = [],
@@ -306,7 +290,7 @@ function cloneArray(data, parents, cloned) {
     for (; l--; c++) {
         value = data[c];
         isNative = isNativeObject(value);
-        if (isNative || value instanceof A) {
+        if (isNative || isArray(value)) {
             index = parents.lastIndexOf(value);
             value = index === -1 ?
                         (isNative ? co : ca)(value, parents, cloned) :
@@ -325,5 +309,13 @@ function cloneArray(data, parents, cloned) {
 }
 
 
-
-module.exports = EXPORTS;
+module.exports = {
+    each: each,
+    assign: assign,
+    rehash: assignProperties,
+    contains: contains,
+    buildInstance: buildInstance,
+    clone: clone,
+    compare: compare,
+    clear: clear
+};

@@ -43,6 +43,11 @@ Registry.prototype = {
         return this;
     },
     
+    clear: function () {
+        OBJECT.clear(this.data);
+        return this;
+    },
+    
     clone: function () {
         var list = this.data;
         return OBJECT.clone(list, true);
