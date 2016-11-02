@@ -29,8 +29,9 @@
         OBJECT.assign(EXPORTS, OBJECT);
         OBJECT.assign(EXPORTS, ARRAY);
         OBJECT.assign(EXPORTS, PROCESSOR);
+        OBJECT.assign(EXPORTS, __webpack_require__(8));
         TYPE.chain = OBJECT.chain = ARRAY.chain = PROCESSOR.chain = EXPORTS;
-        EXPORTS.Promise = __webpack_require__(8);
+        EXPORTS.Promise = __webpack_require__(9);
         module.exports = EXPORTS["default"] = EXPORTS;
     }, function(module, exports, __webpack_require__) {
         (function(global) {
@@ -651,6 +652,44 @@
         }).call(exports, function() {
             return this;
         }());
+    }, function(module, exports, __webpack_require__) {
+        "use strict";
+        var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5);
+        function create() {}
+        function Registry() {
+            this.data = {};
+        }
+        Registry.prototype = {
+            constructor: Registry,
+            get: function(name) {
+                var list = this.data;
+                if (OBJECT.contains(list, name)) {
+                    return list[name];
+                }
+                return void 0;
+            },
+            set: function(name, value) {
+                var list = this.data;
+                if (TYPE.string(name) || TYPE.number(name)) {
+                    list[name] = value;
+                }
+                return this;
+            },
+            unset: function(name) {
+                var list = this.data;
+                if (OBJECT.contains(list, name)) {
+                    delete list[name];
+                }
+                return this;
+            },
+            clone: function() {
+                var list = this.data;
+                return OBJECT.clone(list, true);
+            }
+        };
+        module.exports = {
+            createRegistry: create
+        };
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";

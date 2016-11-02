@@ -13,6 +13,7 @@ OBJECT.assign(EXPORTS, TYPE);
 OBJECT.assign(EXPORTS, OBJECT);
 OBJECT.assign(EXPORTS, ARRAY);
 OBJECT.assign(EXPORTS, PROCESSOR);
+OBJECT.assign(EXPORTS, require('./registry.js'));
 
 TYPE.chain =
     OBJECT.chain =
