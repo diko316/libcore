@@ -2,13 +2,15 @@
 
 var TYPE = require('./type.js'),
     G = global,
-    NAME_RE = /^((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
+    NAME_RE = /^(([^\.]+\.)?(before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
     POSITION_BEFORE = 1,
     POSITION_AFTER = 2,
     RUNNERS = {},
+    NAMESPACES = {},
     EXPORTS = {
         register: set,
         run: run,
+        middlewares: middlewareNamespace,
         setAsync: G.setImmediate,
         clearAsync: G.clearImmediate
     };
@@ -84,21 +86,53 @@ function getPositionAccess(input) {
 
 function parseName(name) {
     var match = TYPE.string(name) && name.match(NAME_RE);
-    var position;
+    var position, prefix;
     
     if (match) {
-        
-        position = match[1] && match[2] === 'before' ?
+        prefix = match[1];
+        position = prefix && match[3] === 'before' ?
                     POSITION_BEFORE :
                     POSITION_AFTER;
                     
-        return [position, match[3]];
+        return [position, (prefix ? match[2] : '') + match[3]];
         
     }
     
     return void(0);
     
 }
+
+function middlewareNamespace(name) {
+    var list = NAMESPACES;
+    var access;
+ 
+    if (TYPE.string(name)) {
+        access = name + '.';
+        if (!(list in access)) {
+            list[access] = {
+                                run: createRunInNamespace(access),
+                                register: createRegisterInNamespace(access)
+                        };
+        }
+        return list[access];
+    }
+    return void(0);
+}
+
+function createRunInNamespace(ns) {
+    function nsRun(name, args, scope) {
+        return run(ns + name, args, scope);
+    }
+    return nsRun;
+}
+
+function createRegisterInNamespace(ns) {
+    function nsRun(name, handler) {
+        return set(ns + name, handler);
+    }
+    return nsRun;
+}
+
 
 function timeoutAsync(handler) {
     return setTimeout(handler, 1);

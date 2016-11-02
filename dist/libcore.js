@@ -266,12 +266,14 @@
         };
     }, function(module, exports) {
         "use strict";
-        var O = Object.prototype, EXPORTS = {
+        var O = Object.prototype, ARRAY = Array, REGEX = RegExp, OHasOwn = O.hasOwnProperty, OToString = O.toString, EXPORTS = {
             each: each,
             assign: assign,
             rehash: assignProperties,
             contains: contains,
-            buildInstance: buildInstance
+            buildInstance: buildInstance,
+            clone: clone,
+            compare: compare
         };
         function empty() {}
         function assign(target, source, defaults) {
@@ -294,14 +296,22 @@
         function applyProperties(value, name) {
             this[0][name] = this[1][value];
         }
-        function each(subject, handler, scope) {
-            var hasOwn = O.hasOwnProperty;
+        function assignAll(target, source, defaults) {
+            var onAssign = apply, eachProperty = each;
+            if (defaults) {
+                eachProperty(defaults, onAssign, target, false);
+            }
+            eachProperty(source, onAssign, target);
+            return target;
+        }
+        function each(subject, handler, scope, hasown) {
+            var hasOwn = OHasOwn, noChecking = hasown === false;
             var name;
             if (scope === void 0) {
                 scope = null;
             }
             for (name in subject) {
-                if (hasOwn.call(subject, name)) {
+                if (noChecking || hasOwn.call(subject, name)) {
                     if (handler.call(scope, subject[name], name, subject) === false) {
                         break;
                     }
@@ -310,11 +320,130 @@
             return subject;
         }
         function contains(subject, property) {
-            return O.hasOwnProperty.call(subject, property);
+            return OHasOwn.call(subject, property);
         }
         function buildInstance(Class) {
             empty.prototype = Class.prototype;
             return new empty();
+        }
+        function isNativeObject(data) {
+            var OBJECT = O, CONSTRUCTOR = OBJECT.constructor;
+            if (data !== null && data !== void 0 && data instanceof CONSTRUCTOR && OToString.call(data) === "[object Object]") {
+                return OHasOwn.call(data, "constructor") || data.constructor === CONSTRUCTOR;
+            }
+            return false;
+        }
+        function compare(object1, object2) {
+            return compareLookback(object1, object2, []);
+        }
+        function compareLookback(object1, object2, references) {
+            var isNative = isNativeObject, A = ARRAY, R = REGEX, D = Date, me = compareLookback, depth = references.length;
+            var name, len;
+            switch (true) {
+              case object1 === object2:
+                return true;
+
+              case isNative(object1):
+                if (!isNative(object2)) {
+                    return false;
+                }
+                if (references.lastIndexOf(object1) !== -1 && references.lastIndexOf(object2) !== -1) {
+                    return true;
+                }
+                references[depth] = object1;
+                references[depth + 1] = object2;
+                for (name in object1) {
+                    if (!(name in object2) || !me(object1[name], object2[name], references)) {
+                        return false;
+                    }
+                }
+                for (name in object2) {
+                    if (!(name in object1) || !me(object1[name], object2[name], references)) {
+                        return false;
+                    }
+                }
+                references.length = depth;
+                return true;
+
+              case object1 instanceof A:
+                if (!(object2 instanceof A)) {
+                    return false;
+                }
+                if (references.lastIndexOf(object1) !== -1 && references.lastIndexOf(object2) !== -1) {
+                    return true;
+                }
+                len = object1.length;
+                if (len !== object2.length) {
+                    return false;
+                }
+                references[depth] = object1;
+                references[depth + 1] = object2;
+                for (;len--; ) {
+                    if (!me(object1[len], object2[len], references)) {
+                        return false;
+                    }
+                }
+                references.length = depth;
+                return true;
+
+              case object1 instanceof R:
+                return object2 instanceof R && object1.source === object2.source;
+
+              case object1 instanceof D:
+                return object2 instanceof D && object1.toString() === object2.toString();
+            }
+            return false;
+        }
+        function clone(data, deep) {
+            var D = Date, R = REGEX, isNative = isNativeObject(data);
+            deep = deep === true;
+            if (isNative || data instanceof ARRAY) {
+                return deep ? (isNative ? cloneObject : cloneArray)(data, [], []) : isNative ? assignAll({}, data) : data.slice(0);
+            }
+            if (data instanceof R) {
+                return new R(data.source, data.flags);
+            } else if (data instanceof D) {
+                return new D(data.getFullYear(), data.getMonth(), data.getDate(), data.getHours(), data.getMinutes(), data.getSeconds(), data.getMilliseconds());
+            }
+            return data;
+        }
+        function cloneObject(data, parents, cloned) {
+            var depth = parents.length, A = ARRAY, ca = cloneArray, co = cloneObject, recreated = {};
+            var name, value, index, isNative;
+            parents[depth] = data;
+            cloned[depth] = recreated;
+            for (name in data) {
+                value = data[name];
+                isNative = isNativeObject(value);
+                if (isNative || value instanceof A) {
+                    index = parents.lastIndexOf(value);
+                    value = index === -1 ? (isNative ? co : ca)(value, parents, cloned) : cloned[index];
+                } else {
+                    value = clone(value, false);
+                }
+                recreated[name] = value;
+            }
+            parents.length = cloned.length = depth;
+            return recreated;
+        }
+        function cloneArray(data, parents, cloned) {
+            var depth = parents.length, A = ARRAY, ca = cloneArray, co = cloneObject, recreated = [], c = 0, l = data.length;
+            var value, index, isNative;
+            parents[depth] = data;
+            cloned[depth] = recreated;
+            for (;l--; c++) {
+                value = data[c];
+                isNative = isNativeObject(value);
+                if (isNative || value instanceof A) {
+                    index = parents.lastIndexOf(value);
+                    value = index === -1 ? (isNative ? co : ca)(value, parents, cloned) : cloned[index];
+                } else {
+                    value = clone(value, false);
+                }
+                recreated[c] = value;
+            }
+            parents.length = cloned.length = depth;
+            return recreated;
         }
         module.exports = EXPORTS;
     }, function(module, exports, __webpack_require__) {
@@ -416,9 +545,10 @@
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(4), G = global, NAME_RE = /^((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, EXPORTS = {
+            var TYPE = __webpack_require__(4), G = global, NAME_RE = /^(([^\.]+\.)?(before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, EXPORTS = {
                 register: set,
                 run: run,
+                middlewares: middlewareNamespace,
                 setAsync: G.setImmediate,
                 clearAsync: G.clearImmediate
             };
@@ -472,12 +602,40 @@
             }
             function parseName(name) {
                 var match = TYPE.string(name) && name.match(NAME_RE);
-                var position;
+                var position, prefix;
                 if (match) {
-                    position = match[1] && match[2] === "before" ? POSITION_BEFORE : POSITION_AFTER;
-                    return [ position, match[3] ];
+                    prefix = match[1];
+                    position = prefix && match[3] === "before" ? POSITION_BEFORE : POSITION_AFTER;
+                    return [ position, (prefix ? match[2] : "") + match[3] ];
                 }
                 return void 0;
+            }
+            function middlewareNamespace(name) {
+                var list = NAMESPACES;
+                var access;
+                if (TYPE.string(name)) {
+                    access = name + ".";
+                    if (!(list in access)) {
+                        list[access] = {
+                            run: createRunInNamespace(access),
+                            register: createRegisterInNamespace(access)
+                        };
+                    }
+                    return list[access];
+                }
+                return void 0;
+            }
+            function createRunInNamespace(ns) {
+                function nsRun(name, args, scope) {
+                    return run(ns + name, args, scope);
+                }
+                return nsRun;
+            }
+            function createRegisterInNamespace(ns) {
+                function nsRun(name, handler) {
+                    return set(ns + name, handler);
+                }
+                return nsRun;
             }
             function timeoutAsync(handler) {
                 return setTimeout(handler, 1);
