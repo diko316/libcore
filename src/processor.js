@@ -106,15 +106,17 @@ function parseName(name) {
 
 function middlewareNamespace(name) {
     var list = NAMESPACES;
-    var access;
+    var access, register, run;
  
     if (TYPE.string(name)) {
         access = name + '.';
         if (!(access in list)) {
-            list[access] = {
-                                run: createRunInNamespace(access),
-                                register: createRegisterInNamespace(access)
-                            };
+            run = createRunInNamespace(access);
+            register = createRegisterInNamespace(access);
+            list[access] = register.chain = run.chain = {
+                                                        run: run,
+                                                        register: register
+                                                    };
         }
         return list[access];
     }
@@ -123,17 +125,18 @@ function middlewareNamespace(name) {
 
 function createRunInNamespace(ns) {
     function nsRun(name, args, scope) {
-        return run(ns + name, args, scope);
+        run(ns + name, args, scope);
+        return nsRun.chain;
     }
     return nsRun;
 }
 
 function createRegisterInNamespace(ns) {
-    function nsRun(name, handler) {
-        console.log('registering: ', ns + name);
-        return set(ns + name, handler);
+    function nsRegister(name, handler) {
+        set(ns + name, handler);
+        return nsRegister.chain;
     }
-    return nsRun;
+    return nsRegister;
 }
 
 

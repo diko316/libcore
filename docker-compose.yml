@@ -16,7 +16,6 @@ services:
       - "3000:3000"
       
   libcore_builder:
-    build: .
     image: libcore:latest
     container_name: "libcore-builder"
     command: bin/autosync-builds.sh
