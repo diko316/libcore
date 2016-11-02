@@ -577,7 +577,7 @@
             var TYPE = __webpack_require__(4), G = global, NAME_RE = /^(([^\.]+\.)?(before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, EXPORTS = {
                 register: set,
                 run: run,
-                middlewares: middlewareNamespace,
+                middleware: middlewareNamespace,
                 setAsync: G.setImmediate,
                 clearAsync: G.clearImmediate
             };
@@ -644,7 +644,7 @@
                 var access;
                 if (TYPE.string(name)) {
                     access = name + ".";
-                    if (!(list in access)) {
+                    if (!(access in list)) {
                         list[access] = {
                             run: createRunInNamespace(access),
                             register: createRegisterInNamespace(access)

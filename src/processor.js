@@ -10,7 +10,7 @@ var TYPE = require('./type.js'),
     EXPORTS = {
         register: set,
         run: run,
-        middlewares: middlewareNamespace,
+        middleware: middlewareNamespace,
         setAsync: G.setImmediate,
         clearAsync: G.clearImmediate
     };
@@ -108,7 +108,7 @@ function middlewareNamespace(name) {
  
     if (TYPE.string(name)) {
         access = name + '.';
-        if (!(list in access)) {
+        if (!(access in list)) {
             list[access] = {
                                 run: createRunInNamespace(access),
                                 register: createRegisterInNamespace(access)
