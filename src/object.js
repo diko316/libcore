@@ -108,7 +108,7 @@ function compare(object1, object2) {
 
 function compareLookback(object1, object2, references) {
     var T = TYPE,
-        isNative = T.nativeObject,
+        isObject = T.object,
         isArray = T.array,
         isRegex = T.regex,
         isDate = T.date,
@@ -122,8 +122,8 @@ function compareLookback(object1, object2, references) {
     case object1 === object2: return true;
     
     // native object comparison
-    case isNative(object1):
-        if (!isNative(object2)) {
+    case isObject(object1):
+        if (!isObject(object2)) {
             return false;
         }
         

@@ -237,10 +237,19 @@
             return subject !== null && subject !== void 0 && toString.call(subject) === OBJECT_SIGNATURE;
         }
         function isNativeObject(subject) {
-            return toString.call(subject) === OBJECT_SIGNATURE && subject instanceof OBJECT;
-        }
-        function ieIsNativeObject(subject) {
-            return subject !== null && subject !== void 0 && toString.call(subject) === OBJECT_SIGNATURE && subject instanceof OBJECT;
+            var O = OBJECT;
+            var constructor, result;
+            if (isSignature(subject) === OBJECT_SIGNATURE) {
+                constructor = subject.constructor;
+                if (O.hasOwnProperty.call(subject, "constructor")) {
+                    delete subject.constructor;
+                    result = subject.constructor === O;
+                    subject.constructor = constructor;
+                    return result;
+                }
+                return constructor === O;
+            }
+            return false;
         }
         function isString(subject, allowEmpty) {
             return typeof subject === "string" && (allowEmpty === true || subject.length !== 0);
@@ -274,7 +283,7 @@
         module.exports = {
             signature: isSignature,
             object: validSignature ? isObject : ieIsObject,
-            nativeObject: validSignature ? isNativeObject : ieIsNativeObject,
+            nativeObject: isNativeObject,
             string: isString,
             number: isNumber,
             scalar: isScalar,
@@ -349,14 +358,14 @@
             return compareLookback(object1, object2, []);
         }
         function compareLookback(object1, object2, references) {
-            var T = TYPE, isNative = T.nativeObject, isArray = T.array, isRegex = T.regex, isDate = T.date, me = compareLookback, depth = references.length;
+            var T = TYPE, isObject = T.object, isArray = T.array, isRegex = T.regex, isDate = T.date, me = compareLookback, depth = references.length;
             var name, len;
             switch (true) {
               case object1 === object2:
                 return true;
 
-              case isNative(object1):
-                if (!isNative(object2)) {
+              case isObject(object1):
+                if (!isObject(object2)) {
                     return false;
                 }
                 if (references.lastIndexOf(object1) !== -1 && references.lastIndexOf(object2) !== -1) {

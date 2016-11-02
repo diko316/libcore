@@ -40,15 +40,23 @@ function ieIsObject(subject) {
 }
 
 function isNativeObject(subject) {
-    return toString.call(subject) === OBJECT_SIGNATURE &&
-            subject instanceof OBJECT;
-}
-
-function ieIsNativeObject(subject) {
-    return subject !== null &&
-            subject !== void(0) &&
-            toString.call(subject) === OBJECT_SIGNATURE &&
-            subject instanceof OBJECT;
+    var O = OBJECT;
+    var constructor, result;
+    
+    if (isSignature(subject) === OBJECT_SIGNATURE) {
+        constructor = subject.constructor;
+        
+        // check constructor
+        if (O.hasOwnProperty.call(subject, 'constructor')) {
+            delete subject.constructor;
+            result = subject.constructor === O;
+            subject.constructor = constructor;
+            return result;
+        }
+        return constructor === O;
+    }
+    
+    return false;
 }
 
 /** is string **/
@@ -100,8 +108,7 @@ module.exports = {
     object: validSignature ?
                 isObject : ieIsObject,
     
-    nativeObject: validSignature ?
-                    isNativeObject : ieIsNativeObject,
+    nativeObject: isNativeObject,
     
     string: isString,
     
