@@ -4,7 +4,7 @@ var TYPE = require("./type.js"),
     OBJECT = require("./object.js");
 
 function create() {
-    
+    return new Registry();
 }
 
 function Registry() {
