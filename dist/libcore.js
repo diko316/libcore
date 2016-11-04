@@ -350,8 +350,11 @@
         function applyClear() {
             delete arguments[2][arguments[1]];
         }
-        function buildInstance(Class) {
+        function buildInstance(Class, overrides) {
             empty.prototype = Class.prototype;
+            if (TYPE.object(overrides)) {
+                return assign(new empty(), overrides);
+            }
             return new empty();
         }
         function compare(object1, object2) {
@@ -471,7 +474,7 @@
             assign: assign,
             rehash: assignProperties,
             contains: contains,
-            buildInstance: buildInstance,
+            instantiate: buildInstance,
             clone: clone,
             compare: compare,
             clear: clear
@@ -739,7 +742,7 @@
             function createPromise(instance) {
                 var Class = Promise;
                 if (!(instance instanceof Class)) {
-                    instance = OBJECT.buildInstance(Class);
+                    instance = OBJECT.instantiate(Class);
                 }
                 instance.__state = [ null, void 0, [], null, null ];
                 return instance;

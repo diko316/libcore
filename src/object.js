@@ -94,8 +94,12 @@ function applyClear() {
 /**
  * Object Classing
  */
-function buildInstance(Class) {
+function buildInstance(Class, overrides) {
     empty.prototype = Class.prototype;
+    
+    if (TYPE.object(overrides)) {
+        return assign(new empty(), overrides);
+    }
     return new empty();
 }
 
@@ -314,7 +318,7 @@ module.exports = {
     assign: assign,
     rehash: assignProperties,
     contains: contains,
-    buildInstance: buildInstance,
+    instantiate: buildInstance,
     clone: clone,
     compare: compare,
     clear: clear

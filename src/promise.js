@@ -17,7 +17,7 @@ function isPromise(object) {
 function createPromise(instance) {
     var Class = Promise;
     if (!(instance instanceof Class)) {
-        instance = OBJECT.buildInstance(Class);
+        instance = OBJECT.instantiate(Class);
     }
     
     instance.__state = [null,
