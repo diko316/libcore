@@ -719,6 +719,9 @@
                 }
                 return this;
             },
+            exists: function(name) {
+                return OBJECT.contains(this.data, name);
+            },
             clear: function() {
                 OBJECT.clear(this.data);
                 return this;
