@@ -38,7 +38,9 @@ function assignProperties(target, source, access) {
 
 function applyProperties(value, name) {
     /*jshint validthis:true */
-    this[0][name] = this[1][value];
+    var target = this;
+    target[0][name] = target[1][value];
+    target = null;
 }
 
 function assignAll(target, source, defaults) {
@@ -88,6 +90,20 @@ function clear(subject) {
 
 function applyClear() {
     delete arguments[2][arguments[1]];
+}
+
+function fillin(target, source, hasown) {
+    each(source, applyFillin, target, hasown);
+    return target;
+}
+
+function applyFillin(value, name) {
+    /* jshint validthis:true */
+    var target = this;
+    if (!contains(target, name)) {
+        target[name] = value;
+    }
+    target = null;
 }
 
 
@@ -321,5 +337,6 @@ module.exports = {
     instantiate: buildInstance,
     clone: clone,
     compare: compare,
+    fillin: fillin,
     clear: clear
 };

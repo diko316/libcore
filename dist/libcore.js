@@ -315,7 +315,9 @@
             return target;
         }
         function applyProperties(value, name) {
-            this[0][name] = this[1][value];
+            var target = this;
+            target[0][name] = target[1][value];
+            target = null;
         }
         function assignAll(target, source, defaults) {
             var onAssign = apply, eachProperty = each;
@@ -349,6 +351,17 @@
         }
         function applyClear() {
             delete arguments[2][arguments[1]];
+        }
+        function fillin(target, source, hasown) {
+            each(source, applyFillin, target, hasown);
+            return target;
+        }
+        function applyFillin(value, name) {
+            var target = this;
+            if (!contains(target, name)) {
+                target[name] = value;
+            }
+            target = null;
         }
         function buildInstance(Class, overrides) {
             empty.prototype = Class.prototype;
@@ -477,6 +490,7 @@
             instantiate: buildInstance,
             clone: clone,
             compare: compare,
+            fillin: fillin,
             clear: clear
         };
     }, function(module, exports, __webpack_require__) {
