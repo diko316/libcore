@@ -1,17 +1,16 @@
 'use strict';
 
 var DETECT = require('./detect.js'),
-    TYPE = require('./type.js'),
     OBJECT = require('./object.js'),
-    ARRAY = require('./array.js'),
     PROCESSOR = require('./processor.js'),
     EXPORTS = {
         env: DETECT
     };
 
-OBJECT.assign(EXPORTS, TYPE);
+OBJECT.assign(EXPORTS, require('./type.js'));
 OBJECT.assign(EXPORTS, OBJECT);
-OBJECT.assign(EXPORTS, ARRAY);
+OBJECT.assign(EXPORTS, require('./array.js'));
+OBJECT.assign(EXPORTS, require('./string.js'));
 OBJECT.assign(EXPORTS, PROCESSOR);
 OBJECT.assign(EXPORTS, require('./registry.js'));
 

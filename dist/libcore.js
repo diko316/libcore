@@ -22,16 +22,17 @@
         module.exports = __webpack_require__(1);
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECT = __webpack_require__(2), TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), ARRAY = __webpack_require__(6), PROCESSOR = __webpack_require__(7), EXPORTS = {
+        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(6), EXPORTS = {
             env: DETECT
         };
-        OBJECT.assign(EXPORTS, TYPE);
+        OBJECT.assign(EXPORTS, __webpack_require__(5));
         OBJECT.assign(EXPORTS, OBJECT);
-        OBJECT.assign(EXPORTS, ARRAY);
-        OBJECT.assign(EXPORTS, PROCESSOR);
+        OBJECT.assign(EXPORTS, __webpack_require__(7));
         OBJECT.assign(EXPORTS, __webpack_require__(8));
+        OBJECT.assign(EXPORTS, PROCESSOR);
+        OBJECT.assign(EXPORTS, __webpack_require__(9));
         PROCESSOR.chain = EXPORTS;
-        EXPORTS.Promise = __webpack_require__(9);
+        EXPORTS.Promise = __webpack_require__(10);
         module.exports = EXPORTS["default"] = EXPORTS;
     }, function(module, exports, __webpack_require__) {
         (function(global) {
@@ -215,87 +216,7 @@
         };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECTED = __webpack_require__(2), validSignature = DETECTED.validSignature, OBJECT_SIGNATURE = "[object Object]", OBJECT = Object, O = OBJECT.prototype, toString = O.toString, isSignature = validSignature ? objectSignature : ieObjectSignature;
-        function objectSignature(subject) {
-            return toString.call(subject);
-        }
-        function ieObjectSignature(subject) {
-            if (subject === null) {
-                return "[object Null]";
-            } else if (subject === void 0) {
-                return "[object Undefined]";
-            }
-            return toString.call(subject);
-        }
-        function isType(subject, type) {
-            return isSignature(subject) === type;
-        }
-        function isObject(subject) {
-            return toString.call(subject) === OBJECT_SIGNATURE;
-        }
-        function ieIsObject(subject) {
-            return subject !== null && subject !== void 0 && toString.call(subject) === OBJECT_SIGNATURE;
-        }
-        function isNativeObject(subject) {
-            var O = OBJECT;
-            var constructor, result;
-            if (isSignature(subject) === OBJECT_SIGNATURE) {
-                constructor = subject.constructor;
-                if (O.hasOwnProperty.call(subject, "constructor")) {
-                    delete subject.constructor;
-                    result = subject.constructor === O;
-                    subject.constructor = constructor;
-                    return result;
-                }
-                return constructor === O;
-            }
-            return false;
-        }
-        function isString(subject, allowEmpty) {
-            return typeof subject === "string" && (allowEmpty === true || subject.length !== 0);
-        }
-        function isNumber(subject) {
-            return typeof subject === "number" && isFinite(subject);
-        }
-        function isScalar(subject) {
-            switch (typeof subject) {
-              case "number":
-                return isFinite(subject);
-
-              case "boolean":
-              case "string":
-                return true;
-            }
-            return false;
-        }
-        function isFunction(subject) {
-            return toString.call(subject) === "[object Function]";
-        }
-        function isArray(subject) {
-            return toString.call(subject) === "[object Array]";
-        }
-        function isDate(subject) {
-            return toString.call(subject) === "[object Date]";
-        }
-        function isRegExp(subject) {
-            return toString.call(subject) === "[object RegExp]";
-        }
-        module.exports = {
-            signature: isSignature,
-            object: validSignature ? isObject : ieIsObject,
-            nativeObject: isNativeObject,
-            string: isString,
-            number: isNumber,
-            scalar: isScalar,
-            array: isArray,
-            method: isFunction,
-            date: isDate,
-            regex: isRegExp,
-            type: isType
-        };
-    }, function(module, exports, __webpack_require__) {
-        "use strict";
-        var O = Object.prototype, TYPE = __webpack_require__(4), OHasOwn = O.hasOwnProperty;
+        var O = Object.prototype, TYPE = __webpack_require__(5), OHasOwn = O.hasOwnProperty;
         function empty() {}
         function assign(target, source, defaults) {
             var onAssign = apply, eachProperty = each;
@@ -495,103 +416,88 @@
         };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(5), A = Array.prototype;
-        function indexOf(subject) {
-            var array = this, l = array.length, c = -1;
-            for (;l--; ) {
-                if (subject === array[++c]) {
-                    array = null;
-                    return c;
-                }
-            }
-            return -1;
+        var DETECTED = __webpack_require__(2), validSignature = DETECTED.validSignature, OBJECT_SIGNATURE = "[object Object]", OBJECT = Object, O = OBJECT.prototype, toString = O.toString, isSignature = validSignature ? objectSignature : ieObjectSignature;
+        function objectSignature(subject) {
+            return toString.call(subject);
         }
-        function lastIndexOf(subject) {
-            var array = this, l = array.length;
-            for (;l--; ) {
-                if (subject === array[l]) {
-                    array = null;
-                    return l;
-                }
+        function ieObjectSignature(subject) {
+            if (subject === null) {
+                return "[object Null]";
+            } else if (subject === void 0) {
+                return "[object Undefined]";
             }
-            return -1;
+            return toString.call(subject);
         }
-        function union(array, array2, clone) {
-            var subject, l, len, total;
-            array = clone !== false ? array : array.slice(0);
-            array.push.apply(array, array2);
-            total = array.length;
-            found: for (l = total; l--; ) {
-                subject = array[l];
-                for (len = total; len--; ) {
-                    if (l !== len && subject === array[len]) {
-                        total--;
-                        array.splice(l, 1);
-                        continue found;
-                    }
+        function isType(subject, type) {
+            return isSignature(subject) === type;
+        }
+        function isObject(subject) {
+            return toString.call(subject) === OBJECT_SIGNATURE;
+        }
+        function ieIsObject(subject) {
+            return subject !== null && subject !== void 0 && toString.call(subject) === OBJECT_SIGNATURE;
+        }
+        function isNativeObject(subject) {
+            var O = OBJECT;
+            var constructor, result;
+            if (isSignature(subject) === OBJECT_SIGNATURE) {
+                constructor = subject.constructor;
+                if (O.hasOwnProperty.call(subject, "constructor")) {
+                    delete subject.constructor;
+                    result = subject.constructor === O;
+                    subject.constructor = constructor;
+                    return result;
                 }
+                return constructor === O;
             }
-            return array;
+            return false;
         }
-        function intersect(array1, array2, clone) {
-            var total1 = array1.length, total2 = array2.length;
-            var subject, l1, l2;
-            array1 = clone !== false ? array1 : array1.slice(0);
-            found: for (l1 = total1; l1--; ) {
-                subject = array1[l1];
-                foundSame: for (l2 = total2; l2--; ) {
-                    if (subject === array2[l2]) {
-                        for (l2 = total1; l2--; ) {
-                            if (l2 !== l1 && subject === array1[l2]) {
-                                break foundSame;
-                            }
-                        }
-                        continue found;
-                    }
-                }
-                array1.splice(l1, 1);
-                total1--;
+        function isString(subject, allowEmpty) {
+            return typeof subject === "string" && (allowEmpty === true || subject.length !== 0);
+        }
+        function isNumber(subject) {
+            return typeof subject === "number" && isFinite(subject);
+        }
+        function isScalar(subject) {
+            switch (typeof subject) {
+              case "number":
+                return isFinite(subject);
+
+              case "boolean":
+              case "string":
+                return true;
             }
-            return array1;
+            return false;
         }
-        function difference(array1, array2, clone) {
-            var total1 = array1.length, total2 = array2.length;
-            var subject, l1, l2;
-            array1 = clone !== false ? array1 : array1.slice(0);
-            found: for (l1 = total1; l1--; ) {
-                subject = array1[l1];
-                for (l2 = total2; l2--; ) {
-                    if (subject === array2[l2]) {
-                        array1.splice(l1, 1);
-                        total1--;
-                        continue found;
-                    }
-                }
-                for (l2 = total1; l2--; ) {
-                    if (l2 !== l1 && subject === array1[l2]) {
-                        array1.splice(l1, 1);
-                        total1--;
-                        continue found;
-                    }
-                }
-            }
-            return array1;
+        function isFunction(subject) {
+            return toString.call(subject) === "[object Function]";
         }
-        if (!DETECT.indexOfSupport) {
-            OBJECT.assign(A, {
-                indexOf: indexOf,
-                lastIndexOf: lastIndexOf
-            });
+        function isArray(subject) {
+            return toString.call(subject) === "[object Array]";
+        }
+        function isDate(subject) {
+            return toString.call(subject) === "[object Date]";
+        }
+        function isRegExp(subject) {
+            return toString.call(subject) === "[object RegExp]";
         }
         module.exports = {
-            unionList: union,
-            intersectList: intersect,
-            differenceList: difference
+            signature: isSignature,
+            object: validSignature ? isObject : ieIsObject,
+            nativeObject: isNativeObject,
+            string: isString,
+            number: isNumber,
+            scalar: isScalar,
+            array: isArray,
+            method: isFunction,
+            date: isDate,
+            regex: isRegExp,
+            type: isType
         };
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(4), G = global, NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, EXPORTS = {
+            var TYPE = __webpack_require__(5), G = global, NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, EXPORTS = {
                 register: set,
                 run: run,
                 middleware: middlewareNamespace,
@@ -703,7 +609,141 @@
         }());
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5);
+        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(4), A = Array.prototype;
+        function indexOf(subject) {
+            var array = this, l = array.length, c = -1;
+            for (;l--; ) {
+                if (subject === array[++c]) {
+                    array = null;
+                    return c;
+                }
+            }
+            return -1;
+        }
+        function lastIndexOf(subject) {
+            var array = this, l = array.length;
+            for (;l--; ) {
+                if (subject === array[l]) {
+                    array = null;
+                    return l;
+                }
+            }
+            return -1;
+        }
+        function union(array, array2, clone) {
+            var subject, l, len, total;
+            array = clone !== false ? array : array.slice(0);
+            array.push.apply(array, array2);
+            total = array.length;
+            found: for (l = total; l--; ) {
+                subject = array[l];
+                for (len = total; len--; ) {
+                    if (l !== len && subject === array[len]) {
+                        total--;
+                        array.splice(l, 1);
+                        continue found;
+                    }
+                }
+            }
+            return array;
+        }
+        function intersect(array1, array2, clone) {
+            var total1 = array1.length, total2 = array2.length;
+            var subject, l1, l2;
+            array1 = clone !== false ? array1 : array1.slice(0);
+            found: for (l1 = total1; l1--; ) {
+                subject = array1[l1];
+                foundSame: for (l2 = total2; l2--; ) {
+                    if (subject === array2[l2]) {
+                        for (l2 = total1; l2--; ) {
+                            if (l2 !== l1 && subject === array1[l2]) {
+                                break foundSame;
+                            }
+                        }
+                        continue found;
+                    }
+                }
+                array1.splice(l1, 1);
+                total1--;
+            }
+            return array1;
+        }
+        function difference(array1, array2, clone) {
+            var total1 = array1.length, total2 = array2.length;
+            var subject, l1, l2;
+            array1 = clone !== false ? array1 : array1.slice(0);
+            found: for (l1 = total1; l1--; ) {
+                subject = array1[l1];
+                for (l2 = total2; l2--; ) {
+                    if (subject === array2[l2]) {
+                        array1.splice(l1, 1);
+                        total1--;
+                        continue found;
+                    }
+                }
+                for (l2 = total1; l2--; ) {
+                    if (l2 !== l1 && subject === array1[l2]) {
+                        array1.splice(l1, 1);
+                        total1--;
+                        continue found;
+                    }
+                }
+            }
+            return array1;
+        }
+        if (!DETECT.indexOfSupport) {
+            OBJECT.assign(A, {
+                indexOf: indexOf,
+                lastIndexOf: lastIndexOf
+            });
+        }
+        module.exports = {
+            unionList: union,
+            intersectList: intersect,
+            differenceList: difference
+        };
+    }, function(module, exports) {
+        (function(global) {
+            "use strict";
+            function base64Encode(str) {
+                var c, l, code;
+                str = utf8Decode(str);
+                for (c = -1, l = str.length; l--; ) {
+                    code = str.charCodeAt(++c);
+                    console.log(str.charAt(c), " = ", code);
+                }
+            }
+            function base64Decode(str) {}
+            function utf8Encode(str) {
+                var c = -1, l = str.length, first = 192, second = 128, pad = 63, fromCharCode = String.fromCharCode, glue = "";
+                var code;
+                str = str.split(glue);
+                for (c = -1; l--; ) {
+                    code = str[++c].charCodeAt(0);
+                    if (code > 128) {
+                        str[c] = fromCharCode(first | code >>> 6) + fromCharCode(second | code & pad);
+                    }
+                }
+                return str.join(glue);
+            }
+            function utf8Decode(s) {
+                for (var a, b, i = -1, l = (s = s.split("")).length, o = String.fromCharCode, c = "charCodeAt"; ++i < l; (a = s[i][c](0)) & 128 && (s[i] = (a & 252) == 192 && ((b = s[i + 1][c](0)) & 192) == 128 ? o(((a & 3) << 6) + (b & 63)) : o(128), 
+                s[++i] = "")) ;
+                return s.join("");
+            }
+            global.base64 = base64Encode;
+            module.exports = {
+                encode64: base64Encode,
+                decode64: base64Decode,
+                encodeU8: utf8Encode,
+                decodeU8: utf8Decode
+            };
+        }).call(exports, function() {
+            return this;
+        }());
+    }, function(module, exports, __webpack_require__) {
+        "use strict";
+        var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4);
         function create() {
             return new Registry();
         }
@@ -751,7 +791,7 @@
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(5), PROCESSOR = __webpack_require__(7), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
+            var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(6), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
             function isPromise(object) {
                 var T = TYPE;
                 return T.object(object) && T.method(object.then);
