@@ -703,44 +703,141 @@
             differenceList: difference
         };
     }, function(module, exports) {
-        (function(global) {
-            "use strict";
-            function base64Encode(str) {
-                var c, l, code;
-                str = utf8Decode(str);
-                for (c = -1, l = str.length; l--; ) {
-                    code = str.charCodeAt(++c);
-                    console.log(str.charAt(c), " = ", code);
+        "use strict";
+        var HALF_BYTE = 128, SIX_BITS = 63, ONE_BYTE = 255, fromCharCode = String.fromCharCode, BASE64_MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/;
+        function base64Encode(str) {
+            var map = BASE64_MAP, buffer = [], bl = 0, c = -1, excess = false, pad = map.charAt(64);
+            var l, total, code, flag, end, chr;
+            str = utf16ToUtf8(str);
+            l = total = str.length;
+            for (;l--; ) {
+                code = str.charCodeAt(++c);
+                flag = c % 3;
+                switch (flag) {
+                  case 0:
+                    chr = map.charAt((code & 252) >> 2);
+                    excess = (code & 3) << 4;
+                    break;
+
+                  case 1:
+                    chr = map.charAt(excess | (code & 240) >> 4);
+                    excess = (code & 15) << 2;
+                    break;
+
+                  case 2:
+                    chr = map.charAt(excess | (code & 192) >> 6);
+                    excess = code & 63;
                 }
-            }
-            function base64Decode(str) {}
-            function utf8Encode(str) {
-                var c = -1, l = str.length, first = 192, second = 128, pad = 63, fromCharCode = String.fromCharCode, glue = "";
-                var code;
-                str = str.split(glue);
-                for (c = -1; l--; ) {
-                    code = str[++c].charCodeAt(0);
-                    if (code > 128) {
-                        str[c] = fromCharCode(first | code >>> 6) + fromCharCode(second | code & pad);
+                buffer[bl++] = chr;
+                end = !l;
+                if (end || flag === 2) {
+                    buffer[bl++] = map.charAt(excess);
+                }
+                if (!l) {
+                    l = bl % 4;
+                    for (l = l && 4 - l; l--; ) {
+                        buffer[bl++] = pad;
                     }
+                    break;
                 }
-                return str.join(glue);
             }
-            function utf8Decode(s) {
-                for (var a, b, i = -1, l = (s = s.split("")).length, o = String.fromCharCode, c = "charCodeAt"; ++i < l; (a = s[i][c](0)) & 128 && (s[i] = (a & 252) == 192 && ((b = s[i + 1][c](0)) & 192) == 128 ? o(((a & 3) << 6) + (b & 63)) : o(128), 
-                s[++i] = "")) ;
-                return s.join("");
+            return buffer.join("");
+        }
+        function base64Decode(str) {
+            var map = BASE64_MAP, oneByte = ONE_BYTE, buffer = [], bl = 0, c = -1, code2str = fromCharCode;
+            var l, code, excess, chr, flag;
+            str = str.replace(BASE64_EXCESS_REMOVE_RE, "");
+            l = str.length;
+            for (;l--; ) {
+                code = map.indexOf(str.charAt(++c));
+                flag = c % 4;
+                switch (flag) {
+                  case 0:
+                    chr = 0;
+                    break;
+
+                  case 1:
+                    chr = (excess << 2 | code >> 4) & oneByte;
+                    break;
+
+                  case 2:
+                    chr = (excess << 4 | code >> 2) & oneByte;
+                    break;
+
+                  case 3:
+                    chr = (excess << 6 | code) & oneByte;
+                }
+                excess = code;
+                if (!l && flag < 3 && chr < 64) {
+                    break;
+                }
+                if (flag) {
+                    buffer[bl++] = code2str(chr);
+                }
             }
-            global.base64 = base64Encode;
-            module.exports = {
-                encode64: base64Encode,
-                decode64: base64Decode,
-                encodeU8: utf8Encode,
-                decodeU8: utf8Decode
-            };
-        }).call(exports, function() {
-            return this;
-        }());
+            return utf8ToUtf16(buffer.join(""));
+        }
+        function utf16ToUtf8(str) {
+            var half = HALF_BYTE, sixBits = SIX_BITS, code2char = fromCharCode, utf8 = [], ul = 0, c = -1, l = str.length;
+            var code;
+            for (;l--; ) {
+                code = str.charCodeAt(++c);
+                if (code < half) {
+                    utf8[ul++] = code2char(code);
+                } else if (code < 2048) {
+                    utf8[ul++] = code2char(192 | code >> 6);
+                    utf8[ul++] = code2char(half | code & sixBits);
+                } else if (code < 55296 || code > 57343) {
+                    utf8[ul++] = code2char(224 | code >> 12);
+                    utf8[ul++] = code2char(half | code >> 6 & sixBits);
+                    utf8[ul++] = code2char(half | code & sixBits);
+                } else {
+                    l--;
+                    code = 65536 + ((code & 1023) << 10 | str.charCodeAt(++c) & 1023);
+                    utf8[ul++] = code2char(240 | code >> 18);
+                    utf8[ul++] = code2char(half | code >> 12 & sixBits);
+                    utf8[ul++] = code2char(half | code >> 6 & sixBits);
+                    utf8[ul++] = code2char(half | code >> sixBits);
+                }
+            }
+            return utf8.join("");
+        }
+        function utf8ToUtf16(str) {
+            var half = HALF_BYTE, sixBits = SIX_BITS, code2char = fromCharCode, utf16 = [], M = Math, min = M.min, max = M.max, ul = 0, l = str.length, c = -1;
+            var code, whatsLeft;
+            for (;l--; ) {
+                code = str.charCodeAt(++c);
+                if (code < half) {
+                    utf16[ul++] = code2char(code);
+                } else if (code > 191 && code < 224) {
+                    utf16[ul++] = code2char((code & 31) << 6 | str.charCodeAt(c + 1) & sixBits);
+                    whatsLeft = max(min(l - 1, 1), 0);
+                    c += whatsLeft;
+                    l -= whatsLeft;
+                    console.log("last? ", l);
+                } else if (code > 223 && code < 240) {
+                    utf16[ul++] = code2char((code & 15) << 12 | (str.charCodeAt(c + 1) & sixBits) << 6 | str.charCodeAt(c + 2) & sixBits);
+                    whatsLeft = max(min(l - 2, 2), 0);
+                    c += whatsLeft;
+                    l -= whatsLeft;
+                    console.log("last? ", l);
+                } else {
+                    code = ((code & 7) << 18 | (str.charCodeAt(c + 1) & sixBits) << 12 | (str.charCodeAt(c + 2) & sixBits) << 6 | str.charCodeAt(c + 3) & sixBits) - 65536;
+                    utf16[ul++] = code2char(code >> 10 | 55296, code & 1023 | 56320);
+                    whatsLeft = max(min(l - 3, 3), 0);
+                    c += whatsLeft;
+                    l -= whatsLeft;
+                    console.log("last? ", l);
+                }
+            }
+            return utf16.join("");
+        }
+        module.exports = {
+            encode64: base64Encode,
+            decode64: base64Decode,
+            utf2bin: utf16ToUtf8,
+            bin2utf: utf8ToUtf16
+        };
     }, function(module, exports, __webpack_require__) {
         "use strict";
         var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4);

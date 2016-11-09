@@ -1,89 +1,214 @@
 'use strict';
 
+var HALF_BYTE = 0x80,
+    SIX_BITS = 0x3f,
+    ONE_BYTE = 0xff,
+    fromCharCode = String.fromCharCode,
+    BASE64_MAP =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+    BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/;
+
 function base64Encode(str) {
-    var c, l, code;
+    var map = BASE64_MAP,
+        buffer = [],
+        bl = 0,
+        c = -1,
+        excess = false,
+        pad = map.charAt(64);
+    var l, total, code, flag, end, chr;
     
     // decode to ascii
-    str = utf8Decode(str);
+    str = utf16ToUtf8(str);
+    l = total = str.length;
     
-    for (c = -1, l = str.length; l--;) {
+    for (; l--;) {
         code = str.charCodeAt(++c);
-        console.log(str.charAt(c), ' = ', code);
+        flag = c % 3;
+        
+        switch (flag) {
+        case 0:
+            chr = map.charAt((code & 0xfc) >> 2);
+            excess = (code & 0x03) << 4;
+            break;
+        case 1:
+            chr = map.charAt(excess | (code & 0xf0) >> 4);
+            excess = (code & 0x0f) << 2;
+            break;
+        case 2:
+            chr = map.charAt(excess | (code & 0xc0) >> 6);
+            excess = code & 0x3f;
+        }
+        buffer[bl++] = chr;
+        
+        end = !l;
+        if ((end || flag === 2)) {
+            buffer[bl++] = map.charAt(excess);
+        }
+        
+        
+        if (!l) {
+            l = bl % 4;
+            for (l = l && 4 - l; l--;) {
+                buffer[bl++] = pad;
+            }
+            break;
+        }
     }
     
+    return buffer.join('');
     
 }
 
 function base64Decode(str) {
+    var map = BASE64_MAP,
+        oneByte = ONE_BYTE,
+        buffer = [],
+        bl = 0,
+        c = -1,
+        code2str = fromCharCode;
+    var l, code, excess, chr, flag;
     
-}
+    str = str.replace(BASE64_EXCESS_REMOVE_RE, '');
+    l = str.length;
+    
+    for (; l--;) {
+        code = map.indexOf(str.charAt(++c));
+        flag = c % 4;
+        
+        switch (flag) {
+        case 0:
+            chr = 0;
+            break;
+        case 1:
+            chr = ((excess << 2) | (code >> 4)) & oneByte;
+            break;
+        case 2:
+            chr = ((excess << 4) | (code >> 2)) & oneByte;
+            break;
+        case 3:
+            chr = ((excess << 6) | code) & oneByte;
+        }
+        
+        excess = code;
+        
+        if (!l && flag < 3 && chr < 64) {
+            break;
+        }
 
-
-//+ Jonas Raoni Soares Silva
-//@ http://jsfromhell.com/geral/utf-8 [v1.0]
-//UTF8 = {
-//	encode: function(s){
-//		for(var c, i = -1, l = (s = s.split("")).length, o = String.fromCharCode; ++i < l;
-//			s[i] = (c = s[i].charCodeAt(0)) >= 127 ? o(0xc0 | (c >>> 6)) + o(0x80 | (c & 0x3f)) : s[i]
-//		);
-//		return s.join("");
-//	},
-//	decode: function(s){
-//		for(var a, b, i = -1, l = (s = s.split("")).length, o = String.fromCharCode, c = "charCodeAt"; ++i < l;
-//			((a = s[i][c](0)) & 0x80) &&
-//			(s[i] = (a & 0xfc) == 0xc0 && ((b = s[i + 1][c](0)) & 0xc0) == 0x80 ?
-//			o(((a & 0x03) << 6) + (b & 0x3f)) : o(128), s[++i] = "")
-//		);
-//		return s.join("");
-//	}
-//};
-function utf8Encode(str){
-    var c = -1,
-        l = str.length,
-        first = 0xc0,
-        second = 0x80,
-        pad = 0x3f,
-        fromCharCode = String.fromCharCode,
-        glue = "";
-    var code;
-    
-    str = str.split(glue);
-    
-    for (c = -1; l--;) {
-        code = str[++c].charCodeAt(0);
-        if (code > 128) {
-            str[c] = fromCharCode(first | (code >>> 6)) +
-                    fromCharCode(second | (code & pad));
+        if (flag) {
+            buffer[bl++] = code2str(chr);
         }
     }
-    return str.join(glue);
-}
-
-function utf8Decode(s){
-    for(var a, b, i = -1, l = (s = s.split("")).length, o = String.fromCharCode, c = "charCodeAt"; ++i < l;
-        ((a = s[i][c](0)) & 0x80) &&
-        (s[i] = (a & 0xfc) == 0xc0 && ((b = s[i + 1][c](0)) & 0xc0) == 0x80 ?
-        o(((a & 0x03) << 6) + (b & 0x3f)) : o(128), s[++i] = "")
-    );
-    return s.join("");
+    
+    return utf8ToUtf16(buffer.join(""));
+    
 }
 
 
-//function utf8Encode(str) {
-//    var G = global;
-//    return G.unescape(G.encodeURIComponent(str));
-//}
-//
-//function utf8Decode(str) {
-//    var G = global;
-//    return G.decodeURIComponent(G.escape(str));
-//}
+function utf16ToUtf8(str) {
+    var half = HALF_BYTE,
+        sixBits = SIX_BITS,
+        code2char = fromCharCode,
+        utf8 = [],
+        ul = 0,
+        c = -1,
+        l = str.length;
+    var code;
+    
+    for (; l--;) {
+        code = str.charCodeAt(++c);
+        
+        if (code < half) {
+            utf8[ul++] = code2char(code);
+        }
+        else if (code < 0x800) {
+            utf8[ul++] = code2char(0xc0 | (code >> 6));
+            utf8[ul++] = code2char(half | (code & sixBits));
+        }
+        else if (code < 0xd800 || code > 0xdfff) {
+            utf8[ul++] = code2char(0xe0 | (code >> 12));
+            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+            utf8[ul++] = code2char(half | (code  & sixBits));
+        }
+        else {
+            l--;
+            code = 0x10000 + (((code & 0x3ff)<<10)
+                      | (str.charCodeAt(++c) & 0x3ff));
+            
+            utf8[ul++] = code2char(0xf0 | (code >> 18));
+            utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
+            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+            utf8[ul++] = code2char(half | (code >> sixBits));
+            
+        }
+    }
+    
+    return utf8.join('');
+}
 
-global.base64 = base64Encode;
+function utf8ToUtf16(str) {
+    var half = HALF_BYTE,
+        sixBits = SIX_BITS,
+        code2char = fromCharCode,
+        utf16 = [],
+        M = Math,
+        min = M.min,
+        max = M.max,
+        ul = 0,
+        l = str.length,
+        c = -1;
+        
+    var code, whatsLeft;
+    
+    for (; l--;) {
+        code = str.charCodeAt(++c);
+        
+        if (code < half) {
+            utf16[ul++] = code2char(code);
+        }
+        else if (code > 0xbf && code < 0xe0) {
+            utf16[ul++] = code2char((code & 0x1f) << 6 |
+                                    str.charCodeAt(c + 1) & sixBits);
+            whatsLeft = max(min(l - 1, 1), 0);
+            c += whatsLeft;
+            l -= whatsLeft;
+            console.log('last? ', l);
+        }
+        else if (code > 0xdf && code < 0xf0) {
+            utf16[ul++] = code2char((code & 0x0f) << 12 |
+                                    (str.charCodeAt(c + 1) & sixBits) << 6 |
+                                    str.charCodeAt(c + 2) & sixBits);
+            
+            whatsLeft = max(min(l - 2, 2), 0);
+            c += whatsLeft;
+            l -= whatsLeft;
+            console.log('last? ', l);
+        }
+        else {
+            
+            code = ((code & 0x07) << 18 |
+                    (str.charCodeAt(c + 1) & sixBits) << 12 |
+                    (str.charCodeAt(c + 2) & sixBits) << 6 |
+                    str.charCodeAt(c + 3) & sixBits) - 0x010000;
+            
+            utf16[ul++] = code2char(code >> 10 | 0xd800,
+                                    code & 0x03ff | 0xdc00);
+            
+            whatsLeft = max(min(l - 3, 3), 0);
+            c += whatsLeft;
+            l -= whatsLeft;
+            console.log('last? ', l);
+        }
+    }
+    
+    return utf16.join('');
+}
+
+
 
 module.exports = {
     "encode64": base64Encode,
     "decode64": base64Decode,
-    "encodeU8": utf8Encode,
-    "decodeU8": utf8Decode
+    "utf2bin": utf16ToUtf8,
+    "bin2utf": utf8ToUtf16
 };
