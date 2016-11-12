@@ -2,7 +2,9 @@
 
 var O = Object.prototype,
     TYPE = require("./type.js"),
-    OHasOwn = O.hasOwnProperty;
+    STRING = require("./string.js"),
+    OHasOwn = O.hasOwnProperty,
+    NUMERIC_RE = /^[0-9]*$/;
     
 function empty() {
     
@@ -104,6 +106,96 @@ function applyFillin(value, name) {
         target[name] = value;
     }
     target = null;
+}
+
+function jsonFill(root, path, value, overwrite) {
+    var dimensions = STRING.jsonPath(path),
+        type = TYPE,
+        object = type.object,
+        array = type.array,
+        has = contains,
+        apply = assign,
+        numericRe = NUMERIC_RE,
+        parent = root,
+        name = path;
+    var numeric, item, c, l, property, temp, isArray;
+    
+    if (dimensions) {
+        name = dimensions[0];
+        dimensions.splice(0, 1);
+            
+        for (c = -1, l = dimensions.length; l--;) {
+            item = dimensions[++c];
+            numeric = numericRe.test(item);
+            
+            // replace name
+            //if (!name && array(parent)) {
+            //    name = parent.length.toString(10);
+            //}
+            
+            // finalize property
+            if (has(parent, name)) {
+                property = parent[name];
+                isArray = array(property);
+                
+                // replace property into object or array
+                if (!isArray && !object(property)) {
+                    if (numeric) {
+                        property = [property];
+                    }
+                    else {
+                        temp = property;
+                        property = {};
+                        property[""] = temp;
+                    }
+                }
+                // change property to object to support "named" property
+                else if (isArray && !numeric) {
+                    property = apply({}, property);
+                    delete property.length;
+                }
+            }
+            else {
+                property = numeric ? [] : {};
+            }
+            
+            parent = parent[name] = property;
+            
+            // finalize name
+            if (!item) {
+                if (array(parent)) {
+                    item = parent.length;
+                }
+                else if (0 in parent) {
+                    item = '0';
+                }
+            }
+            name = item;
+        }
+
+    }
+
+    // if not overwrite, then fill-in value in array or object
+    if (overwrite !== true && has(parent, name)) {
+        property = parent[name];
+        
+        // append
+        if (array(property)) {
+            parent = property;
+            name = parent.length;
+        }
+        else {
+            parent = parent[name] = [property];
+            name = 1;
+        }
+    }
+    
+    parent[name] = value;
+    
+    parent = value = property = temp = null;
+    
+    return root;
+    
 }
 
 
@@ -338,5 +430,6 @@ module.exports = {
     clone: clone,
     compare: compare,
     fillin: fillin,
+    fillJson: jsonFill,
     clear: clear
 };

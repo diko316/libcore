@@ -28,3 +28,22 @@ console.log(' compare object: sample, redundant', object.compare(sample, redunda
 console.log(' compare object: redundant, redundant', object.compare(redundant, redundant));
 
 console.log(' compare object: cloned(redundant), redundant', object.compare(object.clone(redundant, true), redundant));
+
+
+
+
+console.log(' -------------------------------------json fill');
+
+var json = {};
+object.fillJson(json, 'root[]', 'root[]');
+object.fillJson(json, 'root[names][]', 'root[names][]');
+object.fillJson(json, 'root[names][]', 'root[names][]');
+object.fillJson(json, 'root[names][]', 'root[names][]');
+
+object.fillJson(json, 'root[][test]', 'root[][test]');
+object.fillJson(json, 'root[][test]', 'root[][test]');
+
+
+console.log(json);
+
+

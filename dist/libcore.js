@@ -22,13 +22,13 @@
         module.exports = __webpack_require__(1);
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(6), EXPORTS = {
+        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(7), EXPORTS = {
             env: DETECT
         };
         OBJECT.assign(EXPORTS, __webpack_require__(5));
         OBJECT.assign(EXPORTS, OBJECT);
-        OBJECT.assign(EXPORTS, __webpack_require__(7));
         OBJECT.assign(EXPORTS, __webpack_require__(8));
+        OBJECT.assign(EXPORTS, __webpack_require__(6));
         OBJECT.assign(EXPORTS, PROCESSOR);
         OBJECT.assign(EXPORTS, __webpack_require__(9));
         PROCESSOR.chain = EXPORTS;
@@ -216,7 +216,7 @@
         };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var O = Object.prototype, TYPE = __webpack_require__(5), OHasOwn = O.hasOwnProperty;
+        var O = Object.prototype, TYPE = __webpack_require__(5), STRING = __webpack_require__(6), OHasOwn = O.hasOwnProperty, NUMERIC_RE = /^[0-9]*$/;
         function empty() {}
         function assign(target, source, defaults) {
             var onAssign = apply, eachProperty = each;
@@ -283,6 +283,58 @@
                 target[name] = value;
             }
             target = null;
+        }
+        function jsonFill(root, path, value, overwrite) {
+            var dimensions = STRING.jsonPath(path), type = TYPE, object = type.object, array = type.array, has = contains, apply = assign, numericRe = NUMERIC_RE, parent = root, name = path;
+            var numeric, item, c, l, property, temp, isArray;
+            if (dimensions) {
+                name = dimensions[0];
+                dimensions.splice(0, 1);
+                for (c = -1, l = dimensions.length; l--; ) {
+                    item = dimensions[++c];
+                    numeric = numericRe.test(item);
+                    if (has(parent, name)) {
+                        property = parent[name];
+                        isArray = array(property);
+                        if (!isArray && !object(property)) {
+                            if (numeric) {
+                                property = [ property ];
+                            } else {
+                                temp = property;
+                                property = {};
+                                property[""] = temp;
+                            }
+                        } else if (isArray && !numeric) {
+                            property = apply({}, property);
+                            delete property.length;
+                        }
+                    } else {
+                        property = numeric ? [] : {};
+                    }
+                    parent = parent[name] = property;
+                    if (!item) {
+                        if (array(parent)) {
+                            item = parent.length;
+                        } else if (0 in parent) {
+                            item = "0";
+                        }
+                    }
+                    name = item;
+                }
+            }
+            if (overwrite !== true && has(parent, name)) {
+                property = parent[name];
+                if (array(property)) {
+                    parent = property;
+                    name = parent.length;
+                } else {
+                    parent = parent[name] = [ property ];
+                    name = 1;
+                }
+            }
+            parent[name] = value;
+            parent = value = property = temp = null;
+            return root;
         }
         function buildInstance(Class, overrides) {
             empty.prototype = Class.prototype;
@@ -412,6 +464,7 @@
             clone: clone,
             compare: compare,
             fillin: fillin,
+            fillJson: jsonFill,
             clear: clear
         };
     }, function(module, exports, __webpack_require__) {
@@ -493,6 +546,181 @@
             date: isDate,
             regex: isRegExp,
             type: isType
+        };
+    }, function(module, exports) {
+        "use strict";
+        var HALF_BYTE = 128, SIX_BITS = 63, ONE_BYTE = 255, fromCharCode = String.fromCharCode, BASE64_MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/;
+        function base64Encode(str) {
+            var map = BASE64_MAP, buffer = [], bl = 0, c = -1, excess = false, pad = map.charAt(64);
+            var l, total, code, flag, end, chr;
+            str = utf16ToUtf8(str);
+            l = total = str.length;
+            for (;l--; ) {
+                code = str.charCodeAt(++c);
+                flag = c % 3;
+                switch (flag) {
+                  case 0:
+                    chr = map.charAt((code & 252) >> 2);
+                    excess = (code & 3) << 4;
+                    break;
+
+                  case 1:
+                    chr = map.charAt(excess | (code & 240) >> 4);
+                    excess = (code & 15) << 2;
+                    break;
+
+                  case 2:
+                    chr = map.charAt(excess | (code & 192) >> 6);
+                    excess = code & 63;
+                }
+                buffer[bl++] = chr;
+                end = !l;
+                if (end || flag === 2) {
+                    buffer[bl++] = map.charAt(excess);
+                }
+                if (!l) {
+                    l = bl % 4;
+                    for (l = l && 4 - l; l--; ) {
+                        buffer[bl++] = pad;
+                    }
+                    break;
+                }
+            }
+            return buffer.join("");
+        }
+        function base64Decode(str) {
+            var map = BASE64_MAP, oneByte = ONE_BYTE, buffer = [], bl = 0, c = -1, code2str = fromCharCode;
+            var l, code, excess, chr, flag;
+            str = str.replace(BASE64_EXCESS_REMOVE_RE, "");
+            l = str.length;
+            for (;l--; ) {
+                code = map.indexOf(str.charAt(++c));
+                flag = c % 4;
+                switch (flag) {
+                  case 0:
+                    chr = 0;
+                    break;
+
+                  case 1:
+                    chr = (excess << 2 | code >> 4) & oneByte;
+                    break;
+
+                  case 2:
+                    chr = (excess << 4 | code >> 2) & oneByte;
+                    break;
+
+                  case 3:
+                    chr = (excess << 6 | code) & oneByte;
+                }
+                excess = code;
+                if (!l && flag < 3 && chr < 64) {
+                    break;
+                }
+                if (flag) {
+                    buffer[bl++] = code2str(chr);
+                }
+            }
+            return utf8ToUtf16(buffer.join(""));
+        }
+        function utf16ToUtf8(str) {
+            var half = HALF_BYTE, sixBits = SIX_BITS, code2char = fromCharCode, utf8 = [], ul = 0, c = -1, l = str.length;
+            var code;
+            for (;l--; ) {
+                code = str.charCodeAt(++c);
+                if (code < half) {
+                    utf8[ul++] = code2char(code);
+                } else if (code < 2048) {
+                    utf8[ul++] = code2char(192 | code >> 6);
+                    utf8[ul++] = code2char(half | code & sixBits);
+                } else if (code < 55296 || code > 57343) {
+                    utf8[ul++] = code2char(224 | code >> 12);
+                    utf8[ul++] = code2char(half | code >> 6 & sixBits);
+                    utf8[ul++] = code2char(half | code & sixBits);
+                } else {
+                    l--;
+                    code = 65536 + ((code & 1023) << 10 | str.charCodeAt(++c) & 1023);
+                    utf8[ul++] = code2char(240 | code >> 18);
+                    utf8[ul++] = code2char(half | code >> 12 & sixBits);
+                    utf8[ul++] = code2char(half | code >> 6 & sixBits);
+                    utf8[ul++] = code2char(half | code >> sixBits);
+                }
+            }
+            return utf8.join("");
+        }
+        function utf8ToUtf16(str) {
+            var half = HALF_BYTE, sixBits = SIX_BITS, code2char = fromCharCode, utf16 = [], M = Math, min = M.min, max = M.max, ul = 0, l = str.length, c = -1;
+            var code, whatsLeft;
+            for (;l--; ) {
+                code = str.charCodeAt(++c);
+                if (code < half) {
+                    utf16[ul++] = code2char(code);
+                } else if (code > 191 && code < 224) {
+                    utf16[ul++] = code2char((code & 31) << 6 | str.charCodeAt(c + 1) & sixBits);
+                    whatsLeft = max(min(l - 1, 1), 0);
+                    c += whatsLeft;
+                    l -= whatsLeft;
+                    console.log("last? ", l);
+                } else if (code > 223 && code < 240) {
+                    utf16[ul++] = code2char((code & 15) << 12 | (str.charCodeAt(c + 1) & sixBits) << 6 | str.charCodeAt(c + 2) & sixBits);
+                    whatsLeft = max(min(l - 2, 2), 0);
+                    c += whatsLeft;
+                    l -= whatsLeft;
+                } else {
+                    code = ((code & 7) << 18 | (str.charCodeAt(c + 1) & sixBits) << 12 | (str.charCodeAt(c + 2) & sixBits) << 6 | str.charCodeAt(c + 3) & sixBits) - 65536;
+                    utf16[ul++] = code2char(code >> 10 | 55296, code & 1023 | 56320);
+                    whatsLeft = max(min(l - 3, 3), 0);
+                    c += whatsLeft;
+                    l -= whatsLeft;
+                }
+            }
+            return utf16.join("");
+        }
+        function parseJsonPath(path) {
+            var dimensions = [], dl = 0, buffer = [], bl = dl, TRUE = true, FALSE = false, started = FALSE, merge = FALSE;
+            var c, l, item, last;
+            for (c = -1, l = path.length; l--; ) {
+                item = path.charAt(++c);
+                last = !l;
+                if (item === "[") {
+                    if (started) {
+                        break;
+                    }
+                    started = TRUE;
+                    if (bl) {
+                        merge = TRUE;
+                    }
+                } else if (item === "]") {
+                    if (!started) {
+                        break;
+                    }
+                    started = FALSE;
+                    merge = TRUE;
+                } else {
+                    buffer[bl++] = item;
+                    if (last) {
+                        merge = TRUE;
+                    }
+                }
+                if (merge) {
+                    dimensions[dl++] = buffer.join("");
+                    buffer.length = bl = 0;
+                    merge = FALSE;
+                }
+                if (last) {
+                    if (started || dl < 1) {
+                        break;
+                    }
+                    return dimensions;
+                }
+            }
+            return null;
+        }
+        module.exports = {
+            encode64: base64Encode,
+            decode64: base64Decode,
+            utf2bin: utf16ToUtf8,
+            bin2utf: utf8ToUtf16,
+            jsonPath: parseJsonPath
         };
     }, function(module, exports, __webpack_require__) {
         (function(global) {
@@ -702,142 +930,6 @@
             intersectList: intersect,
             differenceList: difference
         };
-    }, function(module, exports) {
-        "use strict";
-        var HALF_BYTE = 128, SIX_BITS = 63, ONE_BYTE = 255, fromCharCode = String.fromCharCode, BASE64_MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/;
-        function base64Encode(str) {
-            var map = BASE64_MAP, buffer = [], bl = 0, c = -1, excess = false, pad = map.charAt(64);
-            var l, total, code, flag, end, chr;
-            str = utf16ToUtf8(str);
-            l = total = str.length;
-            for (;l--; ) {
-                code = str.charCodeAt(++c);
-                flag = c % 3;
-                switch (flag) {
-                  case 0:
-                    chr = map.charAt((code & 252) >> 2);
-                    excess = (code & 3) << 4;
-                    break;
-
-                  case 1:
-                    chr = map.charAt(excess | (code & 240) >> 4);
-                    excess = (code & 15) << 2;
-                    break;
-
-                  case 2:
-                    chr = map.charAt(excess | (code & 192) >> 6);
-                    excess = code & 63;
-                }
-                buffer[bl++] = chr;
-                end = !l;
-                if (end || flag === 2) {
-                    buffer[bl++] = map.charAt(excess);
-                }
-                if (!l) {
-                    l = bl % 4;
-                    for (l = l && 4 - l; l--; ) {
-                        buffer[bl++] = pad;
-                    }
-                    break;
-                }
-            }
-            return buffer.join("");
-        }
-        function base64Decode(str) {
-            var map = BASE64_MAP, oneByte = ONE_BYTE, buffer = [], bl = 0, c = -1, code2str = fromCharCode;
-            var l, code, excess, chr, flag;
-            str = str.replace(BASE64_EXCESS_REMOVE_RE, "");
-            l = str.length;
-            for (;l--; ) {
-                code = map.indexOf(str.charAt(++c));
-                flag = c % 4;
-                switch (flag) {
-                  case 0:
-                    chr = 0;
-                    break;
-
-                  case 1:
-                    chr = (excess << 2 | code >> 4) & oneByte;
-                    break;
-
-                  case 2:
-                    chr = (excess << 4 | code >> 2) & oneByte;
-                    break;
-
-                  case 3:
-                    chr = (excess << 6 | code) & oneByte;
-                }
-                excess = code;
-                if (!l && flag < 3 && chr < 64) {
-                    break;
-                }
-                if (flag) {
-                    buffer[bl++] = code2str(chr);
-                }
-            }
-            return utf8ToUtf16(buffer.join(""));
-        }
-        function utf16ToUtf8(str) {
-            var half = HALF_BYTE, sixBits = SIX_BITS, code2char = fromCharCode, utf8 = [], ul = 0, c = -1, l = str.length;
-            var code;
-            for (;l--; ) {
-                code = str.charCodeAt(++c);
-                if (code < half) {
-                    utf8[ul++] = code2char(code);
-                } else if (code < 2048) {
-                    utf8[ul++] = code2char(192 | code >> 6);
-                    utf8[ul++] = code2char(half | code & sixBits);
-                } else if (code < 55296 || code > 57343) {
-                    utf8[ul++] = code2char(224 | code >> 12);
-                    utf8[ul++] = code2char(half | code >> 6 & sixBits);
-                    utf8[ul++] = code2char(half | code & sixBits);
-                } else {
-                    l--;
-                    code = 65536 + ((code & 1023) << 10 | str.charCodeAt(++c) & 1023);
-                    utf8[ul++] = code2char(240 | code >> 18);
-                    utf8[ul++] = code2char(half | code >> 12 & sixBits);
-                    utf8[ul++] = code2char(half | code >> 6 & sixBits);
-                    utf8[ul++] = code2char(half | code >> sixBits);
-                }
-            }
-            return utf8.join("");
-        }
-        function utf8ToUtf16(str) {
-            var half = HALF_BYTE, sixBits = SIX_BITS, code2char = fromCharCode, utf16 = [], M = Math, min = M.min, max = M.max, ul = 0, l = str.length, c = -1;
-            var code, whatsLeft;
-            for (;l--; ) {
-                code = str.charCodeAt(++c);
-                if (code < half) {
-                    utf16[ul++] = code2char(code);
-                } else if (code > 191 && code < 224) {
-                    utf16[ul++] = code2char((code & 31) << 6 | str.charCodeAt(c + 1) & sixBits);
-                    whatsLeft = max(min(l - 1, 1), 0);
-                    c += whatsLeft;
-                    l -= whatsLeft;
-                    console.log("last? ", l);
-                } else if (code > 223 && code < 240) {
-                    utf16[ul++] = code2char((code & 15) << 12 | (str.charCodeAt(c + 1) & sixBits) << 6 | str.charCodeAt(c + 2) & sixBits);
-                    whatsLeft = max(min(l - 2, 2), 0);
-                    c += whatsLeft;
-                    l -= whatsLeft;
-                    console.log("last? ", l);
-                } else {
-                    code = ((code & 7) << 18 | (str.charCodeAt(c + 1) & sixBits) << 12 | (str.charCodeAt(c + 2) & sixBits) << 6 | str.charCodeAt(c + 3) & sixBits) - 65536;
-                    utf16[ul++] = code2char(code >> 10 | 55296, code & 1023 | 56320);
-                    whatsLeft = max(min(l - 3, 3), 0);
-                    c += whatsLeft;
-                    l -= whatsLeft;
-                    console.log("last? ", l);
-                }
-            }
-            return utf16.join("");
-        }
-        module.exports = {
-            encode64: base64Encode,
-            decode64: base64Decode,
-            utf2bin: utf16ToUtf8,
-            bin2utf: utf8ToUtf16
-        };
     }, function(module, exports, __webpack_require__) {
         "use strict";
         var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4);
@@ -888,7 +980,7 @@
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(6), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
+            var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(7), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
             function isPromise(object) {
                 var T = TYPE;
                 return T.object(object) && T.method(object.then);

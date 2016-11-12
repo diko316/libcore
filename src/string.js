@@ -172,7 +172,7 @@ function utf8ToUtf16(str) {
             whatsLeft = max(min(l - 1, 1), 0);
             c += whatsLeft;
             l -= whatsLeft;
-            console.log('last? ', l);
+            
         }
         else if (code > 0xdf && code < 0xf0) {
             utf16[ul++] = code2char((code & 0x0f) << 12 |
@@ -182,7 +182,7 @@ function utf8ToUtf16(str) {
             whatsLeft = max(min(l - 2, 2), 0);
             c += whatsLeft;
             l -= whatsLeft;
-            console.log('last? ', l);
+            
         }
         else {
             
@@ -197,11 +197,70 @@ function utf8ToUtf16(str) {
             whatsLeft = max(min(l - 3, 3), 0);
             c += whatsLeft;
             l -= whatsLeft;
-            console.log('last? ', l);
+            
         }
     }
     
     return utf16.join('');
+}
+
+function parseJsonPath(path) {
+    var dimensions = [],
+        dl = 0,
+        buffer = [],
+        bl = dl,
+        TRUE = true,
+        FALSE = false,
+        started = FALSE,
+        merge = FALSE;
+        
+    var c, l, item, last;
+
+    for (c = -1, l = path.length; l--;) {
+        item = path.charAt(++c);
+        last = !l;
+        
+        if (item === '[') {
+            if (started) {
+                break;
+            }
+            started = TRUE;
+            // has first buffer
+            if (bl) {
+                merge = TRUE;
+            }
+        }
+        else if (item === ']') {
+            // failed! return failed
+            if (!started) {
+                break;
+            }
+            started = FALSE;
+            merge = TRUE;
+        }
+        else {
+            buffer[bl++] = item;
+            if (last) {
+                merge = TRUE;
+            }
+        }
+        
+        if (merge) {
+            dimensions[dl++] = buffer.join("");
+            buffer.length = bl = 0;
+            merge = FALSE;
+        }
+        
+        // ended but parse failed
+        if (last) {
+            if (started || dl < 1) {
+                break;
+            }
+            return dimensions;
+        }
+    }
+    
+    return null;
 }
 
 
@@ -210,5 +269,6 @@ module.exports = {
     "encode64": base64Encode,
     "decode64": base64Decode,
     "utf2bin": utf16ToUtf8,
-    "bin2utf": utf8ToUtf16
+    "bin2utf": utf8ToUtf16,
+    "jsonPath": parseJsonPath
 };
