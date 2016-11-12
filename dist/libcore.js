@@ -659,7 +659,6 @@
                     whatsLeft = max(min(l - 1, 1), 0);
                     c += whatsLeft;
                     l -= whatsLeft;
-                    console.log("last? ", l);
                 } else if (code > 223 && code < 240) {
                     utf16[ul++] = code2char((code & 15) << 12 | (str.charCodeAt(c + 1) & sixBits) << 6 | str.charCodeAt(c + 2) & sixBits);
                     whatsLeft = max(min(l - 2, 2), 0);
