@@ -549,7 +549,7 @@
         };
     }, function(module, exports) {
         "use strict";
-        var HALF_BYTE = 128, SIX_BITS = 63, ONE_BYTE = 255, fromCharCode = String.fromCharCode, BASE64_MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/;
+        var HALF_BYTE = 128, SIX_BITS = 63, ONE_BYTE = 255, fromCharCode = String.fromCharCode, BASE64_MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/, CAMEL_RE = /[^a-z]+[a-z]/gi, UNCAMEL_RE = /\-*[A-Z]/g;
         function base64Encode(str) {
             var map = BASE64_MAP, buffer = [], bl = 0, c = -1, excess = false, pad = map.charAt(64);
             var l, total, code, flag, end, chr;
@@ -714,12 +714,26 @@
             }
             return null;
         }
+        function camelize(str) {
+            return str.replace(CAMEL_RE, applyCamelize);
+        }
+        function applyCamelize(all) {
+            return all.charAt(all.length - 1).toUpperCase();
+        }
+        function uncamelize(str) {
+            return str.replace(UNCAMEL_RE, applyUncamelize);
+        }
+        function applyUncamelize(all) {
+            return "-" + all.charAt(all.length - 1).toLowerCase();
+        }
         module.exports = {
             encode64: base64Encode,
             decode64: base64Decode,
             utf2bin: utf16ToUtf8,
             bin2utf: utf8ToUtf16,
-            jsonPath: parseJsonPath
+            jsonPath: parseJsonPath,
+            camelize: camelize,
+            uncamelize: uncamelize
         };
     }, function(module, exports, __webpack_require__) {
         (function(global) {
