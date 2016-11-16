@@ -35,13 +35,13 @@ console.log(' compare object: cloned(redundant), redundant', object.compare(obje
 console.log(' -------------------------------------json fill');
 
 var json = {};
-object.fillJson(json, 'root[]', 'root[]');
-object.fillJson(json, 'root[names][]', 'root[names][]');
-object.fillJson(json, 'root[names][]', 'root[names][]');
-object.fillJson(json, 'root[names][]', 'root[names][]');
+object.urlFill(json, 'root[]', 'root[]');
+object.urlFill(json, 'root[names][]', 'root[names][]');
+object.urlFill(json, 'root[names][]', 'root[names][]');
+object.urlFill(json, 'root[names][]', 'root[names][]');
 
-object.fillJson(json, 'root[][test]', 'root[][test]');
-object.fillJson(json, 'root[][test]', 'root[][test]');
+object.urlFill(json, 'root[][test]', 'root[][test]');
+object.urlFill(json, 'root[][test]', 'root[][test]');
 
 
 console.log(json);

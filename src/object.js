@@ -430,6 +430,6 @@ module.exports = {
     clone: clone,
     compare: compare,
     fillin: fillin,
-    fillJson: jsonFill,
+    urlFill: jsonFill,
     clear: clear
 };

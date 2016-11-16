@@ -13,6 +13,7 @@ OBJECT.assign(EXPORTS, require('./array.js'));
 OBJECT.assign(EXPORTS, require('./string.js'));
 OBJECT.assign(EXPORTS, PROCESSOR);
 OBJECT.assign(EXPORTS, require('./registry.js'));
+OBJECT.assign(EXPORTS, require('./json-path.js'));
 
 PROCESSOR.chain = EXPORTS;
 
