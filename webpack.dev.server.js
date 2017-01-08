@@ -1,6 +1,7 @@
 var PATH = require('path'),
     ROOT_PATH = PATH.resolve(__dirname),
     HTTP_PATH = PATH.join(ROOT_PATH, 'test'),
+    DOCS_PATH = PATH.join(ROOT_PATH, 'docs'),
     express = require('express'),
     webpack = require("webpack"),
     webpackDevMiddleware = require("webpack-dev-middleware"),
@@ -27,6 +28,7 @@ app.use(webpackDevMiddleware(compiler, {
 app.use(webpackHotMiddleware(compiler));
 
 app.use(express.static(HTTP_PATH));
+app.use('/docs', express.static(DOCS_PATH));
 
 
 if (typeof port !== 'number' || !isFinite(port)) {

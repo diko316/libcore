@@ -28,6 +28,7 @@
   "homepage": "https://github.com/diko316/libcore#readme",
   "devDependencies": {
     "css-loader": "^0.25.0",
+    "documentation-loader": "^0.1.1-beta",
     "eslint": "^3.6.0",
     "eslint-loader": "^1.5.0",
     "express": "^4.14.0",

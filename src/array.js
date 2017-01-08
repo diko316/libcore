@@ -3,8 +3,7 @@
 var DETECT = require('./detect.js'),
     OBJECT = require('./object.js'),
     A = Array.prototype;
-    
-    
+
 function indexOf(subject) {
     /*jshint validthis:true */
     var array = this,
@@ -36,33 +35,56 @@ function lastIndexOf(subject) {
     return -1;
 }
 
-
-function union(array, array2, clone) {
+/**
+ * Creates a union of two arrays
+ * @name libcore.unionList
+ * @function
+ * @param {Array} array1 - source array
+ * @param {Array} array2 - array to merge
+ * @param {boolean} [clone] - Filters array1 parameter with union of array2
+ *                          if this parameter is false. It returns a new set
+ *                          of array containing union of array1 and array2
+ *                          otherwise.
+ * @returns {Array} union of first two array parameters
+ */
+function union(array1, array2, clone) {
     var subject, l, len, total;
     
-    array = clone !== false ? array : array.slice(0);
+    array1 = clone !== false ? array1 : array1.slice(0);
     
     // apply
-    array.push.apply(array, array2);
-    total = array.length;
+    array1.push.apply(array1, array2);
+    total = array1.length;
     
     // apply unique
     found: for (l = total; l--;) {
-        subject = array[l];
+        subject = array1[l];
         
         // remove if not unique
         for (len = total; len--;) {
-            if (l !== len && subject === array[len]) {
+            if (l !== len && subject === array1[len]) {
                 total--;
-                array.splice(l, 1);
+                array1.splice(l, 1);
                 continue found;
             }
         }
     }
     
-    return array;
+    return array1;
 }
 
+/**
+ * Creates an intersection of two arrays
+ * @name libcore.intersect
+ * @function
+ * @param {Array} array1 - source array 
+ * @param {Array} array2 - array to intersect
+ * @param {boolean} [clone] - Filters array1 parameter with intersection of
+ *                          array2 if this parameter is false. It returns a
+ *                          new set of array containing intersection of
+ *                          array1 and array2 otherwise.
+ * @returns {Array} intersection of first two array parameters
+ */
 function intersect(array1, array2, clone) {
     var total1 = array1.length,
         total2 = array2.length;
@@ -91,6 +113,19 @@ function intersect(array1, array2, clone) {
     return array1;
 }
 
+
+/**
+ * Creates a difference of two arrays
+ * @name libcore.differenceList
+ * @function
+ * @param {Array} array1 - source array 
+ * @param {Array} array2 - array to be applied as difference of array1
+ * @param {boolean} [clone] - Filters array1 parameter with difference of array2
+ *                          if this parameter is false. It returns a new set
+ *                          of array containing difference of
+ *                          array1 and array2 otherwise.
+ * @returns {Array} difference of first two array parameters
+ */
 function difference(array1, array2, clone) {
      var total1 = array1.length,
         total2 = array2.length;

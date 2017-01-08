@@ -20,9 +20,11 @@ var PATH = require('path'),
             //}),
             new webpack.NoErrorsPlugin(),
             new ExtractTextPlugin(libName + '.css')
-        ];
+        ],
+    postloaders = [],
+    preloaders = [];
 
-var name;
+var name, main;
 
 entry[libName] = [PATH.join(sourcePath, 'index.js')];
 
@@ -39,6 +41,13 @@ case "production":
                 comments: false,
                 sourceMap: false
             }));
+    
+    postloaders[postloaders.length] = {
+        test: /\.js$/,
+        loader: "documentation",
+        include: sourcePath,
+        exclude: /node_modules|bower_components|test/
+    };
     break;
 
 case "compressed":
@@ -82,7 +91,7 @@ default:
 
 
        
-module.exports = {
+module.exports = main = {
 
     entry: entry,
 
@@ -108,6 +117,8 @@ module.exports = {
 
     module: {
         noParse: /\.min\.js/,
+        preLoaders: preloaders,
+        postLoaders: postloaders,
         loaders: [{
             test: /\.js$/,
             loader: "eslint-loader?{useEslintrc:false}",
@@ -158,8 +169,16 @@ module.exports = {
             test:   /\.html/,
             loader: 'html-loader'
         }]
+    },
+    
+    documentation: {
+        entry: './src/index.js',
+        github: true,
+        format: 'html',
+        output: './docs'
     }
 
 };
+
 
 

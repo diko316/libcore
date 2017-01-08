@@ -34,7 +34,8 @@
         OBJECT.assign(EXPORTS, __webpack_require__(10));
         PROCESSOR.chain = EXPORTS;
         EXPORTS.Promise = __webpack_require__(11);
-        module.exports = EXPORTS["default"] = EXPORTS;
+        EXPORTS["default"] = EXPORTS;
+        module.exports = EXPORTS;
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
@@ -872,22 +873,22 @@
             }
             return -1;
         }
-        function union(array, array2, clone) {
+        function union(array1, array2, clone) {
             var subject, l, len, total;
-            array = clone !== false ? array : array.slice(0);
-            array.push.apply(array, array2);
-            total = array.length;
+            array1 = clone !== false ? array1 : array1.slice(0);
+            array1.push.apply(array1, array2);
+            total = array1.length;
             found: for (l = total; l--; ) {
-                subject = array[l];
+                subject = array1[l];
                 for (len = total; len--; ) {
-                    if (l !== len && subject === array[len]) {
+                    if (l !== len && subject === array1[len]) {
                         total--;
-                        array.splice(l, 1);
+                        array1.splice(l, 1);
                         continue found;
                     }
                 }
             }
-            return array;
+            return array1;
         }
         function intersect(array1, array2, clone) {
             var total1 = array1.length, total2 = array2.length;

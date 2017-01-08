@@ -7,14 +7,18 @@ TARGET_GID=$(stat -c '%g' ${TARGET})
 TARGET_UID=$(stat -c '%u' ${TARGET})
 
 cd "${ROOT}"
+# remove index.html in docs to regenerate documentation
+rm -f ${ROOT}/docs/index.html
+echo "Cleared documentation."
+
 npm run build
 npm run build-optimized
 cd "${CURRENT_DIR}"
 
 if cp -R ${ROOT}/test/assets/* ${ROOT}/dist/; then
     chown $(stat -c '%u:%g' ${ROOT}/dist) -R ${ROOT}/dist/*
+    echo "Recreated build."
 else
     echo "No builds as for now."
 fi
-
 

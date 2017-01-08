@@ -25,6 +25,7 @@ services:
      - SOURCE_MOD_PATH=/opt/app-source-modification
   
     volumes:
+      - ./docs:/opt/app/docs
       - ./dist:/opt/app/dist
       - .:/opt/app-source:ro
       - .:/opt/app-source-modification:rw

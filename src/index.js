@@ -19,5 +19,6 @@ PROCESSOR.chain = EXPORTS;
 
 // promise polyfill
 EXPORTS.Promise = require("./promise.js");
+EXPORTS['default'] = EXPORTS;
 
-module.exports = EXPORTS['default'] = EXPORTS;
+module.exports = EXPORTS;

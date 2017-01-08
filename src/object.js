@@ -1,17 +1,30 @@
 'use strict';
 
+/**
+ * @external libcore
+ */
+
 var O = Object.prototype,
     TYPE = require("./type.js"),
     STRING = require("./string.js"),
     OHasOwn = O.hasOwnProperty,
     NUMERIC_RE = /^[0-9]*$/;
-    
+
 function empty() {
     
 }
 
+
 /**
- * Object property management
+ * Assign properties of source Object to target Object
+ * @alias module:libcore.assign
+ * @param {Object} target - the target object
+ * @param {Object} source - the source object containing properties
+ *                          to be assigned to target object
+ * @param {Object} [defaults] - object containing default properties
+ *                          which will be assigned first to
+ *                          target before source.
+ * @returns {Object} target object from first parameter
  */
 function assign(target, source, defaults) {
     var onAssign = apply,
@@ -31,6 +44,20 @@ function apply(value, name) {
     this[name] = value;
 }
 
+/**
+ * Relocate and rename properties of source Object into target Object.
+ * 
+ * @name libcore.rehash
+ * @function
+ * @param {Object} target - the target object
+ * @param {Object} source - the source object containing properties to be
+ *                          relocated.
+ * @param {Object} access - the rename map object containing "renamed property"
+ *                          as map object's property name, and
+ *                          "source property name" as map object's
+ *                          property value. (e.g. { "newname": "from source" })
+ * @returns {Object} target object from first parameter
+ */
 function assignProperties(target, source, access) {
     var context = [target, source];
     each(access, applyProperties, context);
@@ -59,7 +86,21 @@ function assignAll(target, source, defaults) {
 }
 
 
-
+/**
+ * Iterates all iteratable property of an object calling "handler" parameter on
+ *      each iteration.
+ * @name libcore.each
+ * @function
+ * @param {Object} subject
+ * @param {Function} handler - the callback of each iteration of
+ *                          "subject" object's property.
+ * @param {*} [scope] - "this" object to use inside the "handler" parameter
+ * @param {boolean} [hasown] - performs checking to only include
+ *                          source object property that is overridden
+ *                          (Object.protototype.hasOwnProperty() returns true)
+ *                          when this parameter is set to true.
+ * @returns {Object} The subject parameter
+ */
 function each(subject, handler, scope, hasown) {
     var hasOwn = OHasOwn,
         noChecking = hasown === false;
@@ -80,20 +121,57 @@ function each(subject, handler, scope, hasown) {
     return subject;
 }
 
+/**
+ * Checks if "subject" Object contains overridden property.
+ *      The same symantics of Object.prototype.hasOwnProperty.
+ *      
+ * @name libcore.contains
+ * @function
+ * @param {Object} subject
+ * @param {String} property - Property Name to inspect
+ * @returns {boolean} True if subject Object contains property and dirty.
+ *                      False if subject Object's property do not exist or not
+ *                      dirty.
+ */
 function contains(subject, property) {
     return OHasOwn.call(subject, property);
 }
 
 
+
+/**
+ * Clears Object properties. This method only deletes overridden properties and
+ *      will not fill "undefined" to non-owned properties from its prototype.
+ * @name libcore.clear
+ * @function
+ * @param {Object} subject
+ * @returns {Object} subject parameter.
+ */
 function clear(subject) {
     each(subject, applyClear, null, true);
     return subject;
 }
 
+
+
 function applyClear() {
     delete arguments[2][arguments[1]];
 }
 
+/**
+ * Assign properties of source Object to target Object only if property do not
+ *      exist or not overridden from the target Object.
+ * @name libcore.fillin
+ * @function
+ * @param {Object} target - the target object
+ * @param {Object} source - the source object containing properties
+ *                          to be assigned to target object
+ * @param {boolean} [hasown] - performs checking to only include
+ *                          source object property that is overridden
+ *                          (Object.protototype.hasOwnProperty() returns true)
+ *                          when this parameter is set to true.
+ * @returns {Object} subject parameter.
+ */
 function fillin(target, source, hasown) {
     each(source, applyFillin, target, hasown);
     return target;
@@ -200,7 +278,13 @@ function jsonFill(root, path, value, overwrite) {
 
 
 /**
- * Object Classing
+ * Builds instance of "Class" parameter without executing its constructor.
+ * @name libcore.instantiate
+ * @function
+ * @param {Function} Class
+ * @param {Object} overrides
+ * @returns {Object} Instance created from Class without executing
+ *                      its constructor.
  */
 function buildInstance(Class, overrides) {
     empty.prototype = Class.prototype;
@@ -212,7 +296,13 @@ function buildInstance(Class, overrides) {
 }
 
 /**
- * Object comparison
+ * Deep compares two scalar, array, object, regex and date objects
+ * @name libcore.compare
+ * @function
+ * @param {*} object1
+ * @param {*} object2
+ * @returns {boolean} True if scalar, regex, date, object properties, or array
+ *                      items of object1 is identical to object2.
  */
 function compare(object1, object2) {
     return compareLookback(object1, object2, []);
@@ -313,7 +403,13 @@ function compareLookback(object1, object2, references) {
 }
 
 /**
- * Object clone
+ * Clones scalar, array, object, regex or date objects
+ * @name libcore.clone
+ * @function
+ * @param {*} data - scalar, array, object, regex or date object to clone.
+ * @param {boolean} [deep] - apply deep clone to object properties or
+ *                          array items.
+ * @returns {*} Cloned object based from data
  */
 function clone(data, deep) {
     var T = TYPE,
