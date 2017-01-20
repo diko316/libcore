@@ -204,7 +204,7 @@ Promise.prototype = {
         else {
             PROCESSOR.setAsync(function () {
                 run(success, state[INDEX_DATA]);
-            });            
+            });
         }
         
         return instance;

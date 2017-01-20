@@ -1,6 +1,7 @@
 'use strict';
 
 var TYPE = require('./type.js'),
+    DETECT = require('./detect.js'),
     G = global,
     // 1 = namespace, 4 = position, 5 = item
     NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
@@ -148,9 +149,24 @@ function clearTimeoutAsync(id) {
     return clearTimeout(id);
 }
 
+function ieSetImmediate(fn) {
+    return setImmediate(fn);
+}
+
+function ieClearImmediate(id) {
+    return clearImmediate(id);
+}
+
 // set immediate polyfill
-if (!(G.setImmediate instanceof Function)) {
+if (!(EXPORTS.setAsync instanceof Function)) {
+    
     EXPORTS.setAsync = timeoutAsync;
     EXPORTS.clearAsync = clearTimeoutAsync;
+    
+}
+// stupid IE dont like setImmediate to be attached to native objects
+else if (/MSIE [0-9]/.test(DETECT.userAgent)) {
+    EXPORTS.setAsync = ieSetImmediate;
+    EXPORTS.clearAsync = ieClearImmediate;
 }
 module.exports = EXPORTS.chain = EXPORTS;
