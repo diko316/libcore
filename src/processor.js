@@ -1,7 +1,7 @@
 'use strict';
 
 var TYPE = require('./type.js'),
-    DETECT = require('./detect.js'),
+    //DETECT = require('./detect.js'),
     G = global,
     // 1 = namespace, 4 = position, 5 = item
     NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
@@ -9,12 +9,15 @@ var TYPE = require('./type.js'),
     POSITION_AFTER = 2,
     RUNNERS = {},
     NAMESPACES = {},
+    NATIVE_SET_IMMEDIATE = !!G.setImmediate,
     EXPORTS = {
         register: set,
         run: run,
         middleware: middlewareNamespace,
-        setAsync: G.setImmediate,
-        clearAsync: G.clearImmediate
+        setAsync: NATIVE_SET_IMMEDIATE ?
+                        nativeSetImmediate : timeoutAsync,
+        clearAsync: NATIVE_SET_IMMEDIATE ?
+                        nativeClearImmediate : clearTimeoutAsync
     };
     
 
@@ -149,24 +152,25 @@ function clearTimeoutAsync(id) {
     return clearTimeout(id);
 }
 
-function ieSetImmediate(fn) {
+function nativeSetImmediate (fn) {
     return setImmediate(fn);
 }
 
-function ieClearImmediate(id) {
+function nativeClearImmediate(id) {
     return clearImmediate(id);
 }
 
 // set immediate polyfill
-if (!(EXPORTS.setAsync instanceof Function)) {
-    
-    EXPORTS.setAsync = timeoutAsync;
-    EXPORTS.clearAsync = clearTimeoutAsync;
-    
-}
-// stupid IE dont like setImmediate to be attached to native objects
-else if (/MSIE [0-9]/.test(DETECT.userAgent)) {
-    EXPORTS.setAsync = ieSetImmediate;
-    EXPORTS.clearAsync = ieClearImmediate;
-}
+//if (!(EXPORTS.setAsync instanceof Function)) {
+//    
+//    EXPORTS.setAsync = timeoutAsync;
+//    EXPORTS.clearAsync = clearTimeoutAsync;
+//    
+//}
+//// stupid IE dont like setImmediate to be attached to native objects
+//else if (/MSIE [0-9]/.test(DETECT.userAgent)) {
+//    EXPORTS.setAsync = ieSetImmediate;
+//    EXPORTS.clearAsync = ieClearImmediate;
+//}
+
 module.exports = EXPORTS.chain = EXPORTS;

@@ -740,12 +740,12 @@
     }, function(module, exports, __webpack_require__) {
         (function(global, setImmediate, clearImmediate) {
             "use strict";
-            var TYPE = __webpack_require__(5), DETECT = __webpack_require__(2), G = global, NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, EXPORTS = {
+            var TYPE = __webpack_require__(5), G = global, NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, NATIVE_SET_IMMEDIATE = !!G.setImmediate, EXPORTS = {
                 register: set,
                 run: run,
                 middleware: middlewareNamespace,
-                setAsync: G.setImmediate,
-                clearAsync: G.clearImmediate
+                setAsync: NATIVE_SET_IMMEDIATE ? nativeSetImmediate : timeoutAsync,
+                clearAsync: NATIVE_SET_IMMEDIATE ? nativeClearImmediate : clearTimeoutAsync
             };
             function set(name, handler) {
                 var parsed = parseName(name), list = RUNNERS;
@@ -842,18 +842,11 @@
             function clearTimeoutAsync(id) {
                 return clearTimeout(id);
             }
-            function ieSetImmediate(fn) {
+            function nativeSetImmediate(fn) {
                 return setImmediate(fn);
             }
-            function ieClearImmediate(id) {
+            function nativeClearImmediate(id) {
                 return clearImmediate(id);
-            }
-            if (!(EXPORTS.setAsync instanceof Function)) {
-                EXPORTS.setAsync = timeoutAsync;
-                EXPORTS.clearAsync = clearTimeoutAsync;
-            } else if (/MSIE [0-9]/.test(DETECT.userAgent)) {
-                EXPORTS.setAsync = ieSetImmediate;
-                EXPORTS.clearAsync = ieClearImmediate;
             }
             module.exports = EXPORTS.chain = EXPORTS;
         }).call(exports, function() {
