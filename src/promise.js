@@ -11,7 +11,9 @@ var TYPE = require("./type.js"),
 
 function isPromise(object) {
     var T = TYPE;
-    return T.object(object) && T.method(object.then);
+    return T.object(object) &&
+            'then' in object &&
+            T.method(object.then);
 }
 
 function createPromise(instance) {

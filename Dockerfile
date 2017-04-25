@@ -1,4 +1,4 @@
-FROM diko316/alnode
+FROM diko316/alnode:v2.1
 
 EXPOSE 8000
 

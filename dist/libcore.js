@@ -1348,7 +1348,7 @@
             var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(7), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
             function isPromise(object) {
                 var T = TYPE;
-                return T.object(object) && T.method(object.then);
+                return T.object(object) && "then" in object && T.method(object.then);
             }
             function createPromise(instance) {
                 var Class = Promise;
