@@ -22,13 +22,13 @@
         module.exports = __webpack_require__(1);
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(7), EXPORTS = {
+        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(3), PROCESSOR = __webpack_require__(6), EXPORTS = {
             env: DETECT
         };
-        OBJECT.assign(EXPORTS, __webpack_require__(5));
+        OBJECT.assign(EXPORTS, __webpack_require__(4));
         OBJECT.assign(EXPORTS, OBJECT);
         OBJECT.assign(EXPORTS, __webpack_require__(10));
-        OBJECT.assign(EXPORTS, __webpack_require__(6));
+        OBJECT.assign(EXPORTS, __webpack_require__(5));
         OBJECT.assign(EXPORTS, PROCESSOR);
         OBJECT.assign(EXPORTS, __webpack_require__(11));
         OBJECT.assign(EXPORTS, __webpack_require__(12));
@@ -36,11 +36,11 @@
         EXPORTS.Promise = __webpack_require__(13);
         EXPORTS["default"] = EXPORTS;
         module.exports = EXPORTS;
-    }, function(module, exports, __webpack_require__) {
+    }, function(module, exports) {
         (function(global) {
             "use strict";
             var ROOT = global, doc = ROOT.document, win = ROOT.window, toString = Object.prototype.toString, objectSignature = "[object Object]", BROWSER = !!doc && !!win && win.self === (doc.defaultView || doc.parentWindow), NODEVERSIONS = BROWSER ? false : function() {
-                return __webpack_require__(3).versions || false;
+                return "process" in global && global.process.versions || false;
             }(), CONSOLE = {}, CONSOLE_NAMES = [ "log", "info", "warn", "error", "assert" ], EXPORTS = {
                 browser: BROWSER,
                 nodejs: NODEVERSIONS && !!NODEVERSIONS.node,
@@ -51,7 +51,7 @@
             };
             var c, l;
             function nodeUserAgent() {
-                var PROCESS = __webpack_require__(3), VERSIONS = NODEVERSIONS, str = [ "Node ", VERSIONS.node, "(", PROCESS.platform, "; V8 ", VERSIONS.v8 || "unknown", "; arch ", PROCESS.arch, ")" ];
+                var PROCESS = "process" in global ? global.process : null, VERSIONS = NODEVERSIONS, str = [ "Node ", VERSIONS.node, "(", PROCESS.platform, "; V8 ", VERSIONS.v8 || "unknown", "; arch ", PROCESS.arch, ")" ];
                 return str.join("");
             }
             function empty() {}
@@ -65,160 +65,9 @@
         }).call(exports, function() {
             return this;
         }());
-    }, function(module, exports) {
-        var process = module.exports = {};
-        var cachedSetTimeout;
-        var cachedClearTimeout;
-        function defaultSetTimout() {
-            throw new Error("setTimeout has not been defined");
-        }
-        function defaultClearTimeout() {
-            throw new Error("clearTimeout has not been defined");
-        }
-        (function() {
-            try {
-                if (typeof setTimeout === "function") {
-                    cachedSetTimeout = setTimeout;
-                } else {
-                    cachedSetTimeout = defaultSetTimout;
-                }
-            } catch (e) {
-                cachedSetTimeout = defaultSetTimout;
-            }
-            try {
-                if (typeof clearTimeout === "function") {
-                    cachedClearTimeout = clearTimeout;
-                } else {
-                    cachedClearTimeout = defaultClearTimeout;
-                }
-            } catch (e) {
-                cachedClearTimeout = defaultClearTimeout;
-            }
-        })();
-        function runTimeout(fun) {
-            if (cachedSetTimeout === setTimeout) {
-                return setTimeout(fun, 0);
-            }
-            if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-                cachedSetTimeout = setTimeout;
-                return setTimeout(fun, 0);
-            }
-            try {
-                return cachedSetTimeout(fun, 0);
-            } catch (e) {
-                try {
-                    return cachedSetTimeout.call(null, fun, 0);
-                } catch (e) {
-                    return cachedSetTimeout.call(this, fun, 0);
-                }
-            }
-        }
-        function runClearTimeout(marker) {
-            if (cachedClearTimeout === clearTimeout) {
-                return clearTimeout(marker);
-            }
-            if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-                cachedClearTimeout = clearTimeout;
-                return clearTimeout(marker);
-            }
-            try {
-                return cachedClearTimeout(marker);
-            } catch (e) {
-                try {
-                    return cachedClearTimeout.call(null, marker);
-                } catch (e) {
-                    return cachedClearTimeout.call(this, marker);
-                }
-            }
-        }
-        var queue = [];
-        var draining = false;
-        var currentQueue;
-        var queueIndex = -1;
-        function cleanUpNextTick() {
-            if (!draining || !currentQueue) {
-                return;
-            }
-            draining = false;
-            if (currentQueue.length) {
-                queue = currentQueue.concat(queue);
-            } else {
-                queueIndex = -1;
-            }
-            if (queue.length) {
-                drainQueue();
-            }
-        }
-        function drainQueue() {
-            if (draining) {
-                return;
-            }
-            var timeout = runTimeout(cleanUpNextTick);
-            draining = true;
-            var len = queue.length;
-            while (len) {
-                currentQueue = queue;
-                queue = [];
-                while (++queueIndex < len) {
-                    if (currentQueue) {
-                        currentQueue[queueIndex].run();
-                    }
-                }
-                queueIndex = -1;
-                len = queue.length;
-            }
-            currentQueue = null;
-            draining = false;
-            runClearTimeout(timeout);
-        }
-        process.nextTick = function(fun) {
-            var args = new Array(arguments.length - 1);
-            if (arguments.length > 1) {
-                for (var i = 1; i < arguments.length; i++) {
-                    args[i - 1] = arguments[i];
-                }
-            }
-            queue.push(new Item(fun, args));
-            if (queue.length === 1 && !draining) {
-                runTimeout(drainQueue);
-            }
-        };
-        function Item(fun, array) {
-            this.fun = fun;
-            this.array = array;
-        }
-        Item.prototype.run = function() {
-            this.fun.apply(null, this.array);
-        };
-        process.title = "browser";
-        process.browser = true;
-        process.env = {};
-        process.argv = [];
-        process.version = "";
-        process.versions = {};
-        function noop() {}
-        process.on = noop;
-        process.addListener = noop;
-        process.once = noop;
-        process.off = noop;
-        process.removeListener = noop;
-        process.removeAllListeners = noop;
-        process.emit = noop;
-        process.binding = function(name) {
-            throw new Error("process.binding is not supported");
-        };
-        process.cwd = function() {
-            return "/";
-        };
-        process.chdir = function(dir) {
-            throw new Error("process.chdir is not supported");
-        };
-        process.umask = function() {
-            return 0;
-        };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var O = Object.prototype, TYPE = __webpack_require__(5), STRING = __webpack_require__(6), OHasOwn = O.hasOwnProperty, NUMERIC_RE = /^[0-9]*$/;
+        var O = Object.prototype, TYPE = __webpack_require__(4), STRING = __webpack_require__(5), OHasOwn = O.hasOwnProperty, NUMERIC_RE = /^[0-9]*$/;
         function empty() {}
         function assign(target, source, defaults) {
             var onAssign = apply, eachProperty = each;
@@ -740,7 +589,7 @@
     }, function(module, exports, __webpack_require__) {
         (function(global, setImmediate, clearImmediate) {
             "use strict";
-            var TYPE = __webpack_require__(5), G = global, NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, NATIVE_SET_IMMEDIATE = !!G.setImmediate, EXPORTS = {
+            var TYPE = __webpack_require__(4), G = global, NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/, POSITION_BEFORE = 1, POSITION_AFTER = 2, RUNNERS = {}, NAMESPACES = {}, NATIVE_SET_IMMEDIATE = !!G.setImmediate, EXPORTS = {
                 register: set,
                 run: run,
                 middleware: middlewareNamespace,
@@ -851,7 +700,7 @@
             module.exports = EXPORTS.chain = EXPORTS;
         }).call(exports, function() {
             return this;
-        }(), __webpack_require__(8).setImmediate, __webpack_require__(8).clearImmediate);
+        }(), __webpack_require__(7).setImmediate, __webpack_require__(7).clearImmediate);
     }, function(module, exports, __webpack_require__) {
         var apply = Function.prototype.apply;
         exports.setTimeout = function() {
@@ -890,7 +739,7 @@
                 }, msecs);
             }
         };
-        __webpack_require__(9);
+        __webpack_require__(8);
         exports.setImmediate = setImmediate;
         exports.clearImmediate = clearImmediate;
     }, function(module, exports, __webpack_require__) {
@@ -1046,10 +895,161 @@
             })(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self);
         }).call(exports, function() {
             return this;
-        }(), __webpack_require__(3));
+        }(), __webpack_require__(9));
+    }, function(module, exports) {
+        var process = module.exports = {};
+        var cachedSetTimeout;
+        var cachedClearTimeout;
+        function defaultSetTimout() {
+            throw new Error("setTimeout has not been defined");
+        }
+        function defaultClearTimeout() {
+            throw new Error("clearTimeout has not been defined");
+        }
+        (function() {
+            try {
+                if (typeof setTimeout === "function") {
+                    cachedSetTimeout = setTimeout;
+                } else {
+                    cachedSetTimeout = defaultSetTimout;
+                }
+            } catch (e) {
+                cachedSetTimeout = defaultSetTimout;
+            }
+            try {
+                if (typeof clearTimeout === "function") {
+                    cachedClearTimeout = clearTimeout;
+                } else {
+                    cachedClearTimeout = defaultClearTimeout;
+                }
+            } catch (e) {
+                cachedClearTimeout = defaultClearTimeout;
+            }
+        })();
+        function runTimeout(fun) {
+            if (cachedSetTimeout === setTimeout) {
+                return setTimeout(fun, 0);
+            }
+            if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+                cachedSetTimeout = setTimeout;
+                return setTimeout(fun, 0);
+            }
+            try {
+                return cachedSetTimeout(fun, 0);
+            } catch (e) {
+                try {
+                    return cachedSetTimeout.call(null, fun, 0);
+                } catch (e) {
+                    return cachedSetTimeout.call(this, fun, 0);
+                }
+            }
+        }
+        function runClearTimeout(marker) {
+            if (cachedClearTimeout === clearTimeout) {
+                return clearTimeout(marker);
+            }
+            if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+                cachedClearTimeout = clearTimeout;
+                return clearTimeout(marker);
+            }
+            try {
+                return cachedClearTimeout(marker);
+            } catch (e) {
+                try {
+                    return cachedClearTimeout.call(null, marker);
+                } catch (e) {
+                    return cachedClearTimeout.call(this, marker);
+                }
+            }
+        }
+        var queue = [];
+        var draining = false;
+        var currentQueue;
+        var queueIndex = -1;
+        function cleanUpNextTick() {
+            if (!draining || !currentQueue) {
+                return;
+            }
+            draining = false;
+            if (currentQueue.length) {
+                queue = currentQueue.concat(queue);
+            } else {
+                queueIndex = -1;
+            }
+            if (queue.length) {
+                drainQueue();
+            }
+        }
+        function drainQueue() {
+            if (draining) {
+                return;
+            }
+            var timeout = runTimeout(cleanUpNextTick);
+            draining = true;
+            var len = queue.length;
+            while (len) {
+                currentQueue = queue;
+                queue = [];
+                while (++queueIndex < len) {
+                    if (currentQueue) {
+                        currentQueue[queueIndex].run();
+                    }
+                }
+                queueIndex = -1;
+                len = queue.length;
+            }
+            currentQueue = null;
+            draining = false;
+            runClearTimeout(timeout);
+        }
+        process.nextTick = function(fun) {
+            var args = new Array(arguments.length - 1);
+            if (arguments.length > 1) {
+                for (var i = 1; i < arguments.length; i++) {
+                    args[i - 1] = arguments[i];
+                }
+            }
+            queue.push(new Item(fun, args));
+            if (queue.length === 1 && !draining) {
+                runTimeout(drainQueue);
+            }
+        };
+        function Item(fun, array) {
+            this.fun = fun;
+            this.array = array;
+        }
+        Item.prototype.run = function() {
+            this.fun.apply(null, this.array);
+        };
+        process.title = "browser";
+        process.browser = true;
+        process.env = {};
+        process.argv = [];
+        process.version = "";
+        process.versions = {};
+        function noop() {}
+        process.on = noop;
+        process.addListener = noop;
+        process.once = noop;
+        process.off = noop;
+        process.removeListener = noop;
+        process.removeAllListeners = noop;
+        process.emit = noop;
+        process.binding = function(name) {
+            throw new Error("process.binding is not supported");
+        };
+        process.cwd = function() {
+            return "/";
+        };
+        process.chdir = function(dir) {
+            throw new Error("process.chdir is not supported");
+        };
+        process.umask = function() {
+            return 0;
+        };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(4), A = Array.prototype;
+        var DETECT = __webpack_require__(2), OBJECT = __webpack_require__(3), A = Array.prototype;
         function indexOf(subject) {
             var array = this, l = array.length, c = -1;
             for (;l--; ) {
@@ -1144,7 +1144,7 @@
         };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4);
+        var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(3);
         function create() {
             return new Registry();
         }
@@ -1191,7 +1191,7 @@
         };
     }, function(module, exports, __webpack_require__) {
         "use strict";
-        var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4), NUMERIC_RE = /^([1-9][0-9]*|0)$/;
+        var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(3), NUMERIC_RE = /^([1-9][0-9]*|0)$/;
         function eachPath(path, callback, arg1, arg2, arg3, arg4) {
             var escape = "\\", dot = ".", buffer = [], bl = 0;
             var c, l, chr, apply, last;
@@ -1345,7 +1345,7 @@
     }, function(module, exports, __webpack_require__) {
         (function(global) {
             "use strict";
-            var TYPE = __webpack_require__(5), OBJECT = __webpack_require__(4), PROCESSOR = __webpack_require__(7), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
+            var TYPE = __webpack_require__(4), OBJECT = __webpack_require__(3), PROCESSOR = __webpack_require__(6), slice = Array.prototype.slice, G = global, INDEX_STATUS = 0, INDEX_DATA = 1, INDEX_PENDING = 2;
             function isPromise(object) {
                 var T = TYPE;
                 return T.object(object) && "then" in object && T.method(object.then);

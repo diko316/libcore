@@ -9,7 +9,8 @@ var ROOT = global,
                 win.self === (doc.defaultView || doc.parentWindow),
     NODEVERSIONS = BROWSER ? false :
                     (function () {
-                        return require("process").versions || false;
+                        return ('process' in global &&
+                                global.process.versions) || false;
                     })(),
     CONSOLE = {},
     CONSOLE_NAMES = [
@@ -35,10 +36,9 @@ var ROOT = global,
     };
     
 var c, l;
-    
 
 function nodeUserAgent() {
-    var PROCESS = require("process"),
+    var PROCESS = 'process' in global ? global.process : null,
         VERSIONS = NODEVERSIONS,
         str = ['Node ',
                 VERSIONS.node,

@@ -145,32 +145,20 @@ function createRegisterInNamespace(ns) {
 
 
 function timeoutAsync(handler) {
-    return setTimeout(handler, 1);
+    return G.setTimeout(handler, 1);
 }
 
 function clearTimeoutAsync(id) {
-    return clearTimeout(id);
+    return G.clearTimeout(id);
 }
 
 function nativeSetImmediate (fn) {
-    return setImmediate(fn);
+    return G.setImmediate(fn);
 }
 
 function nativeClearImmediate(id) {
-    return clearImmediate(id);
+    return G.clearImmediate(id);
 }
 
-// set immediate polyfill
-//if (!(EXPORTS.setAsync instanceof Function)) {
-//    
-//    EXPORTS.setAsync = timeoutAsync;
-//    EXPORTS.clearAsync = clearTimeoutAsync;
-//    
-//}
-//// stupid IE dont like setImmediate to be attached to native objects
-//else if (/MSIE [0-9]/.test(DETECT.userAgent)) {
-//    EXPORTS.setAsync = ieSetImmediate;
-//    EXPORTS.clearAsync = ieClearImmediate;
-//}
 
 module.exports = EXPORTS.chain = EXPORTS;
