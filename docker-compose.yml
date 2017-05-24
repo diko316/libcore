@@ -2,7 +2,7 @@ version: '2'
 
 services:
 
-  libcore:
+  server:
     build: .
     image: libcore:latest
     container_name: "libdocore-test"
@@ -15,13 +15,13 @@ services:
     ports:
       - "3000:3000"
       
-  libcore_builder:
+  builder:
     image: libcore:latest
     container_name: "libcore-builder"
     command: bin/autosync-builds.sh
     
     environment:
-     - BUILD_MODE=production
+     - BUILD_MODE=development
      - SOURCE_MOD_PATH=/opt/app-source-modification
   
     volumes:
