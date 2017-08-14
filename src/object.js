@@ -4,16 +4,24 @@
  * @external libcore
  */
 
-var O = Object.prototype,
+var Obj = Object,
+    O = Obj.prototype,
+    EACH = typeof Obj.getOwnPropertyNames === 'function' ?
+                es5each : es3each,
     TYPE = require("./type.js"),
     STRING = require("./string.js"),
     OHasOwn = O.hasOwnProperty,
     NUMERIC_RE = /^[0-9]*$/;
+    
 
 function empty() {
     
 }
 
+function isValidObject(target) {
+    var type = TYPE;
+    return type.object(target) || type.method(target);
+}
 
 /**
  * Assign properties of source Object to target Object
@@ -28,10 +36,22 @@ function empty() {
  */
 function assign(target, source, defaults) {
     var onAssign = apply,
-        eachProperty = each;
-        
-    if (defaults) {
+        is = isValidObject,
+        eachProperty = EACH;
+    
+    if (!is(target)) {
+        throw new Error("Invalid [target] parameter.");
+    }
+    
+    if (!is(source)) {
+        throw new Error("Invalid [source] parameter.");
+    }
+    
+    if (is(defaults)) {
         eachProperty(defaults, onAssign, target);
+    }
+    else if (arguments.length > 2) {
+        throw new Error("Invalid [defaults] parameter.");
     }
     
     eachProperty(source, onAssign, target);
@@ -49,9 +69,9 @@ function apply(value, name) {
  * 
  * @name libcore.rehash
  * @function
- * @param {Object} target - the target object
- * @param {Object} source - the source object containing properties to be
- *                          relocated.
+ * @param {Object|Function} target - the target object
+ * @param {Object|Function} source - the source object containing properties
+ *                                  to be relocated.
  * @param {Object} access - the rename map object containing "renamed property"
  *                          as map object's property name, and
  *                          "source property name" as map object's
@@ -59,8 +79,22 @@ function apply(value, name) {
  * @returns {Object} target object from first parameter
  */
 function assignProperties(target, source, access) {
-    var context = [target, source];
-    each(access, applyProperties, context);
+    var is = isValidObject,
+        context = [target, source];
+        
+    if (!is(target)) {
+        throw new Error("Invalid [target] parameter.");
+    }
+    
+    if (!is(source)) {
+        throw new Error("Invalid [source] parameter.");
+    }
+    
+    if (!TYPE.object(access)) {
+        throw new Error("Invalid [access] parameter.");
+    }
+    
+    EACH(access, applyProperties, context);
     context = context[0] = context[1] =  null;
     return target;
 }
@@ -74,7 +108,7 @@ function applyProperties(value, name) {
 
 function assignAll(target, source, defaults) {
     var onAssign = apply,
-        eachProperty = each;
+        eachProperty = EACH;
         
     if (defaults) {
         eachProperty(defaults, onAssign, target, false);
@@ -101,20 +135,56 @@ function assignAll(target, source, defaults) {
  *                          when this parameter is set to true.
  * @returns {Object} The subject parameter
  */
-function each(subject, handler, scope, hasown) {
+function es3each(subject, handler, scope, hasown) {
     var hasOwn = OHasOwn,
         noChecking = hasown === false;
     var name;
+    
+    if (!isValidObject(subject)) {
+        throw new Error("Invalid [subject] parameter.");
+    }
+    
+    if (arguments.length > 3 && typeof hasown !== 'boolean') {
+        throw new Error("Invalid [hasown] hasOwnProperty parameter.");
+    }
     
     if (scope === void(0)) {
         scope = null;
     }
     
     for (name in subject) {
-        if (noChecking || hasOwn.call(subject, name)) {
-            if (handler.call(scope, subject[name], name, subject) === false) {
-                break;
-            }
+        if ((noChecking || hasOwn.call(subject, name)) &&
+            handler.call(scope, subject[name], name, subject) === false) {
+            break;
+        }
+    }
+    
+    return subject;
+}
+
+function es5each(subject, handler, scope, hasown) {
+    var hasOwn = OHasOwn,
+        noChecking = hasown === false;
+    var names, name, c, l;
+    
+    if (!isValidObject(subject)) {
+        throw new Error("Invalid [subject] parameter.");
+    }
+    
+    if (arguments.length > 3 && typeof hasown !== 'boolean') {
+        throw new Error("Invalid [hasown] hasOwnProperty parameter.");
+    }
+    
+    if (scope === void(0)) {
+        scope = null;
+    }
+    
+    names = Obj.getOwnPropertyNames(subject);
+    for (c = -1, l = names.length; l--;) {
+        name = names[++c];
+        if ((noChecking || hasOwn.call(subject, name)) &&
+            handler.call(scope, subject[name], name, subject) === false) {
+            break;
         }
     }
     
@@ -134,6 +204,12 @@ function each(subject, handler, scope, hasown) {
  *                      dirty.
  */
 function contains(subject, property) {
+    var type = TYPE;
+    
+    if (!type.string(property) && !type.number(property)) {
+        throw new Error("Invalid [property] parameter.");
+    }
+    
     return OHasOwn.call(subject, property);
 }
 
@@ -148,7 +224,7 @@ function contains(subject, property) {
  * @returns {Object} subject parameter.
  */
 function clear(subject) {
-    each(subject, applyClear, null, true);
+    EACH(subject, applyClear, null, true);
     return subject;
 }
 
@@ -173,7 +249,7 @@ function applyClear() {
  * @returns {Object} subject parameter.
  */
 function fillin(target, source, hasown) {
-    each(source, applyFillin, target, hasown);
+    EACH(source, applyFillin, target, hasown);
     return target;
 }
 
@@ -443,40 +519,81 @@ function clone(data, deep) {
 
 
 
+//function cloneObjectOld(data, parents, cloned) {
+//    var depth = parents.length,
+//        T = TYPE,
+//        isNativeObject = T.nativeObject,
+//        isArray = T.array,
+//        ca = cloneArray,
+//        co = cloneObject,
+//        recreated = {};
+//    var name, value, index, isNative;
+//    
+//    parents[depth] = data;
+//    cloned[depth] = recreated;
+//    
+//    /*jshint forin:false */
+//    for (name in data) {
+//    
+//        value = data[name];
+//        isNative = isNativeObject(value);
+//        
+//        if (isNative || isArray(value)) {
+//            index = parents.lastIndexOf(value);
+//            value = index === -1 ?
+//                        (isNative ? co : ca)(value, parents, cloned) :
+//                        cloned[index];
+//        }
+//        else {
+//            value = clone(value, false);
+//        }
+//        recreated[name] = value;
+//    }
+//    
+//    parents.length = cloned.length = depth;
+//    
+//    return recreated;
+//}
+
 function cloneObject(data, parents, cloned) {
     var depth = parents.length,
-        T = TYPE,
-        isNativeObject = T.nativeObject,
-        isArray = T.array,
-        ca = cloneArray,
-        co = cloneObject,
-        recreated = {};
-    var name, value, index, isNative;
+        recreated = {},
+        context = [recreated,
+                   parents,
+                   cloned];
     
     parents[depth] = data;
     cloned[depth] = recreated;
     
-    /*jshint forin:false */
-    for (name in data) {
-    
-        value = data[name];
-        isNative = isNativeObject(value);
-        
-        if (isNative || isArray(value)) {
-            index = parents.lastIndexOf(value);
-            value = index === -1 ?
-                        (isNative ? co : ca)(value, parents, cloned) :
-                        cloned[index];
-        }
-        else {
-            value = clone(value, false);
-        }
-        recreated[name] = value;
-    }
+    EACH(data, onEachClonedProperty, context);
     
     parents.length = cloned.length = depth;
     
     return recreated;
+}
+
+function onEachClonedProperty(value, name) {
+    var T = TYPE,
+        /*jshint validthis:true */
+        context = this,
+        isNative = T.nativeObject(value),
+        parents = context[1],
+        cloned = context[2];
+    var index;
+    
+    if (isNative || T.array(value)) {
+        index = parents.lastIndexOf(value);
+        value = index === -1 ?
+                    (isNative ?
+                        cloneObject :
+                        cloneArray)(value, parents, cloned) :
+                    
+                    cloned[index];
+    }
+    else {
+        value = clone(value, false);
+    }
+    context[0][name] = value;
 }
 
 function cloneArray(data, parents, cloned) {
@@ -518,7 +635,7 @@ function cloneArray(data, parents, cloned) {
 
 
 module.exports = {
-    each: each,
+    each: EACH,
     assign: assign,
     rehash: assignProperties,
     contains: contains,

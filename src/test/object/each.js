@@ -5,7 +5,7 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                                         'handler:Function, ' +
                                         'scope:Mixed, ' +
                                         '[hasown:Boolean]) method',
-    function () {
+    () => {
         
         var lib = global.libcore,
             fn = function () {},
@@ -40,33 +40,21 @@ describe('Iterate an object using each(subject:Object|Function, ' +
         
         it('1. Should only accept Native Javascript Object or Function ' +
             ' "subject" parameter.',
-            function () {
+            () => {
                 
-                function eachObject() {
-                    return lib.each(obj, empty, null);
-                }
+                expect(() => lib.each(null, empty, null)).toThrow();
                 
-                function eachNonObject() {
-                    return lib.each(null, empty, null);
-                }
+                expect(() => lib.each(obj, empty, null)).not.toThrow();
+                expect(lib.each(obj, empty, null)).toBe(obj);
                 
-                function eachFunction() {
-                    return lib.each(fn, empty, null);
-                }
-                
-                expect(eachNonObject).toThrow();
-                
-                expect(eachObject).not.toThrow();
-                expect(eachObject()).toBe(obj);
-                
-                expect(eachFunction).not.toThrow();
-                expect(eachFunction()).toBe(fn);
+                expect(() => lib.each(fn, empty, null)).not.toThrow();
+                expect(lib.each(fn, empty, null)).toBe(fn);
                 
             });
         
         it('2. Should call "handler" function parameter ' +
             'on each iteration of "subject" Object property.',
-            function () {
+            () => {
                 
                 function eachHandler(value, name, subject) {
 
@@ -75,23 +63,11 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                     expect(subject[name]).toBe(value);
                 }
                 
-                function execHasOwn() {
-                    return lib.each(obj, eachHandler, null);
-                }
+                expect(() => lib.each(obj, eachHandler, null)).not.toThrow();
+                expect(lib.each(obj, eachHandler, null)).toBe(obj);
                 
-                function invalidNumberHandler() {
-                    return lib.each(obj, 100, null);
-                }
-                
-                function invalidStringHandler() {
-                    return lib.each(obj, 'str', null);
-                }
-                
-                expect(execHasOwn).not.toThrow();
-                expect(execHasOwn()).toBe(obj);
-                
-                expect(invalidStringHandler).toThrow();
-                expect(invalidNumberHandler).toThrow();
+                expect(() => lib.each(obj, 100, null)).toThrow();
+                expect(() => lib.each(obj, 'str', null)).toThrow();
                 
             });
         
@@ -99,7 +75,7 @@ describe('Iterate an object using each(subject:Object|Function, ' +
         it('3. Should accept 4th optional Boolean "hasown" parameter where ' +
            ' only modified or created properties is iterated.',
         
-            function () {
+            () => {
                 
                 function eachHandler(value, name, subject) {
                     expect(name).toBe("extra");
@@ -108,12 +84,10 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                     expect(subject[name]).toBe(value);
                 }
                 
-                function execHasOwn() {
-                    return lib.each(augmented, eachHandler, null, true);
-                }
-                
-                expect(execHasOwn).not.toThrow();
-                expect(execHasOwn()).toBe(obj);
+                expect(() => lib.each(augmented, eachHandler, null, true)).
+                        not.toThrow();
+                expect(lib.each(augmented, eachHandler, null, true)).
+                        toBe(augmented);
                 
                 
             });
@@ -121,7 +95,7 @@ describe('Iterate an object using each(subject:Object|Function, ' +
         it('4. Should treat "hasown" parameter to true if no 4th optional ' +
            '"hasown" parameter is given.',
         
-            function () {
+            () => {
                 
                 function eachHandler(value, name, subject) {
                     expect(name).toBe("extra");
@@ -130,18 +104,15 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                     expect(subject[name]).toBe(value);
                 }
                 
-                function execHasOwn() {
-                    return lib.each(augmented, eachHandler, null);
-                }
-                
-                expect(execHasOwn).not.toThrow();
-                expect(execHasOwn()).toBe(obj);
+                expect(() => lib.each(augmented, eachHandler, null)).
+                        not.toThrow();
+                expect(lib.each(augmented, eachHandler, null)).toBe(augmented);
                 
             });
         
         it('5. Should accept 4th optional Boolean "hasown" parameter where ' +
            ' all properties is iterated regardless if property is default.',
-            function () {
+            () => {
 
                 function eachHandler(value, name, subject) {
                     expect(subject).toBe(augmented);
@@ -149,33 +120,20 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                     expect(subject[name]).toBe(value);
                 }
                 
-                function execAllProperties() {
-                    return lib.each(augmented, eachHandler, null, false);
-                }
-                
-                expect(execAllProperties).not.toThrow();
-                expect(execAllProperties()).toBe(augmented);
+                expect(() => lib.each(augmented, eachHandler, null, false)).
+                        not.toThrow();
+                expect(lib.each(augmented, eachHandler, null, false)).
+                        toBe(augmented);
 
             });
         
         it('6. Should not accept non-Boolean 4th optional "hasown" parameter.',
-           function () {
+           () => {
                 
-                function eachNonObject() {
-                    return lib.each(obj, empty, null, true);
-                }
-                
-                function eachNumberHasOwn() {
-                    return lib.each(obj, empty, null, 101);
-                }
-                
-                function eachStringHasOwn() {
-                    return lib.each(obj, empty, null, "Javascript");
-                }
-                
-                expect(eachNonObject).not.toThrow();
-                expect(eachNumberHasOwn).toThrow();
-                expect(eachStringHasOwn).toThrow();
+                expect(() => lib.each(obj, empty, null, true)).not.toThrow();
+                expect(() => lib.each(obj, empty, null, 101)).toThrow();
+                expect(() => lib.each(obj, empty, null, "Javascript")).
+                            toThrow();
            });
         
     });
