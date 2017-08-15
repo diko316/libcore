@@ -144,7 +144,9 @@ function isNativeObject(subject) {
 
 /** is string **/
 function isString(subject, allowEmpty) {
-    return typeof subject === 'string' &&
+    return (typeof subject === 'string' ||
+            O.toString.call(subject) === '[object String]') &&
+
             (allowEmpty === true || subject.length !== 0);
 }
 
