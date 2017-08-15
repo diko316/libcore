@@ -86,6 +86,13 @@ return /******/ (function(modules) { // webpackBootstrap
 var DETECTED = __webpack_require__(3),
     validSignature = DETECTED.validSignature,
     OBJECT_SIGNATURE = '[object Object]',
+    NULL_SIGNATURE = '[object Null]',
+    NUMBER_SIGNATURE = '[object Number]',
+    STRING_SIGNATURE = '[object String]',
+    BOOLEAN_SIGNATURE = '[object Boolean]',
+    STRING = 'string',
+    NUMBER = 'number',
+    BOOLEAN = 'boolean',
     OBJECT = Object,
     O = OBJECT.prototype,
     toString = O.toString,
@@ -94,21 +101,60 @@ var DETECTED = __webpack_require__(3),
 
 /** is object signature **/
 function objectSignature(subject) {
+    if (typeof subject === NUMBER && !isFinite(subject)) {
+        return NULL_SIGNATURE;
+    }
     return toString.call(subject);
 }
 
 function ieObjectSignature(subject) {
-    if (subject === null) {
-        return '[object Null]';
-    }
-    else if (subject === void(0)) {
+    switch (true) {
+    case subject === null:
+    case typeof subject === NUMBER && !isFinite(subject):
+        return NULL_SIGNATURE;
+    
+    case subject === undefined:
         return '[object Undefined]';
+    
+    default:
+        return toString.call(subject);
     }
-    return toString.call(subject);
 }
 
 function isType(subject, type) {
-    return isSignature(subject) === type;
+    var len;
+    switch (type) {
+    case "scalar":
+        switch (isSignature(subject)) {
+        case STRING_SIGNATURE:
+        case NUMBER_SIGNATURE:
+        case BOOLEAN_SIGNATURE: return true;
+        }
+        return false;
+    
+    case "regexp":
+    case "regex":
+        type = "RegExp";
+        break;
+    
+    case "method":
+        type = "Function";
+        break;
+    
+    case "native":
+    case "nativeObject":
+        return isNativeObject(subject);
+    }
+    if (typeof type === STRING) {
+        len = type.length;
+        if (len) {
+            return isSignature(subject) === '[object ' +
+                                        type.charAt(0).toUpperCase() +
+                                        type.substring(1, len) +
+                                        ']';
+        }
+    }
+    return false;
 }
 
 /** is object **/
@@ -144,24 +190,23 @@ function isNativeObject(subject) {
 
 /** is string **/
 function isString(subject, allowEmpty) {
-    return (typeof subject === 'string' ||
-            O.toString.call(subject) === '[object String]') &&
+    return (typeof subject === STRING ||
+            O.toString.call(subject) === STRING_SIGNATURE) &&
 
             (allowEmpty === true || subject.length !== 0);
 }
 
 /** is number **/
 function isNumber(subject) {
-    return typeof subject === 'number' && isFinite(subject);
+    return typeof subject === NUMBER && isFinite(subject);
 }
 
 /** is scalar **/
 function isScalar(subject) {
     switch (typeof subject) {
-    case 'number': return isFinite(subject);
-    
-    case 'boolean':
-    case 'string': return true;
+    case NUMBER: return isFinite(subject);
+    case BOOLEAN:
+    case STRING: return true;
     }
     return false;
 }
@@ -172,8 +217,9 @@ function isFunction(subject) {
 }
 
 /** is array **/
-function isArray(subject) {
-    return toString.call(subject) === '[object Array]';
+function isArray(subject, notEmpty) {
+    return toString.call(subject) === '[object Array]' &&
+            (notEmpty !== true || subject.length !== 0);
 }
 
 /** is date **/
@@ -1635,66 +1681,269 @@ module.exports = {
 
 var TYPE = __webpack_require__(0),
     OBJECT = __webpack_require__(1),
-    NUMERIC_RE = /^([1-9][0-9]*|0)$/;
-
-
-function eachPath(path, callback, arg1, arg2, arg3, arg4) {
-    var escape = "\\",
-        dot = ".",
-        buffer = [],
-        bl = 0;
-    var c, l, chr, apply, last;
+    NUMERIC_RE = /^([1-9][0-9]*|0)$/,
+    START = "start",
+    QUEUE = "queue",
+    END = "end",
+    STATE = {
+        "start": {
+            "[": "bracket_start",
+            "default": "any"
+        },
+        
+        "bracket_start": {
+            "'": "sq_start",
+            '"': "dq_start",
+            "default": "bracket_any"
+        },
+        "sq_start": {
+            "'": "bracket_end",
+            "\\": "sq_escape",
+            "default": "sq"
+        },
+        "sq": {
+            "'": "bracket_end",
+            "\\": "sq_escape",
+            "default": "sq"
+        },
+        "sq_escape": {
+            "default": "sq"
+        },
+        "dq_start": {
+            '"': "bracket_end",
+            "\\": "dq_escape",
+            "default": "dq"
+        },
+        "dq": {
+            '"': "bracket_end",
+            "\\": "dq_escape",
+            "default": "dq"
+        },
+        "dq_escape": {
+            "default": "dq"
+        },
+        
+        "bracket_any": {
+            "]": "property_end",
+            "\\": "bracket_any_escape",
+            "default": "bracket_any"
+        },
+        
+        "bracket_any_escape": {
+            "default": "bracket_any"
+        },
+        
+        "bracket_end": {
+            "]": "property_end"
+        },
+        
+        "any": {
+            ".": "start",
+            "\\": "any_escape",
+            "[": "bracket_start",
+            "default": "any"
+        },
+        "any_escape": {
+            "default": "any"
+        },
+        
+        "property_end": {
+            "[": "bracket_start",
+            ".": "start"
+        }
+    },
+    STATE_ACTION = {
+        "start": {
+            "any": START
+        },
+        
+        "any": {
+            "any": QUEUE,
+            "start": END,
+            "bracket_start": END
+        },
+        "any_escape": {
+            "any": QUEUE,
+            "bracket_start": END,
+            "start": START
+        },
+        
+        "bracket_start": {
+            "bracket_any": START
+        },
+        
+        "bracket_any": {
+            "bracket_any": QUEUE,
+            "property_end": END
+        },
+        
+        "bracket_any_escape": {
+            "bracket_any": QUEUE
+        },
+        
+        "sq_start": {
+            "sq": START,
+            "bracket_end": END
+        },
+        "sq": {
+            "sq": QUEUE,
+            "bracket_end": END
+        },
+        "sq_escape": {
+            "sq": QUEUE
+        },
+        
+        "dq_start": {
+            "dq": START,
+            "bracket_end": END
+        },
+        "dq": {
+            "dq": QUEUE,
+            "bracket_end": END
+        },
+        "dq_escape": {
+            "dq": QUEUE
+        }
+    };
     
-    for (c = -1, l = path.length; l--;) {
-        chr = path.charAt(++c);
-        apply = false;
-        last = !l;
-        switch (chr) {
-        case escape:
-            chr = "";
-            if (l) {
-                chr = path.charAt(++c);
-                l--;
-            }
-            break;
-        case dot:
-            chr = "";
-            apply = true;
-            break;
-        }
-        
-        if (chr) {
-            buffer[bl++] = chr;
-        }
-        
-        if (last || apply) {
-            if (bl) {
-                if (callback(buffer.join(""),
-                            last,
-                            arg1,
-                            arg2,
-                            arg3,
-                            arg4) === false) {
-                    return;
-                }
-                buffer.length = bl = 0;
-            }
-        }
+
+
+function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
+    var T = TYPE,
+        map = STATE,
+        action = STATE_ACTION,
+        DEFAULT = "default";
+    var c, l, chr, state, stateObject, items, len, last,
+        next, actionObject, buffer, bl, buffered, pending;
+    
+    if (!T.string(subject)) {
+        throw new Error("Invalid [subject] parameter");
     }
+    
+    if (!T.method(callback)) {
+        throw new Error("Invalid [callback] parameter");
+    }
+    
+    buffer = bl = false;
+    state = "start";
+    stateObject = map.start;
+    
+    items = [];
+    len = pending = 0;
+    
+    for (c = -1, l = subject.length; l--;) {
+        buffered = false;
+        chr = subject.charAt(++c);
+        last = !l;
+        
+        // find next state
+        if (chr in stateObject) {
+            next = stateObject[chr];
+        }
+        else if (DEFAULT in stateObject) {
+            next = stateObject[DEFAULT];
+        }
+        else {
+            return null;
+        }
+        
+        // check for actions
+        if (state in action) {
+            actionObject = action[state];
+            if (next in actionObject) {
+                switch (actionObject[next]) {
+                case "start":
+                        if (buffer !== false) {
+                            return false;
+                        }
+                        buffer = [chr];
+                        bl = 1;
+                    break;
+                case "queue":
+                        if (buffer === false) {
+                            return false;
+                        }
+                        buffer[bl++] = chr;
+                        // dont end if did not reach the end
+                        if (!last) {
+                            break;
+                        }
+                /* falls through */
+                case "end":
+                        if (buffer === false) {
+                            return false;
+                        }
+                        items[len++] = buffer.join('');
+                        buffer = bl = false;
+                    break;
+                }
+            }
+        }
+        
+        
+        state = next;
+        stateObject = map[state];
+        
+        if (pending < len - 1) {
+            if (callback(items[pending++],
+                        false,
+                        arg1,
+                        arg2,
+                        arg3,
+                        arg4,
+                        arg5) === false) {
+                return true;
+            }
+        }
+        
+        if (last && pending < len) {
+            if (callback(items[pending++],
+                        true,
+                        arg1,
+                        arg2,
+                        arg3,
+                        arg4,
+                        arg5) === false) {
+                return true;
+            }
+        }
+
+    }
+    
+    return true;
+
+}
+
+function onParsePath(property, last, context) {
+    context[context.length] = property;
+}
+
+function parsePath(path) {
+    var items = [];
+    
+    return eachPath(path, onParsePath, items) ?
+                items : null;
+    
 }
 
 function isAccessible(subject, item) {
-    var type = TYPE;
-    switch (true) {
-    case type.object(subject):
-    case type.array(subject) &&
-        (!NUMERIC_RE.test(item) || item !== 'length'):
+    switch (TYPE.signature(subject)) {
+    case '[object Number]':
+        return isFinite(subject) && item in Number.prototype;
         
-        if (!OBJECT.contains(subject, item)) {
-            return false;
+    case '[object String]':
+        return item in String.prototype;
+    
+    case '[object RegExp]':
+    case '[object Date]':
+    case '[object Array]':
+    case '[object Object]':
+    case '[object Function]':
+        if (item in subject) {
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 function findCallback(item, last, operation) {
@@ -1848,6 +2097,7 @@ function compare(path, object1, object2) {
 }
 
 module.exports = {
+    jsonParsePath: parsePath,
     jsonFind: find,
     jsonCompare: compare,
     jsonClone: clone,

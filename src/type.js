@@ -3,6 +3,13 @@
 var DETECTED = require('./detect.js'),
     validSignature = DETECTED.validSignature,
     OBJECT_SIGNATURE = '[object Object]',
+    NULL_SIGNATURE = '[object Null]',
+    NUMBER_SIGNATURE = '[object Number]',
+    STRING_SIGNATURE = '[object String]',
+    BOOLEAN_SIGNATURE = '[object Boolean]',
+    STRING = 'string',
+    NUMBER = 'number',
+    BOOLEAN = 'boolean',
     OBJECT = Object,
     O = OBJECT.prototype,
     toString = O.toString,
@@ -11,21 +18,60 @@ var DETECTED = require('./detect.js'),
 
 /** is object signature **/
 function objectSignature(subject) {
+    if (typeof subject === NUMBER && !isFinite(subject)) {
+        return NULL_SIGNATURE;
+    }
     return toString.call(subject);
 }
 
 function ieObjectSignature(subject) {
-    if (subject === null) {
-        return '[object Null]';
-    }
-    else if (subject === void(0)) {
+    switch (true) {
+    case subject === null:
+    case typeof subject === NUMBER && !isFinite(subject):
+        return NULL_SIGNATURE;
+    
+    case subject === undefined:
         return '[object Undefined]';
+    
+    default:
+        return toString.call(subject);
     }
-    return toString.call(subject);
 }
 
 function isType(subject, type) {
-    return isSignature(subject) === type;
+    var len;
+    switch (type) {
+    case "scalar":
+        switch (isSignature(subject)) {
+        case STRING_SIGNATURE:
+        case NUMBER_SIGNATURE:
+        case BOOLEAN_SIGNATURE: return true;
+        }
+        return false;
+    
+    case "regexp":
+    case "regex":
+        type = "RegExp";
+        break;
+    
+    case "method":
+        type = "Function";
+        break;
+    
+    case "native":
+    case "nativeObject":
+        return isNativeObject(subject);
+    }
+    if (typeof type === STRING) {
+        len = type.length;
+        if (len) {
+            return isSignature(subject) === '[object ' +
+                                        type.charAt(0).toUpperCase() +
+                                        type.substring(1, len) +
+                                        ']';
+        }
+    }
+    return false;
 }
 
 /** is object **/
@@ -61,24 +107,23 @@ function isNativeObject(subject) {
 
 /** is string **/
 function isString(subject, allowEmpty) {
-    return (typeof subject === 'string' ||
-            O.toString.call(subject) === '[object String]') &&
+    return (typeof subject === STRING ||
+            O.toString.call(subject) === STRING_SIGNATURE) &&
 
             (allowEmpty === true || subject.length !== 0);
 }
 
 /** is number **/
 function isNumber(subject) {
-    return typeof subject === 'number' && isFinite(subject);
+    return typeof subject === NUMBER && isFinite(subject);
 }
 
 /** is scalar **/
 function isScalar(subject) {
     switch (typeof subject) {
-    case 'number': return isFinite(subject);
-    
-    case 'boolean':
-    case 'string': return true;
+    case NUMBER: return isFinite(subject);
+    case BOOLEAN:
+    case STRING: return true;
     }
     return false;
 }
@@ -89,8 +134,9 @@ function isFunction(subject) {
 }
 
 /** is array **/
-function isArray(subject) {
-    return toString.call(subject) === '[object Array]';
+function isArray(subject, notEmpty) {
+    return toString.call(subject) === '[object Array]' &&
+            (notEmpty !== true || subject.length !== 0);
 }
 
 /** is date **/

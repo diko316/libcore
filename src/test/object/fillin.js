@@ -21,6 +21,7 @@ describe('Apply properties of [source] object to [target] object only if ' +
                 }
             };
             filler = {
+                id: 'filler',
                 fillPropety: "fill",
                 fillMethod: function () {
                     console.log("filling it with metho!");
@@ -34,9 +35,8 @@ describe('Apply properties of [source] object to [target] object only if ' +
            () => {
                 expect(() => lib.fillin(null, filler)).toThrow();
                 expect(() => lib.fillin(new Date(), filler)).toThrow();
-                //expect(() => lib.fillin(undefined, filler)).toThrow();
-                //expect(() => lib.fillin(1, filler)).toThrow();
-                //expect(() => lib.fillin(subject, filler)).not.toThrow();
+                expect(() => lib.fillin(undefined, filler)).toThrow();
+                expect(() => lib.fillin(1, filler)).toThrow();
            });
         
         it('2. Should only accept [source] Native Javascript Object or ' +
@@ -54,21 +54,32 @@ describe('Apply properties of [source] object to [target] object only if ' +
            ' to only use updated properties from [source] or false ' +
            ' to use all enumerable properties from [source].',
            () => {
-                var toCompare = lib.clone(subject);
-                var newFiller;
+                var fillin = lib.clone(subject),
+                    compare = lib.clone(fillin);
+                var newFiller, result;
+                
                 function Empty() {
                 }
                 Empty.prototype = filler;
                 newFiller = new Empty();
+                result = lib.fillin(fillin,
+                                    newFiller,
+                                    false);
                 
-                expect(lib.fillin(subject,
-                                  newFiller,
-                                  false)).toEqual(toCompare);
+                lib.assign(compare, newFiller);
                 
-                lib.assign(toCompare, filler);
-                expect(lib.fillin(subject,
-                                  filler,
-                                  true)).toEqual(toCompare);
+                expect(result).toEqual(compare);
+                expect(result.id).toBe(subject.id);
+                
+                
+                fillin = lib.clone(subject);
+                compare = lib.clone(fillin);
+                result = lib.fillin(fillin,
+                                    newFiller,
+                                    true);
+                
+                expect(result).toEqual(compare);
+                expect(result.id).toBe(compare.id);
                 
            });
         
