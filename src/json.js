@@ -288,7 +288,7 @@ function find(path, object) {
 }
 
 function clone(path, object, deep) {
-    return OBJECT.clone(find(path, object), deep);
+    return OBJECT.clone(find(path, object), deep === true);
 }
 
 
@@ -414,7 +414,7 @@ function remove(path, object) {
 }
 
 function compare(path, object1, object2) {
-    return OBJECT.compare(find(path, object1), object1, object2);
+    return OBJECT.compare(find(path, object1), object2);
 }
 
 module.exports = {

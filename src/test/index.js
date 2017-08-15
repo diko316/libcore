@@ -26,4 +26,5 @@ require("./object/compare.js");
 
 require("./json/parse-path.js");
 require("./json/find.js");
-
+require("./json/compare.js");
+require("./json/clone.js");
