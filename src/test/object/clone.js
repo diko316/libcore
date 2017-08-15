@@ -35,13 +35,16 @@ describe('Clones Native Javascript objects using clone(data:Mixed,' +
             
                 expect(() => lib.clone(objectSubject)).not.toThrow();
                 expect(lib.clone(objectSubject)).toEqual(objectSubject);
+                expect(lib.clone(objectSubject)).not.toBe(objectSubject);
                 
                 expect(() => lib.clone(arraySubject)).not.toThrow();
                 expect(lib.clone(arraySubject)).toEqual(arraySubject);
+                expect(lib.clone(arraySubject)).not.toBe(arraySubject);
                 
                 expect(() => lib.clone(regexSubject)).not.toThrow();
                 expect(lib.clone(regexSubject).source).
                             toEqual(regexSubject.source);
+                expect(lib.clone(regexSubject)).not.toBe(regexSubject);
                             
                 expect(() => lib.clone(123)).not.toThrow();
                 expect(lib.clone(123)).toBe(123);
@@ -70,5 +73,18 @@ describe('Clones Native Javascript objects using clone(data:Mixed,' +
                 expect(lib.clone(objectSubject, true)).toEqual(objectSubject);
                 expect(lib.clone(objectSubject, true).inside).
                     toEqual(objectSubject.inside);
+                expect(lib.clone(objectSubject, true).inside).
+                    not.toBe(objectSubject.inside);
+           });
+        
+        it('4. Should accept optional Boolean false [deep] parameter ' +
+           'to enable shallow cloning of array and object properties.',
+           () => {
+                expect(() => lib.clone(objectSubject, false)).not.toThrow();
+                expect(lib.clone(objectSubject, false)).toEqual(objectSubject);
+                expect(lib.clone(objectSubject, false).inside).
+                    toEqual(objectSubject.inside);
+                expect(lib.clone(objectSubject, false).inside).
+                    toBe(objectSubject.inside);
            });
     });

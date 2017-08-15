@@ -466,7 +466,10 @@ function applyClear() {
  * @returns {Object} subject parameter.
  */
 function fillin(target, source, hasown) {
-    EACH(source, applyFillin, target, hasown);
+    if (!isValidObject(target)) {
+        throw new Error("Invalid [target] parameter");
+    }
+    EACH(source, applyFillin, target, hasown !== false);
     return target;
 }
 
@@ -607,9 +610,11 @@ function compareLookback(object1, object2, references) {
         isArray = T.array,
         isRegex = T.regex,
         isDate = T.date,
+        onCompare = onEachCompareObject,
+        each = EACH,
         me = compareLookback,
         depth = references.length;
-    var name, len;
+    var len, context;
     
     switch (true) {
         
@@ -632,18 +637,16 @@ function compareLookback(object1, object2, references) {
         references[depth] = object1;
         references[depth + 1] = object2;
         
-        // compare properties
-        for (name in object1) {
-            if (!(name in object2) ||
-                !me(object1[name], object2[name], references)) {
-                return false;
-            }
+        context = [object2, references, true];
+        each(object1, onCompare, context);
+        if (!context[2]) {
+            return false;
         }
-        for (name in object2) {
-            if (!(name in object1) ||
-                !me(object1[name], object2[name], references)) {
-                return false;
-            }
+        
+        context[0] = object1;
+        each(object2, onCompare, context);
+        if (!context[2]) {
+            return false;
         }
         
         references.length = depth;
@@ -695,6 +698,18 @@ function compareLookback(object1, object2, references) {
     return false;
 }
 
+function onEachCompareObject(value, name) {
+    /* jshint validthis:true */
+    var context = this,
+        target = context[0],
+        result = name in target ?
+                    compareLookback(value, target[name], context[1]) :
+                    false;
+    context[2] = result;
+    
+    return result;
+}
+
 /**
  * Clones scalar, array, object, regex or date objects
  * @name libcore.clone
@@ -735,43 +750,6 @@ function clone(data, deep) {
 }
 
 
-
-//function cloneObjectOld(data, parents, cloned) {
-//    var depth = parents.length,
-//        T = TYPE,
-//        isNativeObject = T.nativeObject,
-//        isArray = T.array,
-//        ca = cloneArray,
-//        co = cloneObject,
-//        recreated = {};
-//    var name, value, index, isNative;
-//    
-//    parents[depth] = data;
-//    cloned[depth] = recreated;
-//    
-//    /*jshint forin:false */
-//    for (name in data) {
-//    
-//        value = data[name];
-//        isNative = isNativeObject(value);
-//        
-//        if (isNative || isArray(value)) {
-//            index = parents.lastIndexOf(value);
-//            value = index === -1 ?
-//                        (isNative ? co : ca)(value, parents, cloned) :
-//                        cloned[index];
-//        }
-//        else {
-//            value = clone(value, false);
-//        }
-//        recreated[name] = value;
-//    }
-//    
-//    parents.length = cloned.length = depth;
-//    
-//    return recreated;
-//}
-
 function cloneObject(data, parents, cloned) {
     var depth = parents.length,
         recreated = {},
@@ -789,9 +767,34 @@ function cloneObject(data, parents, cloned) {
     return recreated;
 }
 
+function cloneArray(data, parents, cloned) {
+    var depth = parents.length,
+        onProperty = onEachClonedProperty,
+        recreated = [],
+        context = [recreated,
+                   parents,
+                   cloned],
+        c = 0,
+        l = data.length;
+    
+    parents[depth] = data;
+    cloned[depth] = recreated;
+    
+    for (; l--; c++) {
+        onProperty.call(context,
+                        data[c],
+                        c,
+                        data);
+    }
+    
+    parents.length = cloned.length = depth;
+    
+    return recreated;
+}
+
 function onEachClonedProperty(value, name) {
     var T = TYPE,
-        /*jshint validthis:true */
+        /* jshint validthis:true */
         context = this,
         isNative = T.nativeObject(value),
         parents = context[1],
@@ -810,44 +813,8 @@ function onEachClonedProperty(value, name) {
     else {
         value = clone(value, false);
     }
+    
     context[0][name] = value;
-}
-
-function cloneArray(data, parents, cloned) {
-    var depth = parents.length,
-        T = TYPE,
-        isNativeObject = T.nativeObject,
-        isArray = T.array,
-        ca = cloneArray,
-        co = cloneObject,
-        recreated = [],
-        c = 0,
-        l = data.length;
-        
-    var value, index, isNative;
-    
-    parents[depth] = data;
-    cloned[depth] = recreated;
-    
-    for (; l--; c++) {
-        value = data[c];
-        isNative = isNativeObject(value);
-        if (isNative || isArray(value)) {
-            index = parents.lastIndexOf(value);
-            value = index === -1 ?
-                        (isNative ? co : ca)(value, parents, cloned) :
-                        cloned[index];
-        }
-        else {
-            value = clone(value, false);
-        }
-        recreated[c] = value;
-    }
-    
-    parents.length = cloned.length = depth;
-    
-    return recreated;
-    
 }
 
 
