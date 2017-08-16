@@ -4,12 +4,14 @@ var TYPE = require("./type.js"),
     OBJECT = require("./object.js"),
     NUMERIC_RE = /^([1-9][0-9]*|0)$/,
     START = "start",
+    START_ESCAPED = "start_escaped",
     QUEUE = "queue",
     END = "end",
     STATE = {
         "start": {
             "[": "bracket_start",
-            "default": "any"
+            "default": "any",
+            "\\": "any_escape"
         },
         
         "bracket_start": {
@@ -75,7 +77,8 @@ var TYPE = require("./type.js"),
     },
     STATE_ACTION = {
         "start": {
-            "any": START
+            "any": START,
+            "any_escape": START_ESCAPED
         },
         
         "any": {
@@ -133,9 +136,13 @@ function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
     var T = TYPE,
         map = STATE,
         action = STATE_ACTION,
+        start = START,
+        start_escaped = START_ESCAPED,
+        queue = QUEUE,
+        end = END,
         DEFAULT = "default";
     var c, l, chr, state, stateObject, items, len, last,
-        next, actionObject, buffer, bl, buffered, pending;
+        next, actionObject, buffer, bl, buffered, pending, start_queue;
     
     if (!T.string(subject)) {
         throw new Error("Invalid [subject] parameter");
@@ -172,15 +179,28 @@ function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
         if (state in action) {
             actionObject = action[state];
             if (next in actionObject) {
+                start_queue = false;
+                
                 switch (actionObject[next]) {
-                case "start":
+                case start:
                         if (buffer !== false) {
                             return false;
                         }
+                        
                         buffer = [chr];
                         bl = 1;
-                    break;
-                case "queue":
+                        break;
+                        
+                case start_escaped:
+                        if (buffer !== false) {
+                            return false;
+                        }
+                        
+                        buffer = [];
+                        bl = 0;
+                        break;
+                        
+                case queue:
                         if (buffer === false) {
                             return false;
                         }
@@ -190,7 +210,7 @@ function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
                             break;
                         }
                 /* falls through */
-                case "end":
+                case end:
                         if (buffer === false) {
                             return false;
                         }

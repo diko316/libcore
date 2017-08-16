@@ -78,5 +78,31 @@ describe('Extract property names from a JSON path using ' +
                                   'length']);
                });
             
+            it('3. Should be able to extract escaped string properties ' +
+               'JSON path (e.g. "grid.\\n\\.o\\].offset")',
+               () => {
+                
+                    var subject = "grid.\\n\\.o\\].offset";
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'grid',
+                            'n.o]',
+                            'offset'
+                        ]);
+                        
+                    subject = "grid.\\n\\.o\\]['offset']";
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'grid',
+                            'n.o]',
+                            'offset'
+                        ]);
+               });
             
         });
