@@ -1877,30 +1877,35 @@ function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
                 start_queue = false;
                 
                 switch (actionObject[next]) {
+                
                 case start:
-                        if (buffer !== false) {
-                            return false;
-                        }
-                        
-                        buffer = [chr];
-                        bl = 1;
-                        break;
-                        
+                    start_queue = true;
+                /* falls through */
                 case start_escaped:
                         if (buffer !== false) {
                             return false;
                         }
                         
-                        buffer = [];
-                        bl = 0;
-                        break;
+                        if (start_queue && !last) {
+                            buffer = [chr];
+                            bl = 1;
+                        }
+                        else {
+                            buffer = [];
+                            bl = 0;
+                        }
                         
+                        // exit if not last
+                        if (!last) {
+                            break;
+                        }
+                /* falls through */
                 case queue:
                         if (buffer === false) {
                             return false;
                         }
                         buffer[bl++] = chr;
-                        // dont end if did not reach the end
+                        // exit if not last
                         if (!last) {
                             break;
                         }
@@ -2027,13 +2032,11 @@ function clone(path, object, deep) {
     return OBJECT.clone(find(path, object), deep === true);
 }
 
-//function getItemsCallback(item, last, operation) {
-//    operation[operation.length] = item;
-//}
 
 function onPopulatePath(item, last, context) {
     var subject = context[1],
-        writable = isWritable(subject),
+        iswritable = isWritable,
+        writable = iswritable(subject),
         U = void(0),
         success = false;
         
@@ -2048,7 +2051,7 @@ function onPopulatePath(item, last, context) {
                 
             }
             // allow only when writable
-            else if (isWritable(subject[item])) {
+            else if (iswritable(subject[item])) {
                 success = true;
             }
         }
@@ -2069,8 +2072,12 @@ function onPopulatePath(item, last, context) {
 }
 
 function assign(path, subject, value, overwrite) {
-    var T = TYPE;
-    var context, name, current, valueSignature, currentSignature;
+    var T = TYPE,
+        typeArray = T.ARRAY,
+        apply = OBJECT.assign,
+        writable = isWritable;
+    var context, name, current, valueSignature, currentSignature,
+        arrayOperation, arrayPush, canApply;
     
     if (!T.string(path)) {
         throw new Error("Invalid [path] parameter.");
@@ -2083,48 +2090,149 @@ function assign(path, subject, value, overwrite) {
     
     if (name !== false) {
         subject = context[1];
-        overwrite = overwrite !== false;
-        valueSignature = currentSignature = null;
+        valueSignature = writable(value);
+        arrayOperation = T.array(subject) && NUMERIC_RE.test(name);
         
-        // validate overwrite
-        if (!overwrite) {
-            overwrite = true;
-            
-            if (name in subject) {
-                current = subject[name];
-                valueSignature = isWritable(value);
-                currentSignature = isWritable(current);
-                
-                // can apply
-                if (isWritable(current) && isWritable(value)) {
-                    overwrite = false;
+        if (name in subject) {
+            current = subject[name];
+            currentSignature = writable(current);
+        }
+        else {
+            current = undefined;
+            currentSignature = null;
+        }
+        
+        canApply = valueSignature && !!currentSignature;
+        arrayPush = canApply &&
+                        valueSignature === typeArray &&
+                        currentSignature === typeArray;
+                        
+        
+        // finalize overwrite type
+        switch (overwrite) {
+        // only available if subject is array and name is numeric index
+        case 'insert':
+            overwrite = !arrayOperation;
+            if (arrayOperation) {
+                subject.splice(name * 1, 0, value);
+            }
+            break;
+        
+        // only available if subject canApply
+        case 'apply':
+            overwrite = !canApply;
+            if (canApply) {
+                apply(current, value);
+            }
+            break;
+        
+        // only available if current is array and value is array
+        case 'push':
+            overwrite = !arrayPush;
+            if (arrayPush) {
+                current.push.apply(current, value);
+            }
+            break;
+        
+        // only available if current is array and value is array
+        case 'unshift':
+            overwrite = !arrayPush;
+            if (arrayPush) {
+                current.splice.apply(current, [0, 0].concat(value));
+            }
+            break;
+        
+        // default is no overwrite if possible
+        case false:
+        /* falls through */
+        default:
+            // can apply or push only if non-scalar current and value
+            overwrite = !canApply;
+            if (canApply) {
+                if (arrayPush) {
+                    current.push.apply(current, value);
+                }
+                else {
+                    apply(current, value);
                 }
             }
         }
         
-        
-        
-        // try applying object
-        if (overwrite) {
+        // plain overwrite!
+        if (overwrite === true) {
             subject[name] = value;
         }
-        else if (current) {
-            
-            // push
-            if (valueSignature === T.ARRAY && currentSignature === T.ARRAY) {
-                current.push.apply(current, value);
-            }
-            else {
-                OBJECT.assign(current, value);
-            }
-            
-        }
+        
         return true;
     
     }
     return false;
 }
 
+
+function onRemovePath(item, last, context) {
+    var subject = context[1],
+        iswritable = isWritable,
+        writable = iswritable(subject),
+        U = void(0),
+        success = false;
+        
+    // populate
+    if (!last) {
+        if (writable && item in subject) {
+            
+            // go to next
+            if (iswritable(subject[item])) {
+                success = true;
+            }
+            // still a success, nothing to remove
+            else {
+                context[3] = true;
+            }
+
+        }
+    
+        context[1] = success ? subject[item] : U;
+        
+    }
+    // end it with writable state?
+    else {
+        success = writable;
+        context[2] = success && item;
+        context[3] = true;
+    }
+    
+    return success;
+}
+
+function remove(path, subject) {
+    var T = TYPE;
+    var context, name;
+    
+    if (!T.string(path)) {
+        throw new Error("Invalid [path] parameter.");
+    }
+    
+    // main subject should be accessible and native object
+    context = [void(0), subject, false, false];
+    eachPath(path, onRemovePath, context);
+    
+    name = context[2];
+    // found! and must be removed
+    if (name !== false) {
+        subject = context[1];
+        
+        // remove item
+        if (T.array(subject) && NUMERIC_RE.test(name)) {
+            subject.splice(name * 1, 1);
+        }
+        else {
+            delete context[1][name];
+        }
+    }
+    
+    return context[3];
+}
 
 
 //function assignOld(path, subject, value, overwrite) {
@@ -2208,41 +2316,41 @@ function assign(path, subject, value, overwrite) {
 //}
 
 
-function removeCallback(item, last, operation) {
-    var subject = operation[0];
-    var isLength;
-    
-    if (!isAccessible(subject, item)) {
-        return false;
-    }
-    
-    // set
-    if (last) {
-        if (TYPE.array(subject)) {
-            isLength = item === 'length';
-            subject.splice(isLength ?
-                                0 : item.toString(10),
-                            isLength ?
-                                subject.length : 1);
-        }
-        else {
-            delete subject[item];
-        }
-        
-        operation[1] = true;
-    }
-    else {
-        operation[0] = subject[item];
-    }
-    
-}
-
-function remove(path, object) {
-    var operation = [object, false];
-    eachPath(path, removeCallback, operation);
-    operation[0] = null;
-    return operation[1];
-}
+//function removeCallback(item, last, operation) {
+//    var subject = operation[0];
+//    var isLength;
+//    
+//    if (!isAccessible(subject, item)) {
+//        return false;
+//    }
+//    
+//    // set
+//    if (last) {
+//        if (TYPE.array(subject)) {
+//            isLength = item === 'length';
+//            subject.splice(isLength ?
+//                                0 : item.toString(10),
+//                            isLength ?
+//                                subject.length : 1);
+//        }
+//        else {
+//            delete subject[item];
+//        }
+//        
+//        operation[1] = true;
+//    }
+//    else {
+//        operation[0] = subject[item];
+//    }
+//    
+//}
+//
+//function removeOld(path, object) {
+//    var operation = [object, false];
+//    eachPath(path, removeCallback, operation);
+//    operation[0] = null;
+//    return operation[1];
+//}
 
 function compare(path, object1, object2) {
     return OBJECT.compare(find(path, object1), object2);

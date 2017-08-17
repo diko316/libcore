@@ -17,13 +17,19 @@ describe('Extract property names from a JSON path using ' +
                     expect(lib.jsonParsePath(subject)).
                         toEqual(['grid', 'paging', 'offset']);
                     
-                    subject = 'grid.rows.0.label.length'
+                    subject = 'grid.rows.0.label.length';
                     expect(lib.jsonParsePath(subject)).
                         toEqual(['grid',
                                   'rows',
                                   '0',
                                   'label',
                                   'length']);
+                        
+                    subject = 'grid.rows.0';
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual(['grid',
+                                  'rows',
+                                  '0']);
                });
             
             it('2. Should be able to extract quoted string properties ' +
@@ -38,7 +44,7 @@ describe('Extract property names from a JSON path using ' +
                         toEqual(['grid', 'paging', 'offset']);
                     
                     
-                    subject = 'grid["rows"].0.label.length'
+                    subject = 'grid["rows"].0.label.length';
                     expect(() => lib.jsonParsePath(subject)).
                         not.toThrow();
                     expect(lib.jsonParsePath(subject)).
@@ -47,17 +53,7 @@ describe('Extract property names from a JSON path using ' +
                                   '0',
                                   'label',
                                   'length']);
-                    subject = 'grid.rows[0].label.length'
-                    expect(() => lib.jsonParsePath(subject)).
-                        not.toThrow();
-                    expect(lib.jsonParsePath(subject)).
-                        toEqual(['grid',
-                                  'rows',
-                                  '0',
-                                  'label',
-                                  'length']);
-                        
-                    subject = 'grid["rows"][0].label.length'
+                    subject = 'grid.rows[0].label.length';
                     expect(() => lib.jsonParsePath(subject)).
                         not.toThrow();
                     expect(lib.jsonParsePath(subject)).
@@ -67,7 +63,17 @@ describe('Extract property names from a JSON path using ' +
                                   'label',
                                   'length']);
                         
-                    subject = '["grid"].rows[0].label.length'
+                    subject = 'grid["rows"][0].label.length';
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual(['grid',
+                                  'rows',
+                                  '0',
+                                  'label',
+                                  'length']);
+                        
+                    subject = '["grid"].rows[0].label.length';
                     expect(() => lib.jsonParsePath(subject)).
                         not.toThrow();
                     expect(lib.jsonParsePath(subject)).
