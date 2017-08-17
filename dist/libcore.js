@@ -1698,6 +1698,7 @@ module.exports = {
 var TYPE = __webpack_require__(0),
     OBJECT = __webpack_require__(1),
     NUMERIC_RE = /^([1-9][0-9]*|0)$/,
+    ERROR_PATH_INVALID = 'Invalid [path] parameter.',
     START = "start",
     START_ESCAPED = "start_escaped",
     QUEUE = "queue",
@@ -1827,7 +1828,7 @@ var TYPE = __webpack_require__(0),
     
 
 
-function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
+function eachPath(path, callback, arg1, arg2, arg3, arg4, arg5) {
     var T = TYPE,
         map = STATE,
         action = STATE_ACTION,
@@ -1839,8 +1840,8 @@ function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
     var c, l, chr, state, stateObject, items, len, last,
         next, actionObject, buffer, bl, buffered, pending, start_queue;
     
-    if (!T.string(subject)) {
-        throw new Error("Invalid [subject] parameter");
+    if (!T.string(path)) {
+        throw new Error(ERROR_PATH_INVALID);
     }
     
     if (!T.method(callback)) {
@@ -1854,9 +1855,9 @@ function eachPath(subject, callback, arg1, arg2, arg3, arg4, arg5) {
     items = [];
     len = pending = 0;
     
-    for (c = -1, l = subject.length; l--;) {
+    for (c = -1, l = path.length; l--;) {
         buffered = false;
-        chr = subject.charAt(++c);
+        chr = path.charAt(++c);
         last = !l;
         
         // find next state
@@ -2080,7 +2081,7 @@ function assign(path, subject, value, overwrite) {
         arrayOperation, arrayPush, canApply;
     
     if (!T.string(path)) {
-        throw new Error("Invalid [path] parameter.");
+        throw new Error(ERROR_PATH_INVALID);
     }
     
     // main subject should be accessible and native object
@@ -2207,10 +2208,10 @@ function onRemovePath(item, last, context) {
 
 function remove(path, subject) {
     var T = TYPE;
-    var context, name;
+    var context, name, returnValue;
     
     if (!T.string(path)) {
-        throw new Error("Invalid [path] parameter.");
+        throw new Error(ERROR_PATH_INVALID);
     }
     
     // main subject should be accessible and native object
@@ -2218,142 +2219,50 @@ function remove(path, subject) {
     eachPath(path, onRemovePath, context);
     
     name = context[2];
+    returnValue = context[3];
+    
     // found! and must be removed
-    if (name !== false) {
+    if (returnValue && name !== false) {
+        
         subject = context[1];
         
-        // remove item
-        if (T.array(subject) && NUMERIC_RE.test(name)) {
-            subject.splice(name * 1, 1);
+        if (!(name in subject)) {
+            
+            returnValue = false;
         }
         else {
-            delete context[1][name];
+        
+            // remove item
+            if (T.array(subject) && NUMERIC_RE.test(name)) {
+                subject.splice(name * 1, 1);
+                
+            }
+            else {
+                
+                delete subject[name];
+                // check if removable
+                returnValue = !(name in subject);
+                
+            }
+            
         }
     }
     
-    return context[3];
+    return returnValue;
 }
-
-
-//function assignOld(path, subject, value, overwrite) {
-//    var type = TYPE,
-//        has = OBJECT.contains,
-//        array = type.array,
-//        object = type.object,
-//        apply = type.assign,
-//        parent = subject,
-//        numericRe = NUMERIC_RE;
-//    var items, c, l, item, name, numeric, property, isArray, temp;
-//    
-//    if (object(parent) || array(parent)) {
-//        eachPath(path, getItemsCallback, items = []);
-//        
-//        if (items.length) {
-//            name = items[0];
-//            items.splice(0, 1);
-//            
-//            for (c = -1, l = items.length; l--;) {
-//                item = items[++c];
-//                numeric = numericRe.test(item);
-//                
-//                // finalize
-//                if (has(parent, name)) {
-//                    property = parent[name];
-//                    isArray = array(property);
-//                    
-//                    // replace property into object or array
-//                    if (!isArray && !object(property)) {
-//                        if (numeric) {
-//                            property = [property];
-//                        }
-//                        else {
-//                            temp = property;
-//                            property = {};
-//                            property[""] = temp;
-//                        }
-//                    }
-//                    // change property to object to support "named" property
-//                    else if (isArray && !numeric) {
-//                        property = apply({}, property);
-//                        delete property.length;
-//                    }
-//                    
-//                }
-//                else {
-//                    property = numeric ? [] : {};
-//                }
-//                
-//                parent = parent[name] = property;
-//                name = item;
-//                
-//            }
-//            
-//            if (overwrite !== true && has(parent, name)) {
-//                property = parent[name];
-//                
-//                // append
-//                if (array(property)) {
-//                    parent = property;
-//                    name = parent.length;
-//                }
-//                else {
-//                    parent = parent[name] = [property];
-//                    name = 1;
-//                }
-//            }
-//            
-//            parent[name] = value;
-//    
-//            parent = value = property = temp = null;
-//            
-//            return true;
-//        
-//        }
-//        
-//        
-//    }
-//    return false;
-//}
-
-
-//function removeCallback(item, last, operation) {
-//    var subject = operation[0];
-//    var isLength;
-//    
-//    if (!isAccessible(subject, item)) {
-//        return false;
-//    }
-//    
-//    // set
-//    if (last) {
-//        if (TYPE.array(subject)) {
-//            isLength = item === 'length';
-//            subject.splice(isLength ?
-//                                0 : item.toString(10),
-//                            isLength ?
-//                                subject.length : 1);
-//        }
-//        else {
-//            delete subject[item];
-//        }
-//        
-//        operation[1] = true;
-//    }
-//    else {
-//        operation[0] = subject[item];
-//    }
-//    
-//}
-//
-//function removeOld(path, object) {
-//    var operation = [object, false];
-//    eachPath(path, removeCallback, operation);
-//    operation[0] = null;
-//    return operation[1];
-//}
 
 function compare(path, object1, object2) {
     return OBJECT.compare(find(path, object1), object2);
+}
+
+function fill(path, subject, value, overwrite) {
+    var T = TYPE;
+    
+    if (!T.string(path)) {
+        throw new Error(ERROR_PATH_INVALID);
+    }
+    
+    
 }
 
 module.exports = {
@@ -2363,7 +2272,8 @@ module.exports = {
     jsonClone: clone,
     jsonEach: eachPath,
     jsonSet: assign,
-    jsonUnset: remove
+    jsonUnset: remove,
+    jsonFill: fill
 };
 
 /***/ }),
