@@ -103,6 +103,27 @@ describe('Extract property names from a JSON path using ' +
                             'n.o]',
                             'offset'
                         ]);
+                        
+                    subject = "method[\"type\"].grid";
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'method',
+                            'type',
+                            'grid'
+                        ]);
+                        
+                    subject = "method.id";
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'method',
+                            'id'
+                        ]);
                });
             
         });

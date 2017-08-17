@@ -86,39 +86,35 @@ return /******/ (function(modules) { // webpackBootstrap
 var DETECTED = __webpack_require__(3),
     validSignature = DETECTED.validSignature,
     OBJECT_SIGNATURE = '[object Object]',
+    ARRAY_SIGNATURE = '[object Array]',
     NULL_SIGNATURE = '[object Null]',
+    UNDEFINED_SIGNATURE = '[object Undefined]',
     NUMBER_SIGNATURE = '[object Number]',
     STRING_SIGNATURE = '[object String]',
     BOOLEAN_SIGNATURE = '[object Boolean]',
+    METHOD_SIGNATURE = '[object Function]',
+    DATE_SIGNATURE = '[object Date]',
+    REGEX_SIGNATURE = '[object RegExp]',
     STRING = 'string',
     NUMBER = 'number',
     BOOLEAN = 'boolean',
     OBJECT = Object,
     O = OBJECT.prototype,
     toString = O.toString,
-    isSignature = validSignature ?
-                    objectSignature : ieObjectSignature;
+    isSignature = objectSignature;
 
 /** is object signature **/
 function objectSignature(subject) {
-    if (typeof subject === NUMBER && !isFinite(subject)) {
+    if (subject === undefined) {
+        return UNDEFINED_SIGNATURE;
+    }
+    
+    if (subject === null ||
+        (typeof subject === NUMBER && !isFinite(subject))) {
         return NULL_SIGNATURE;
     }
+    
     return toString.call(subject);
-}
-
-function ieObjectSignature(subject) {
-    switch (true) {
-    case subject === null:
-    case typeof subject === NUMBER && !isFinite(subject):
-        return NULL_SIGNATURE;
-    
-    case subject === undefined:
-        return '[object Undefined]';
-    
-    default:
-        return toString.call(subject);
-    }
 }
 
 function isType(subject, type) {
@@ -213,27 +209,39 @@ function isScalar(subject) {
 
 /** is function **/
 function isFunction(subject) {
-    return toString.call(subject) === '[object Function]';
+    return toString.call(subject) === METHOD_SIGNATURE;
 }
 
 /** is array **/
 function isArray(subject, notEmpty) {
-    return toString.call(subject) === '[object Array]' &&
+    return toString.call(subject) === ARRAY_SIGNATURE &&
             (notEmpty !== true || subject.length !== 0);
 }
 
 /** is date **/
 function isDate(subject) {
-    return toString.call(subject) === '[object Date]';
+    return toString.call(subject) === DATE_SIGNATURE;
 }
 
 /** is regexp **/
 function isRegExp(subject) {
-    return toString.call(subject) === '[object RegExp]';
+    return toString.call(subject) === REGEX_SIGNATURE;
 }
 
 
 module.exports = {
+    OBJECT: OBJECT_SIGNATURE,
+    ARRAY: ARRAY_SIGNATURE,
+    NULL: NULL_SIGNATURE,
+    UNDEFINED: UNDEFINED_SIGNATURE,
+    NUMBER: NUMBER_SIGNATURE,
+    STRING: STRING_SIGNATURE,
+    BOOLEAN: BOOLEAN_SIGNATURE,
+    METHOD: METHOD_SIGNATURE,
+    FUNCTION: METHOD_SIGNATURE,
+    DATE: DATE_SIGNATURE,
+    REGEX: REGEX_SIGNATURE,
+    
     signature: isSignature,
     
     object: validSignature ?
@@ -284,8 +292,16 @@ function empty() {
 }
 
 function isValidObject(target) {
-    var type = TYPE;
-    return type.object(target) || type.method(target);
+    var T = TYPE;
+    
+    switch (T.signature(target)) {
+    case T.REGEX:
+    case T.DATE:
+    case T.ARRAY:
+    case T.OBJECT:
+    case T.METHOD: return true;
+    }
+    return false;
 }
 
 /**
@@ -1947,21 +1963,42 @@ function parsePath(path) {
 }
 
 function isAccessible(subject, item) {
-    switch (TYPE.signature(subject)) {
-    case '[object Number]':
-        return isFinite(subject) && item in Number.prototype;
-        
-    case '[object String]':
-        return item in String.prototype;
+    var T = TYPE,
+        signature = T.signature(subject);
     
-    case '[object RegExp]':
-    case '[object Date]':
-    case '[object Array]':
-    case '[object Object]':
-    case '[object Function]':
+    switch (signature) {
+    case T.NUMBER:
+        return isFinite(subject) && item in Number.prototype && signature;
+        
+    case T.STRING:
+        return item in String.prototype && signature;
+    
+    case T.BOOLEAN:
+        return item in Boolean.prototype && signature;
+    
+    case T.REGEX:
+    case T.DATE:
+    case T.ARRAY:
+    case T.OBJECT:
+    case T.METHOD:
         if (item in subject) {
-            return true;
+            return signature;
         }
+    }
+    return false;
+}
+
+function isWritable(subject) {
+    var T = TYPE,
+        signature = T.signature(subject);
+    
+    switch (signature) {
+    case T.REGEX:
+    case T.DATE:
+    case T.ARRAY:
+    case T.OBJECT:
+    case T.METHOD:
+        return signature;
     }
     return false;
 }
@@ -1990,90 +2027,185 @@ function clone(path, object, deep) {
     return OBJECT.clone(find(path, object), deep === true);
 }
 
+//function getItemsCallback(item, last, operation) {
+//    operation[operation.length] = item;
+//}
 
-function getItemsCallback(item, last, operation) {
-    operation[operation.length] = item;
+function onPopulatePath(item, last, context) {
+    var subject = context[1],
+        writable = isWritable(subject),
+        U = void(0),
+        success = false;
+        
+    // populate
+    if (!last) {
+        // populate
+        if (writable) {
+            // set object
+            if (!(item in subject)) {
+                subject[item] = {};
+                success = true;
+                
+            }
+            // allow only when writable
+            else if (isWritable(subject[item])) {
+                success = true;
+            }
+        }
+    
+        context[1] = success ? subject[item] : U;
+        
+    }
+    // end it with writable state?
+    else {
+        success = writable;
+        context[2] = success && item;
+        
+    }
+   
+    return success;
+    
+    
 }
 
 function assign(path, subject, value, overwrite) {
-    var type = TYPE,
-        has = OBJECT.contains,
-        array = type.array,
-        object = type.object,
-        apply = type.assign,
-        parent = subject,
-        numericRe = NUMERIC_RE;
-    var items, c, l, item, name, numeric, property, isArray, temp;
+    var T = TYPE;
+    var context, name, current, valueSignature, currentSignature;
     
-    if (object(parent) || array(parent)) {
-        eachPath(path, getItemsCallback, items = []);
+    if (!T.string(path)) {
+        throw new Error("Invalid [path] parameter.");
+    }
+    
+    // main subject should be accessible and native object
+    context = [void(0), subject, false];
+    eachPath(path, onPopulatePath, context);
+    name = context[2];
+    
+    if (name !== false) {
+        subject = context[1];
+        overwrite = overwrite !== false;
+        valueSignature = currentSignature = null;
         
-        if (items.length) {
-            name = items[0];
-            items.splice(0, 1);
+        // validate overwrite
+        if (!overwrite) {
+            overwrite = true;
             
-            for (c = -1, l = items.length; l--;) {
-                item = items[++c];
-                numeric = numericRe.test(item);
+            if (name in subject) {
+                current = subject[name];
+                valueSignature = isWritable(value);
+                currentSignature = isWritable(current);
                 
-                // finalize
-                if (has(parent, name)) {
-                    property = parent[name];
-                    isArray = array(property);
-                    
-                    // replace property into object or array
-                    if (!isArray && !object(property)) {
-                        if (numeric) {
-                            property = [property];
-                        }
-                        else {
-                            temp = property;
-                            property = {};
-                            property[""] = temp;
-                        }
-                    }
-                    // change property to object to support "named" property
-                    else if (isArray && !numeric) {
-                        property = apply({}, property);
-                        delete property.length;
-                    }
-                    
-                }
-                else {
-                    property = numeric ? [] : {};
-                }
-                
-                parent = parent[name] = property;
-                name = item;
-                
-            }
-            
-            if (overwrite !== true && has(parent, name)) {
-                property = parent[name];
-                
-                // append
-                if (array(property)) {
-                    parent = property;
-                    name = parent.length;
-                }
-                else {
-                    parent = parent[name] = [property];
-                    name = 1;
+                // can apply
+                if (isWritable(current) && isWritable(value)) {
+                    overwrite = false;
                 }
             }
-            
-            parent[name] = value;
-    
-            parent = value = property = temp = null;
-            
-            return true;
-        
         }
         
         
+        
+        // try applying object
+        if (overwrite) {
+            subject[name] = value;
+        }
+        else if (current) {
+            
+            // push
+            if (valueSignature === T.ARRAY && currentSignature === T.ARRAY) {
+                current.push.apply(current, value);
+            }
+            else {
+                OBJECT.assign(current, value);
+            }
+            
+        }
+        return true;
+    
     }
     return false;
 }
+
+
+
+//function assignOld(path, subject, value, overwrite) {
+//    var type = TYPE,
+//        has = OBJECT.contains,
+//        array = type.array,
+//        object = type.object,
+//        apply = type.assign,
+//        parent = subject,
+//        numericRe = NUMERIC_RE;
+//    var items, c, l, item, name, numeric, property, isArray, temp;
+//    
+//    if (object(parent) || array(parent)) {
+//        eachPath(path, getItemsCallback, items = []);
+//        
+//        if (items.length) {
+//            name = items[0];
+//            items.splice(0, 1);
+//            
+//            for (c = -1, l = items.length; l--;) {
+//                item = items[++c];
+//                numeric = numericRe.test(item);
+//                
+//                // finalize
+//                if (has(parent, name)) {
+//                    property = parent[name];
+//                    isArray = array(property);
+//                    
+//                    // replace property into object or array
+//                    if (!isArray && !object(property)) {
+//                        if (numeric) {
+//                            property = [property];
+//                        }
+//                        else {
+//                            temp = property;
+//                            property = {};
+//                            property[""] = temp;
+//                        }
+//                    }
+//                    // change property to object to support "named" property
+//                    else if (isArray && !numeric) {
+//                        property = apply({}, property);
+//                        delete property.length;
+//                    }
+//                    
+//                }
+//                else {
+//                    property = numeric ? [] : {};
+//                }
+//                
+//                parent = parent[name] = property;
+//                name = item;
+//                
+//            }
+//            
+//            if (overwrite !== true && has(parent, name)) {
+//                property = parent[name];
+//                
+//                // append
+//                if (array(property)) {
+//                    parent = property;
+//                    name = parent.length;
+//                }
+//                else {
+//                    parent = parent[name] = [property];
+//                    name = 1;
+//                }
+//            }
+//            
+//            parent[name] = value;
+//    
+//            parent = value = property = temp = null;
+//            
+//            return true;
+//        
+//        }
+//        
+//        
+//    }
+//    return false;
+//}
 
 
 function removeCallback(item, last, operation) {

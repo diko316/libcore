@@ -19,8 +19,16 @@ function empty() {
 }
 
 function isValidObject(target) {
-    var type = TYPE;
-    return type.object(target) || type.method(target);
+    var T = TYPE;
+    
+    switch (T.signature(target)) {
+    case T.REGEX:
+    case T.DATE:
+    case T.ARRAY:
+    case T.OBJECT:
+    case T.METHOD: return true;
+    }
+    return false;
 }
 
 /**

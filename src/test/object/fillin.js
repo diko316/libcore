@@ -30,20 +30,18 @@ describe('Apply properties of [source] object to [target] object only if ' +
         });
         
         
-        it('1. Should only accept [target] Native Javascript Object or ' +
-           'Function parameter.',
+        it('1. Should only accept [target] Native Javascript Object parameter.',
            () => {
                 expect(() => lib.fillin(null, filler)).toThrow();
-                expect(() => lib.fillin(new Date(), filler)).toThrow();
+                expect(() => lib.fillin(new Date(), filler)).not.toThrow();
                 expect(() => lib.fillin(undefined, filler)).toThrow();
                 expect(() => lib.fillin(1, filler)).toThrow();
            });
         
-        it('2. Should only accept [source] Native Javascript Object or ' +
-           'Function parameter.',
+        it('2. Should only accept [source] Native Javascript Object parameter.',
            () => {
                 expect(() => lib.fillin(subject, null)).toThrow();
-                expect(() => lib.fillin(subject, new Date())).toThrow();
+                expect(() => lib.fillin(subject, new Date())).not.toThrow();
                 expect(() => lib.fillin(subject, undefined)).toThrow();
                 expect(() => lib.fillin(subject, 1)).toThrow();
                 expect(() => lib.fillin(subject, filler)).not.toThrow();

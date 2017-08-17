@@ -3,39 +3,35 @@
 var DETECTED = require('./detect.js'),
     validSignature = DETECTED.validSignature,
     OBJECT_SIGNATURE = '[object Object]',
+    ARRAY_SIGNATURE = '[object Array]',
     NULL_SIGNATURE = '[object Null]',
+    UNDEFINED_SIGNATURE = '[object Undefined]',
     NUMBER_SIGNATURE = '[object Number]',
     STRING_SIGNATURE = '[object String]',
     BOOLEAN_SIGNATURE = '[object Boolean]',
+    METHOD_SIGNATURE = '[object Function]',
+    DATE_SIGNATURE = '[object Date]',
+    REGEX_SIGNATURE = '[object RegExp]',
     STRING = 'string',
     NUMBER = 'number',
     BOOLEAN = 'boolean',
     OBJECT = Object,
     O = OBJECT.prototype,
     toString = O.toString,
-    isSignature = validSignature ?
-                    objectSignature : ieObjectSignature;
+    isSignature = objectSignature;
 
 /** is object signature **/
 function objectSignature(subject) {
-    if (typeof subject === NUMBER && !isFinite(subject)) {
+    if (subject === undefined) {
+        return UNDEFINED_SIGNATURE;
+    }
+    
+    if (subject === null ||
+        (typeof subject === NUMBER && !isFinite(subject))) {
         return NULL_SIGNATURE;
     }
+    
     return toString.call(subject);
-}
-
-function ieObjectSignature(subject) {
-    switch (true) {
-    case subject === null:
-    case typeof subject === NUMBER && !isFinite(subject):
-        return NULL_SIGNATURE;
-    
-    case subject === undefined:
-        return '[object Undefined]';
-    
-    default:
-        return toString.call(subject);
-    }
 }
 
 function isType(subject, type) {
@@ -130,27 +126,39 @@ function isScalar(subject) {
 
 /** is function **/
 function isFunction(subject) {
-    return toString.call(subject) === '[object Function]';
+    return toString.call(subject) === METHOD_SIGNATURE;
 }
 
 /** is array **/
 function isArray(subject, notEmpty) {
-    return toString.call(subject) === '[object Array]' &&
+    return toString.call(subject) === ARRAY_SIGNATURE &&
             (notEmpty !== true || subject.length !== 0);
 }
 
 /** is date **/
 function isDate(subject) {
-    return toString.call(subject) === '[object Date]';
+    return toString.call(subject) === DATE_SIGNATURE;
 }
 
 /** is regexp **/
 function isRegExp(subject) {
-    return toString.call(subject) === '[object RegExp]';
+    return toString.call(subject) === REGEX_SIGNATURE;
 }
 
 
 module.exports = {
+    OBJECT: OBJECT_SIGNATURE,
+    ARRAY: ARRAY_SIGNATURE,
+    NULL: NULL_SIGNATURE,
+    UNDEFINED: UNDEFINED_SIGNATURE,
+    NUMBER: NUMBER_SIGNATURE,
+    STRING: STRING_SIGNATURE,
+    BOOLEAN: BOOLEAN_SIGNATURE,
+    METHOD: METHOD_SIGNATURE,
+    FUNCTION: METHOD_SIGNATURE,
+    DATE: DATE_SIGNATURE,
+    REGEX: REGEX_SIGNATURE,
+    
     signature: isSignature,
     
     object: validSignature ?

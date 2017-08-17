@@ -18,12 +18,11 @@ describe('Remaps properties of an object into new property of another object' +
             };
         });
         
-        it('1. Should only accept Native Javascript Object or Function ' +
-            ' "target" parameter.',
+        it('1. Should only accept Native Javascript Object "target" parameter.',
             () => {
                 expect(() => lib.rehash(null, source, {})).toThrow();
                 
-                expect(() => lib.rehash(new Date(), source, {})).toThrow();
+                expect(() => lib.rehash(new Date(), source, {})).not.toThrow();
                 
                 expect(() => lib.rehash(1, source, {})).toThrow();
                 
@@ -35,12 +34,11 @@ describe('Remaps properties of an object into new property of another object' +
                     not.toThrow();
             });
         
-        it('2. Should only accept Native Javascript Object or Function ' +
-            ' "source" parameter.',
+        it('2. Should only accept Native Javascript Object "source" parameter.',
             () => {
                 expect(() => lib.rehash(target, null, {})).toThrow();
                 
-                expect(() => lib.rehash(target, new Date(), {})).toThrow();
+                expect(() => lib.rehash(target, new Date(), {})).not.toThrow();
                 
                 expect(() => lib.rehash(target, 1, {})).toThrow();
                 

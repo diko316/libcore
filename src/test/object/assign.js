@@ -27,7 +27,7 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('2. Should accept Function as first "target" parameter.',
+        it('2. Should accept Native Object as first "target" parameter.',
             () => {
                 var target = function () {},
                     source = subject;
@@ -39,7 +39,7 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('3. Should not accept non-Function or non-Object as ' +
+        it('3. Should not accept non-Native Object as ' +
             'first "target" parameter.',
             () => {
                 
@@ -48,7 +48,7 @@ describe('Apply properties of source object to target object using ' +
                 expect(() => lib.assign(null, source)).toThrow();
                 expect(() => lib.assign("null", source)).toThrow();
                 expect(() => lib.assign(1056, source)).toThrow();
-                expect(() => lib.assign(new Date(), source)).toThrow();
+                expect(() => lib.assign(new Date(), source)).not.toThrow();
                 
             });
         
@@ -62,7 +62,7 @@ describe('Apply properties of source object to target object using ' +
                     
             });
         
-        it('5. Should accept Function as 2nd "source" parameter.',
+        it('5. Should accept Native Object as 2nd "source" parameter.',
             () => {
                 var target = {},
                     source = fnSubject;
@@ -74,7 +74,7 @@ describe('Apply properties of source object to target object using ' +
                     
             });
         
-        it('6. Should not accept non-Function or non-Object as ' +
+        it('6. Should not accept non-Native Object as ' +
             '2nd "source" parameter.',
             () => {
                 
@@ -83,11 +83,11 @@ describe('Apply properties of source object to target object using ' +
                 expect(() => lib.assign(target, null)).toThrow();
                 expect(() => lib.assign(target, "null")).toThrow();
                 expect(() => lib.assign(target, 1056)).toThrow();
-                expect(() => lib.assign(target, new Date())).toThrow();
+                expect(() => lib.assign(target, new Date())).not.toThrow();
                 
             });
         
-        it('7. Should accept 3rd optional "defaults" Object parameter.',
+        it('7. Should accept 3rd optional "defaults" Native Object parameter.',
             () => {
                 var target = {},
                     source = subject,
@@ -109,7 +109,8 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('8. Should not accept non-Object 3rd optional "defaults" parameter.',
+        it('8. Should not accept non-Native Object 3rd optional ' +
+           '"defaults" parameter.',
             () => {
                 var target = {},
                     source = subject;
