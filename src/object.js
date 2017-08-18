@@ -11,7 +11,8 @@ var Obj = Object,
     TYPE = require("./type.js"),
     STRING = require("./string.js"),
     OHasOwn = O.hasOwnProperty,
-    NUMERIC_RE = /^[0-9]*$/;
+    NUMERIC_RE = /^[0-9]*$/,
+    ARRAY_INDEX_RE = /^[1-9][0-9]*|0$/;
     
 
 function empty() {
@@ -19,14 +20,15 @@ function empty() {
 }
 
 function isValidObject(target) {
-    var T = TYPE;
+    var T = TYPE,
+        signature = T.signature(target);
     
-    switch (T.signature(target)) {
+    switch (signature) {
     case T.REGEX:
     case T.DATE:
     case T.ARRAY:
     case T.OBJECT:
-    case T.METHOD: return true;
+    case T.METHOD: return signature;
     }
     return false;
 }
@@ -608,6 +610,28 @@ function onEachClonedProperty(value, name) {
     context[0][name] = value;
 }
 
+function onMaxNumericIndex(value, name, context) {
+    if (ARRAY_INDEX_RE.test(name)) {
+        context[0] = Math.max(1 * name, context[0]);
+    }
+}
+
+function maxNumericIndex(subject) {
+    var context;
+    
+    if (TYPE.array(subject)) {
+        return subject.length - 1;
+    }
+    
+    if (isValidObject(subject)) {
+        
+        context = [-1];
+        EACH(subject, onMaxNumericIndex, context);
+        return context[0];
+    }
+    return false;
+}
+
 
 module.exports = {
     each: EACH,
@@ -618,6 +642,7 @@ module.exports = {
     clone: clone,
     compare: compare,
     fillin: fillin,
-    urlFill: jsonFill,
-    clear: clear
+    //urlFill: jsonFill,
+    clear: clear,
+    maxObjectIndex: maxNumericIndex
 };

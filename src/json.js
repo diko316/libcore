@@ -3,6 +3,7 @@
 var TYPE = require("./type.js"),
     OBJECT = require("./object.js"),
     NUMERIC_RE = /^([1-9][0-9]*|0)$/,
+    ARRAY_INDEX_RE = /^([1-9][0-9]*|0|)$/,
     ERROR_PATH_INVALID = 'Invalid [path] parameter.',
     START = "start",
     START_ESCAPED = "start_escaped",
@@ -198,7 +199,6 @@ var TYPE = require("./type.js"),
             "dq": QUEUE
         }
     };
-    
 
 
 function eachPath(path, callback, arg1, arg2, arg3, arg4, arg5) {
@@ -668,17 +668,18 @@ function compare(path, object1, object2) {
 
 function fill(path, subject, value, overwrite) {
     var T = TYPE,
+        O = OBJECT,
         typeArray = T.ARRAY,
-        typeObject = T.OBJECT,
-        array = T.array,
         object = T.object,
-        signature = T.signature,
-        apply = OBJECT.assign,
-        numericRe = NUMERIC_RE,
-        iswritable = isJSONWritable,
-        U = void(0);
-    var parent, c, l, item, type, isArray,
-        property, numeric, writable;
+        getMax = O.maxObjectIndex,
+        apply = O.assign,
+        has = O.contains,
+        arrayIndexRe = ARRAY_INDEX_RE,
+        iswritable = isJSONWritable;
+    var parent, c, l, item, parentIndex,
+        property, arrayIndex, writable;
+        
+    
     
     if (!T.string(path)) {
         throw new Error(ERROR_PATH_INVALID);
@@ -691,49 +692,77 @@ function fill(path, subject, value, overwrite) {
     
     // unable to create items from path
     path = parsePath(path);
-    if (!T.array(path)) {
+    if (!path || !path.length) {
         return false;
     }
     
     parent = subject;
-    for (c = -1, l = path.length; l--;) {
+    parentIndex = path[0];
+    
+    // finalize parent index
+    if (!parentIndex) {
+        parentIndex = getMax(parent) + 1;
+    }
+    
+    l = path.length -1;
+    
+    for (c = 0; l--;) {
         item = path[++c];
-        type = signature(item);
-        numeric = numericRe.test(item);
         
-        // finalize property and contain current value
-        if (item in parent) {
-            property = parent[item];
+        // only determine if arrayIndex or not,
+        //      resolve this later if it will turn into parentIndex
+        arrayIndex = arrayIndexRe.test(item);
+        
+        // finalize property
+        if (has(parent, parentIndex)) {
+            property = parent[parentIndex];
             writable = iswritable(property);
             
             // recreate array into object to support "named" property
-            if (writable === typeArray && !numeric) {
+            if (writable === typeArray && !arrayIndex) {
                 property = apply({}, property);
                 delete property.length;
                 
             }
             // contain current property
             else if (!writable) {
-                property = numeric ?
+                property = arrayIndex ?
                     [property] : {"": property};
             }
-            
+
         }
-        // populate property by guessing it from propertyName
+        // populate
         else {
-            property = numeric ? [] : {};
+            property = arrayIndex ? [] : {};
         }
+        //console.log('add ', parentIndex, ' to ', parent, ' = ', property);
+        parent = parent[parentIndex] = property;
+        parentIndex = item;
         
-        // finalize parent
-        parent = parent[item] = property;
-        
-        // empty item = create index
+        // resolve empty parentIndex
         if (!item) {
-            
+            parentIndex = getMax(parent) + 1;
         }
         
     }
     
+    // if not overwrite, then fill-in value in array or object
+    //if (overwrite !== true && has(parent, parentIndex)) {
+    //    property = parent[parentIndex];
+    //    
+    //    // append
+    //    if (T.array(property)) {
+    //        parent = property;
+    //        parentIndex = parent.length;
+    //    }
+    //    else {
+    //        parent = parent[parentIndex] = [property];
+    //        parentIndex = 1;
+    //    }
+    //}
+    
+    parent[parentIndex] = value;
+    //console.log('final: ', item, ' in ', parent, ' = ', value);
     
     return true;
     
