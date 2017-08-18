@@ -132,4 +132,123 @@ describe('Extract property names from a JSON path using ' +
                         ]);
                });
             
+            it('4. Should be able to extract empty bracket property ' +
+               'JSON path (e.g. "[].offset")',
+               () => {
+                
+                    var subject = "[].offset";
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            '',
+                            'offset'
+                        ]);
+                        
+                    subject = "offset[]";
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'offset',
+                            ''
+                        ]);
+                        
+                        
+                    subject = "grid[].offset";
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'grid',
+                            '',
+                            'offset'
+                        ]);
+               });
+            
+            it('5. Should be able to extract empty string in ' +
+               'bracket property JSON path (e.g. [""].offset)',
+               () => {
+                
+                    var subject = "[''].offset";
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            '',
+                            'offset'
+                        ]);
+                        
+                    subject = '[""].offset';
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            '',
+                            'offset'
+                        ]);
+                        
+               });
+            
+            it('6. Should be able to extract empty string in ' +
+               'quoted property JSON path (e.g. "".offset)',
+               () => {
+                
+                    var subject = "''.offset";
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            '',
+                            'offset'
+                        ]);
+                    
+                    
+                    subject = "offset.''";
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'offset',
+                            ''
+                        ]);
+                        
+                    subject = '"".offset';
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            '',
+                            'offset'
+                        ]);
+                        
+                        
+                    subject = 'offset.""';
+                    
+                    expect(() => lib.jsonParsePath(subject)).
+                        not.toThrow();
+                        
+                    expect(lib.jsonParsePath(subject)).
+                        toEqual([
+                            'offset',
+                            ''
+                        ]);
+                        
+               });
         });

@@ -1703,18 +1703,55 @@ var TYPE = __webpack_require__(0),
     START_ESCAPED = "start_escaped",
     QUEUE = "queue",
     END = "end",
+    END_EMPTY = "end_empty",
     STATE = {
         "start": {
             "[": "bracket_start",
+            "'": "any_sq_start",
+            '"': "any_dq_start",
             "default": "any",
             "\\": "any_escape"
         },
         
         "bracket_start": {
+            "]": "property_end",
             "'": "sq_start",
             '"': "dq_start",
             "default": "bracket_any"
         },
+        
+        "any_sq_start": {
+            "'": "property_end",
+            "\\": "any_sq_escape",
+            "default": "any_sq"
+        },
+        
+        "any_sq": {
+            "'": "property_end",
+            "\\": "any_sq_escape",
+            "default": "any_sq"
+        },
+        
+        "any_sq_escape": {
+            "default": "any_sq"
+        },
+        
+        "any_dq_start": {
+            '"': "property_end",
+            "\\": "any_dq_escape",
+            "default": "any_dq"
+        },
+        
+        "any_dq": {
+            '"': "property_end",
+            "\\": "any_dq_escape",
+            "default": "any_dq"
+        },
+        
+        "any_dq_escape": {
+            "default": "any_dq"
+        },
+        
         "sq_start": {
             "'": "bracket_end",
             "\\": "sq_escape",
@@ -1777,6 +1814,36 @@ var TYPE = __webpack_require__(0),
             "any_escape": START_ESCAPED
         },
         
+        "any_sq_start": {
+            "any_sq": START,
+            "property_end": END_EMPTY
+            
+        },
+        
+        "any_sq": {
+            "any_sq": QUEUE,
+            "property_end": END
+        },
+        
+        "any_sq_escape": {
+            "any_sq": QUEUE
+        },
+        
+        "any_dq_start": {
+            "any_dq": START,
+            "property_end": END_EMPTY
+            
+        },
+        
+        "any_dq": {
+            "any_dq": QUEUE,
+            "property_end": END
+        },
+        
+        "any_dq_escape": {
+            "any_dq": QUEUE
+        },
+        
         "any": {
             "any": QUEUE,
             "start": END,
@@ -1789,7 +1856,8 @@ var TYPE = __webpack_require__(0),
         },
         
         "bracket_start": {
-            "bracket_any": START
+            "bracket_any": START,
+            "property_end": END_EMPTY
         },
         
         "bracket_any": {
@@ -1803,7 +1871,7 @@ var TYPE = __webpack_require__(0),
         
         "sq_start": {
             "sq": START,
-            "bracket_end": END
+            "bracket_end": END_EMPTY
         },
         "sq": {
             "sq": QUEUE,
@@ -1815,7 +1883,7 @@ var TYPE = __webpack_require__(0),
         
         "dq_start": {
             "dq": START,
-            "bracket_end": END
+            "bracket_end": END_EMPTY
         },
         "dq": {
             "dq": QUEUE,
@@ -1836,9 +1904,11 @@ function eachPath(path, callback, arg1, arg2, arg3, arg4, arg5) {
         start_escaped = START_ESCAPED,
         queue = QUEUE,
         end = END,
+        end_empty = END_EMPTY,
         DEFAULT = "default";
     var c, l, chr, state, stateObject, items, len, last,
-        next, actionObject, buffer, bl, buffered, pending, start_queue;
+        next, actionObject, buffer, bl, buffered, pending,
+        start_queue, restart;
     
     if (!T.string(path)) {
         throw new Error(ERROR_PATH_INVALID);
@@ -1875,7 +1945,7 @@ function eachPath(path, callback, arg1, arg2, arg3, arg4, arg5) {
         if (state in action) {
             actionObject = action[state];
             if (next in actionObject) {
-                start_queue = false;
+                start_queue = restart = false;
                 
                 switch (actionObject[next]) {
                 
@@ -1918,6 +1988,16 @@ function eachPath(path, callback, arg1, arg2, arg3, arg4, arg5) {
                         items[len++] = buffer.join('');
                         buffer = bl = false;
                     break;
+                case end_empty:
+                        if (buffer !== false) {
+                            return false;
+                        }
+                        items[len++] = '';
+                        
+                        if (path === 'offset.') {
+                            console.log("created empty!", path, " = ", items);
+                        }
+                    break;
                 }
             }
         }
@@ -1927,6 +2007,10 @@ function eachPath(path, callback, arg1, arg2, arg3, arg4, arg5) {
         stateObject = map[state];
         
         if (pending < len - 1) {
+            if (path === 'offset.') {
+                console.log(path, ' = ', items, " pending ", pending, " len: ", len);
+                console.log("    calling: ", items[pending]);
+            }
             if (callback(items[pending++],
                         false,
                         arg1,
@@ -1937,17 +2021,27 @@ function eachPath(path, callback, arg1, arg2, arg3, arg4, arg5) {
                 return true;
             }
         }
-        
-        if (last && pending < len) {
-            if (callback(items[pending++],
-                        true,
-                        arg1,
-                        arg2,
-                        arg3,
-                        arg4,
-                        arg5) === false) {
-                return true;
+        // last
+        if (last) {
+            if (path === 'offset.') {
+                console.log(path, ' = ', items, " pending ", pending, " len: ", len);
             }
+            l = len - pending;
+            for (; l--;) {
+                if (path === 'offset.') {
+                    console.log("    last calling: ", items[pending]);
+                }
+                if (callback(items[pending++],
+                            !l,
+                            arg1,
+                            arg2,
+                            arg3,
+                            arg4,
+                            arg5) === false) {
+                    return true;
+                }
+            }
+            break;
         }
 
     }
@@ -1963,7 +2057,7 @@ function onParsePath(property, last, context) {
 function parsePath(path) {
     var items = [];
     
-    return eachPath(path, onParsePath, items) ?
+    return eachPath(path, onParsePath, items) && items.length ?
                 items : null;
     
 }
@@ -2004,6 +2098,18 @@ function isWritable(subject) {
     case T.ARRAY:
     case T.OBJECT:
     case T.METHOD:
+        return signature;
+    }
+    return false;
+}
+
+function isJSONWritable(subject) {
+    var T = TYPE,
+        signature = T.signature(subject);
+    
+    switch (signature) {
+    case T.ARRAY:
+    case T.OBJECT:
         return signature;
     }
     return false;
@@ -2068,8 +2174,7 @@ function onPopulatePath(item, last, context) {
     }
    
     return success;
-    
-    
+
 }
 
 function assign(path, subject, value, overwrite) {
@@ -2255,13 +2360,77 @@ function compare(path, object1, object2) {
     return OBJECT.compare(find(path, object1), object2);
 }
 
+
 function fill(path, subject, value, overwrite) {
-    var T = TYPE;
+    var T = TYPE,
+        typeArray = T.ARRAY,
+        typeObject = T.OBJECT,
+        array = T.array,
+        object = T.object,
+        signature = T.signature,
+        apply = OBJECT.assign,
+        numericRe = NUMERIC_RE,
+        iswritable = isJSONWritable,
+        U = void(0);
+    var parent, c, l, item, type, isArray,
+        property, numeric, writable;
     
     if (!T.string(path)) {
         throw new Error(ERROR_PATH_INVALID);
     }
     
+    // root subject should be an object
+    if (!object(subject)) {
+        return false;
+    }
+    
+    // unable to create items from path
+    path = parsePath(path);
+    if (!T.array(path)) {
+        return false;
+    }
+    
+    parent = subject;
+    for (c = -1, l = path.length; l--;) {
+        item = path[++c];
+        type = signature(item);
+        numeric = numericRe.test(item);
+        
+        // finalize property and contain current value
+        if (item in parent) {
+            property = parent[item];
+            writable = iswritable(property);
+            
+            // recreate array into object to support "named" property
+            if (writable === typeArray && !numeric) {
+                property = apply({}, property);
+                delete property.length;
+                
+            }
+            // contain current property
+            else if (!writable) {
+                property = numeric ?
+                    [property] : {"": property};
+            }
+            
+        }
+        // populate property by guessing it from propertyName
+        else {
+            property = numeric ? [] : {};
+        }
+        
+        // finalize parent
+        parent = parent[item] = property;
+        
+        // empty item = create index
+        if (!item) {
+            
+        }
+        
+    }
+    
+    
+    return true;
     
 }
 
