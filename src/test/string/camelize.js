@@ -13,5 +13,19 @@ describe('Converts String [subject] to Camel cased String using ' +
             
                 expect(() => lib.camelize('ads-b-ds')).not.toThrow();
                 
+                expect(lib.camelize('ads-b-ds')).toBe('adsBDs');
+                
+                expect(lib.camelize('ads-)(*b_%+-ds')).toBe('adsBDs');
+                
+           });
+        
+        it('2. Should not accept non-String [subject] and ' +
+           'throw error instead.',
+           () => {
+            
+                expect(() => lib.camelize(1)).toThrow();
+                expect(() => lib.camelize(null)).toThrow();
+                expect(() => lib.camelize(new Date())).toThrow();
+                
            });
     });

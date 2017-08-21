@@ -20,6 +20,7 @@ require("./string/decode64.js");
 require("./string/utf2bin.js");
 require("./string/bin2utf.js");
 require("./string/camelize.js");
+require("./string/uncamelize.js");
 
 require("./object/each.js");
 require("./object/assign.js");
