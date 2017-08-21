@@ -104,7 +104,8 @@ describe('Fill [subject] Object with property or array item with [value] ' +
             
                 var value = { name: "subitem" },
                     firstValue = { name: "first value" },
-                    anotherRow = { id: "row2" };
+                    anotherRow = { id: "row2" },
+                    anotherRow2 = { id: "row3" };
                 
                 expect(() => lib.jsonFill('grid.rows[].subitems[]',
                                           subject,
@@ -125,10 +126,16 @@ describe('Fill [subject] Object with property or array item with [value] ' +
                                     subject,
                                     anotherRow)).
                         toBe(true);
+                        
+                expect(lib.jsonFill('grid.rows[]',
+                                    subject,
+                                    anotherRow2)).
+                        toBe(true);
                 
                 expect(subject.grid.rows[0].subitems[0]).toBe(firstValue);
                 expect(subject.grid.rows[1].subitems[0]).toBe(value);
                 expect(subject.grid.rows[2]).toBe(anotherRow);
+                expect(subject.grid.rows[3]).toBe(anotherRow2);
             
            });
     });

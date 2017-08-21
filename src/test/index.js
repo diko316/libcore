@@ -15,6 +15,12 @@ require("./type/date.js");
 require("./type/regex.js");
 require("./type/type.js");
 
+require("./string/encode64.js");
+require("./string/decode64.js");
+require("./string/utf2bin.js");
+require("./string/bin2utf.js");
+require("./string/camelize.js");
+
 require("./object/each.js");
 require("./object/assign.js");
 require("./object/fillin.js");

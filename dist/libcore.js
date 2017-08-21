@@ -548,97 +548,6 @@ function applyFillin(value, name) {
     target = null;
 }
 
-function jsonFill(root, path, value, overwrite) {
-    var dimensions = STRING.jsonPath(path),
-        type = TYPE,
-        object = type.object,
-        array = type.array,
-        has = contains,
-        apply = assign,
-        numericRe = NUMERIC_RE,
-        parent = root,
-        name = path;
-    var numeric, item, c, l, property, temp, isArray;
-    
-    if (dimensions) {
-        name = dimensions[0];
-        dimensions.splice(0, 1);
-            
-        for (c = -1, l = dimensions.length; l--;) {
-            item = dimensions[++c];
-            numeric = numericRe.test(item);
-            
-            // replace name
-            //if (!name && array(parent)) {
-            //    name = parent.length.toString(10);
-            //}
-            
-            // finalize property
-            if (has(parent, name)) {
-                property = parent[name];
-                isArray = array(property);
-                
-                // replace property into object or array
-                if (!isArray && !object(property)) {
-                    if (numeric) {
-                        property = [property];
-                    }
-                    else {
-                        temp = property;
-                        property = {};
-                        property[""] = temp;
-                    }
-                }
-                // change property to object to support "named" property
-                else if (isArray && !numeric) {
-                    property = apply({}, property);
-                    delete property.length;
-                }
-            }
-            else {
-                property = numeric ? [] : {};
-            }
-            
-            parent = parent[name] = property;
-            
-            // finalize name
-            if (!item) {
-                if (array(parent)) {
-                    item = parent.length;
-                }
-                else if (0 in parent) {
-                    item = '0';
-                }
-            }
-            name = item;
-        }
-
-    }
-
-    // if not overwrite, then fill-in value in array or object
-    if (overwrite !== true && has(parent, name)) {
-        property = parent[name];
-        
-        // append
-        if (array(property)) {
-            parent = property;
-            name = parent.length;
-        }
-        else {
-            parent = parent[name] = [property];
-            name = 1;
-        }
-    }
-    
-    parent[name] = value;
-    
-    parent = value = property = temp = null;
-    
-    return root;
-    
-}
-
-
 /**
  * Builds instance of "Class" parameter without executing its constructor.
  * @name libcore.instantiate
@@ -1209,13 +1118,16 @@ var HALF_BYTE = 0x80,
     SIX_BITS = 0x3f,
     ONE_BYTE = 0xff,
     fromCharCode = String.fromCharCode,
+    TYPE = __webpack_require__(0),
     BASE64_MAP =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+    NOT_BASE64_RE = /[^a-zA-Z0-9\+\/\=]/g,
     BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/,
     CAMEL_RE = /[^a-z]+[a-z]/ig,
-    UNCAMEL_RE = /\-*[A-Z]/g;
+    UNCAMEL_RE = /\-*[A-Z]/g,
+    INVALID_SUBJECT = 'Invalid [subject] parameter.';
 
-function base64Encode(str) {
+function base64Encode(subject) {
     var map = BASE64_MAP,
         buffer = [],
         bl = 0,
@@ -1224,12 +1136,16 @@ function base64Encode(str) {
         pad = map.charAt(64);
     var l, total, code, flag, end, chr;
     
+    if (!TYPE.string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
     // decode to ascii
-    str = utf16ToUtf8(str);
-    l = total = str.length;
+    subject = utf16ToUtf8(subject);
+    l = total = subject.length;
     
     for (; l--;) {
-        code = str.charCodeAt(++c);
+        code = subject.charCodeAt(++c);
         flag = c % 3;
         
         switch (flag) {
@@ -1266,7 +1182,7 @@ function base64Encode(str) {
     
 }
 
-function base64Decode(str) {
+function base64Decode(subject) {
     var map = BASE64_MAP,
         oneByte = ONE_BYTE,
         buffer = [],
@@ -1275,11 +1191,15 @@ function base64Decode(str) {
         code2str = fromCharCode;
     var l, code, excess, chr, flag;
     
-    str = str.replace(BASE64_EXCESS_REMOVE_RE, '');
-    l = str.length;
+    if (!TYPE.string(subject, true) || NOT_BASE64_RE.test(subject)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    subject = subject.replace(BASE64_EXCESS_REMOVE_RE, '');
+    l = subject.length;
     
     for (; l--;) {
-        code = map.indexOf(str.charAt(++c));
+        code = map.indexOf(subject.charAt(++c));
         flag = c % 4;
         
         switch (flag) {
@@ -1307,23 +1227,28 @@ function base64Decode(str) {
         }
     }
     
+    //return decodeURIComponent(escape(buffer.join("")));
+    
     return utf8ToUtf16(buffer.join(""));
+    //return binbuffer.join("");
     
 }
 
 
-function utf16ToUtf8(str) {
+function utf16ToUtf8(subject) {
     var half = HALF_BYTE,
         sixBits = SIX_BITS,
         code2char = fromCharCode,
         utf8 = [],
-        ul = 0,
-        c = -1,
-        l = str.length;
-    var code;
+        ul = 0;
+    var code, c, l;
     
-    for (; l--;) {
-        code = str.charCodeAt(++c);
+    if (!TYPE.string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    for (c = -1, l = subject.length; l--;) {
+        code = subject.charCodeAt(++c);
         
         if (code < half) {
             utf8[ul++] = code2char(code);
@@ -1340,7 +1265,7 @@ function utf16ToUtf8(str) {
         else {
             l--;
             code = 0x10000 + (((code & 0x3ff)<<10)
-                      | (str.charCodeAt(++c) & 0x3ff));
+                      | (subject.charCodeAt(++c) & 0x3ff));
             
             utf8[ul++] = code2char(0xf0 | (code >> 18));
             utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
@@ -1353,133 +1278,62 @@ function utf16ToUtf8(str) {
     return utf8.join('');
 }
 
-function utf8ToUtf16(str) {
-    var half = HALF_BYTE,
-        sixBits = SIX_BITS,
-        code2char = fromCharCode,
-        utf16 = [],
-        M = Math,
-        min = M.min,
-        max = M.max,
-        ul = 0,
-        l = str.length,
-        c = -1;
-        
-    var code, whatsLeft;
+
+// based from https://gist.github.com/weishuaiwang/4221687
+function utf8ToUtf16(subject) {
+    var code2char = fromCharCode;
+    var utf16, ul, c, l, code;
     
-    for (; l--;) {
-        code = str.charCodeAt(++c);
-        
-        if (code < half) {
-            utf16[ul++] = code2char(code);
-        }
-        else if (code > 0xbf && code < 0xe0) {
-            utf16[ul++] = code2char((code & 0x1f) << 6 |
-                                    str.charCodeAt(c + 1) & sixBits);
-            whatsLeft = max(min(l - 1, 1), 0);
-            c += whatsLeft;
-            l -= whatsLeft;
-            
-        }
-        else if (code > 0xdf && code < 0xf0) {
-            utf16[ul++] = code2char((code & 0x0f) << 12 |
-                                    (str.charCodeAt(c + 1) & sixBits) << 6 |
-                                    str.charCodeAt(c + 2) & sixBits);
-            
-            whatsLeft = max(min(l - 2, 2), 0);
-            c += whatsLeft;
-            l -= whatsLeft;
-            
-        }
-        else {
-            
-            code = ((code & 0x07) << 18 |
-                    (str.charCodeAt(c + 1) & sixBits) << 12 |
-                    (str.charCodeAt(c + 2) & sixBits) << 6 |
-                    str.charCodeAt(c + 3) & sixBits) - 0x010000;
-            
-            utf16[ul++] = code2char(code >> 10 | 0xd800,
-                                    code & 0x03ff | 0xdc00);
-            
-            whatsLeft = max(min(l - 3, 3), 0);
-            c += whatsLeft;
-            l -= whatsLeft;
-            
+    if (!TYPE.string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    utf16 = [];
+    ul = 0;
+    for (c = -1, l = subject.length; l--;) {
+        code = subject.charCodeAt(++c);
+        switch (code >> 4) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            // 0xxxxxxx
+            utf16[ul++] = subject.charAt(c);
+            break;
+        case 12:
+        case 13:
+            // 110x xxxx 10xx xxxx
+            l--;
+            utf16[ul++] = code2char(((code & 0x1F) << 6) |
+                                    (subject.charCodeAt(++c) & 0x3F));
+            break;
+        case 14:
+            // 1110 xxxx10xx xxxx10xx xxxx
+            utf16[ul++] = code2char(((code & 0x0F) << 12) |
+                                    ((subject.charCodeAt(++c) & 0x3F) << 6) |
+                                    ((subject.charCodeAt(++c) & 0x3F) << 0));
+            l -= 2;
+            break;
         }
     }
     
-    return utf16.join('');
+    return utf16.join("");
 }
 
-function parseJsonPath(path) {
-    var dimensions = [],
-        dl = 0,
-        buffer = [],
-        bl = dl,
-        TRUE = true,
-        FALSE = false,
-        started = FALSE,
-        merge = FALSE;
-        
-    var c, l, item, last;
-
-    for (c = -1, l = path.length; l--;) {
-        item = path.charAt(++c);
-        last = !l;
-        
-        if (item === '[') {
-            if (started) {
-                break;
-            }
-            started = TRUE;
-            // has first buffer
-            if (bl) {
-                merge = TRUE;
-            }
-        }
-        else if (item === ']') {
-            // failed! return failed
-            if (!started) {
-                break;
-            }
-            started = FALSE;
-            merge = TRUE;
-        }
-        else {
-            buffer[bl++] = item;
-            if (last) {
-                merge = TRUE;
-            }
-        }
-        
-        if (merge) {
-            dimensions[dl++] = buffer.join("");
-            buffer.length = bl = 0;
-            merge = FALSE;
-        }
-        
-        // ended but parse failed
-        if (last) {
-            if (started || dl < 1) {
-                break;
-            }
-            return dimensions;
-        }
-    }
-    
-    return null;
-}
-
-function camelize(str) {
-    return str.replace(CAMEL_RE, applyCamelize);
+function camelize(subject) {
+    return subject.replace(CAMEL_RE, applyCamelize);
 }
 
 function applyCamelize(all) {
     return all.charAt(all.length - 1).toUpperCase();
 }
 
-function uncamelize(str) {
-    return str.replace(UNCAMEL_RE, applyUncamelize);
+function uncamelize(subject) {
+    return subject.replace(UNCAMEL_RE, applyUncamelize);
 }
 
 function applyUncamelize(all) {
@@ -1491,7 +1345,6 @@ module.exports = {
     "decode64": base64Decode,
     "utf2bin": utf16ToUtf8,
     "bin2utf": utf8ToUtf16,
-    "jsonPath": parseJsonPath,
     "camelize": camelize,
     "uncamelize": uncamelize
 };
