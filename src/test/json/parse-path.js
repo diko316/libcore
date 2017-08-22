@@ -39,6 +39,15 @@ describe('Extract property names from a JSON path using ' +
                     
                     expect(() => lib.jsonParsePath(subject)).
                         not.toThrow();
+                    
+                    expect(lib.jsonParsePath('[0]')).
+                        toEqual(['0']);
+                        
+                    expect(lib.jsonParsePath('[0].id')).
+                        toEqual(['0', 'id']);
+                        
+                    expect(lib.jsonParsePath('items[]')).
+                        toEqual(['items', '']);
                         
                     expect(lib.jsonParsePath(subject)).
                         toEqual(['grid', 'paging', 'offset']);

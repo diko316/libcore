@@ -27,6 +27,9 @@ describe('Retrieves Mixed value from a given JSON path using ' +
                             "label": "label3"
                         }]
                     },
+                    "0": {
+                        "index": "zero"
+                    },
                     "method": testFunction
                 };
                 
@@ -59,6 +62,9 @@ describe('Retrieves Mixed value from a given JSON path using ' +
                'extracted from [object] parameter.',
                () => {
                     expect(lib.jsonFind("grid", subject)).toBe(subject.grid);
+                    
+                    expect(lib.jsonFind("0.index", subject)).toBe("zero");
+                    
                     expect(lib.jsonFind("grid['paging']", subject)).
                                     toBe(subject.grid.paging);
                     expect(lib.jsonFind("grid['paging'].offset", subject)).

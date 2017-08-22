@@ -776,6 +776,33 @@ function fill(path, subject, value, overwrite) {
     
 }
 
+function existsCallback(item, last, context) {
+    var subject = context[0],
+        exists = isAccessible(subject, item);
+    
+    if (exists) {
+        context[0] = subject[item];
+    }
+    
+    if (last) {
+        context[1] = !!exists;
+    }
+    
+    return exists;
+}
+
+function exists(path, subject) {
+    var operation = [subject, false];
+    
+    eachPath(path, existsCallback, operation);
+    operation[0] = null;
+    
+    return operation[1];
+}
+
+
+
+
 module.exports = {
     jsonParsePath: parsePath,
     jsonFind: find,
@@ -784,5 +811,6 @@ module.exports = {
     jsonEach: eachPath,
     jsonSet: assign,
     jsonUnset: remove,
-    jsonFill: fill
+    jsonFill: fill,
+    jsonExists: exists
 };

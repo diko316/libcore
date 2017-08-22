@@ -8,7 +8,7 @@ describe('Sets registry [value] indexed with [name] using ' +
         
         beforeEach(() => {
             registry = lib.createRegistry();
-            registry.apply({
+            registry.assign({
                 "name": "diko",
                 "0": [{
                     "id": 101,
@@ -47,7 +47,7 @@ describe('Sets registry [value] indexed with [name] using ' +
                 expect(registry.get("3")).toBe("another");
            });
         
-        it('3. Should insert [value] indexed with String [name] parameter ' +
+        it('3. Should insert [value] indexed with Number [name] parameter ' +
            'returning registry object.',
            () => {
                 expect(() => registry.set(3, "new label")).not.toThrow();

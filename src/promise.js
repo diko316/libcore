@@ -225,7 +225,7 @@ OBJECT.assign(Promise, {
     resolve: resolve
 });
 
-// Polyfill if no promise
+// Polyfill if promise is not supported
 if (!TYPE.method(G.Promise)) {
     G.Promise = Promise;
 }

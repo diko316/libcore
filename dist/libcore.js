@@ -315,12 +315,14 @@ function isValidObject(target) {
  * @param {Object} [defaults] - object containing default properties
  *                          which will be assigned first to
  *                          target before source.
+ * @param {Boolean} [ownedOnly] - only assign properties owned by "source"
  * @returns {Object} target object from first parameter
  */
-function assign(target, source, defaults) {
+function assign(target, source, defaults, ownedOnly) {
     var onAssign = apply,
         is = isValidObject,
-        eachProperty = EACH;
+        eachProperty = EACH,
+        len = arguments.length;
     
     if (!is(target)) {
         throw new Error("Invalid [target] parameter.");
@@ -330,14 +332,22 @@ function assign(target, source, defaults) {
         throw new Error("Invalid [source] parameter.");
     }
     
-    if (is(defaults)) {
-        eachProperty(defaults, onAssign, target);
+    if (typeof defaults === 'boolean') {
+        ownedOnly = defaults;
+        len = 2;
     }
-    else if (arguments.length > 2) {
+    else {
+        ownedOnly = ownedOnly !== false;
+    }
+    
+    if (is(defaults)) {
+        eachProperty(defaults, onAssign, target, ownedOnly);
+    }
+    else if (len > 2) {
         throw new Error("Invalid [defaults] parameter.");
     }
     
-    eachProperty(source, onAssign, target);
+    eachProperty(source, onAssign, target, ownedOnly);
     
     return target;
 }
@@ -1678,7 +1688,7 @@ function fill(path, subject, value, overwrite) {
             }
 
         }
-        // force create child
+        // error! unable to replace root object
         else if (isSubjectArray && parent === subject && !arrayIndex) {
             throw new Error(ERROR_NATIVE_OBJECT);
         }
@@ -1686,7 +1696,7 @@ function fill(path, subject, value, overwrite) {
         else {
             property = arrayIndex ? [] : {};
         }
-        //console.log('add ', parentIndex, ' to ', parent, ' = ', property);
+        
         parent = parent[parentIndex] = property;
         parentIndex = item;
         
@@ -1713,11 +1723,37 @@ function fill(path, subject, value, overwrite) {
     //}
     
     parent[parentIndex] = value;
-    //console.log('final: ', item, ' in ', parent, ' = ', value);
     
     return true;
     
 }
+
+function existsCallback(item, last, context) {
+    var subject = context[0],
+        exists = isAccessible(subject, item);
+    
+    if (exists) {
+        context[0] = subject[item];
+    }
+    
+    if (last) {
+        context[1] = !!exists;
+    }
+    
+    return exists;
+}
+
+function exists(path, subject) {
+    var operation = [subject, false];
+    
+    eachPath(path, existsCallback, operation);
+    operation[0] = null;
+    
+    return operation[1];
+}
+
+
+
 
 module.exports = {
     jsonParsePath: parsePath,
@@ -1727,7 +1763,8 @@ module.exports = {
     jsonEach: eachPath,
     jsonSet: assign,
     jsonUnset: remove,
-    jsonFill: fill
+    jsonFill: fill,
+    jsonExists: exists
 };
 
 /***/ }),
@@ -2628,7 +2665,7 @@ OBJECT.assign(Promise, {
     resolve: resolve
 });
 
-// Polyfill if no promise
+// Polyfill if promise is not supported
 if (!TYPE.method(G.Promise)) {
     G.Promise = Promise;
 }
@@ -2648,6 +2685,7 @@ G = null;
 var TYPE = __webpack_require__(0),
     OBJECT = __webpack_require__(1),
     JSON_OP = __webpack_require__(4),
+    isString = TYPE.string,
     ERROR_NAME = 'Invalid [name] parameter.',
     ERROR_PATH = 'Invalid [path] parameter.';
 
@@ -2673,7 +2711,7 @@ Registry.prototype = {
     constructor: Registry,
     
     onApply: function (value) {
-        OBJECT.assign(this.data, value);
+        OBJECT.assign(this.data, value, true);
     },
     
     onSet: function (name, value) {
@@ -2730,27 +2768,32 @@ Registry.prototype = {
     },
     
     find: function (path) {
-        if (!TYPE.string(path)) {
+        if (!isString(path)) {
             throw new Error(ERROR_PATH);
         }
         
         return JSON_OP.jsonFind(path, this.data);
     },
     
-    insert: function (path) {
-        if (!TYPE.string(path)) {
+    insert: function (path, value) {
+        if (!isString(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        return JSON_OP.jsonFill(path, this.data, true);
+        JSON_OP.jsonFill(path, this.data, value, true);
+        
+        return this;
+    
     },
     
     remove: function (path) {
-        if (!TYPE.string(path)) {
+        if (!isString(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        return JSON_OP.jsonUnset(path, this.data);
+        JSON_OP.jsonUnset(path, this.data);
+        
+        return this;
     },
     
     exists: function (name) {
@@ -2761,7 +2804,15 @@ Registry.prototype = {
         return OBJECT.contains(this.data, name);
     },
     
-    apply: function(value) {
+    pathExists: function (path) {
+        if (!isString(path)) {
+            throw new Error(ERROR_PATH);
+        }
+        
+        return JSON_OP.jsonExists(path, this.data);
+    },
+    
+    assign: function(value) {
         var T = TYPE;
         
         switch (T.signature(value)) {

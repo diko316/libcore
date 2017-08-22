@@ -3,6 +3,7 @@
 var TYPE = require("./type.js"),
     OBJECT = require("./object.js"),
     JSON_OP = require("./json.js"),
+    isString = TYPE.string,
     ERROR_NAME = 'Invalid [name] parameter.',
     ERROR_PATH = 'Invalid [path] parameter.';
 
@@ -28,7 +29,7 @@ Registry.prototype = {
     constructor: Registry,
     
     onApply: function (value) {
-        OBJECT.assign(this.data, value);
+        OBJECT.assign(this.data, value, true);
     },
     
     onSet: function (name, value) {
@@ -85,27 +86,32 @@ Registry.prototype = {
     },
     
     find: function (path) {
-        if (!TYPE.string(path)) {
+        if (!isString(path)) {
             throw new Error(ERROR_PATH);
         }
         
         return JSON_OP.jsonFind(path, this.data);
     },
     
-    insert: function (path) {
-        if (!TYPE.string(path)) {
+    insert: function (path, value) {
+        if (!isString(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        return JSON_OP.jsonFill(path, this.data, true);
+        JSON_OP.jsonFill(path, this.data, value, true);
+        
+        return this;
+    
     },
     
     remove: function (path) {
-        if (!TYPE.string(path)) {
+        if (!isString(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        return JSON_OP.jsonUnset(path, this.data);
+        JSON_OP.jsonUnset(path, this.data);
+        
+        return this;
     },
     
     exists: function (name) {
@@ -116,7 +122,15 @@ Registry.prototype = {
         return OBJECT.contains(this.data, name);
     },
     
-    apply: function(value) {
+    pathExists: function (path) {
+        if (!isString(path)) {
+            throw new Error(ERROR_PATH);
+        }
+        
+        return JSON_OP.jsonExists(path, this.data);
+    },
+    
+    assign: function(value) {
         var T = TYPE;
         
         switch (T.signature(value)) {

@@ -4,7 +4,8 @@
 describe('Apply properties of source object to target object using ' +
         ' assign(target:Object|Function, ' +
                 'source:Object|Function, ' +
-                '[defaults:Object]) method',
+                '[defaults:Object, ' +
+                'ownedOnly:Boolean]) method',
     () => {
         
         var lib = global.libcore,

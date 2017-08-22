@@ -41,6 +41,14 @@ require("./json/clone.js");
 require("./json/set.js");
 require("./json/unset.js");
 require("./json/fill.js");
+require("./json/exists.js");
 
 require("./registry/get.js");
 require("./registry/set.js");
+require("./registry/assign.js");
+require("./registry/unset.js");
+require("./registry/exists.js");
+require("./registry/find.js");
+require("./registry/insert.js");
+require("./registry/remove.js");
+require("./registry/path-exists.js");

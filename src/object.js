@@ -42,12 +42,14 @@ function isValidObject(target) {
  * @param {Object} [defaults] - object containing default properties
  *                          which will be assigned first to
  *                          target before source.
+ * @param {Boolean} [ownedOnly] - only assign properties owned by "source"
  * @returns {Object} target object from first parameter
  */
-function assign(target, source, defaults) {
+function assign(target, source, defaults, ownedOnly) {
     var onAssign = apply,
         is = isValidObject,
-        eachProperty = EACH;
+        eachProperty = EACH,
+        len = arguments.length;
     
     if (!is(target)) {
         throw new Error("Invalid [target] parameter.");
@@ -57,14 +59,22 @@ function assign(target, source, defaults) {
         throw new Error("Invalid [source] parameter.");
     }
     
-    if (is(defaults)) {
-        eachProperty(defaults, onAssign, target);
+    if (typeof defaults === 'boolean') {
+        ownedOnly = defaults;
+        len = 2;
     }
-    else if (arguments.length > 2) {
+    else {
+        ownedOnly = ownedOnly !== false;
+    }
+    
+    if (is(defaults)) {
+        eachProperty(defaults, onAssign, target, ownedOnly);
+    }
+    else if (len > 2) {
         throw new Error("Invalid [defaults] parameter.");
     }
     
-    eachProperty(source, onAssign, target);
+    eachProperty(source, onAssign, target, ownedOnly);
     
     return target;
 }

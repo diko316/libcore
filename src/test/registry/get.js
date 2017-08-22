@@ -8,7 +8,7 @@ describe('Retrieves registry value based from [name] index using ' +
         
         beforeEach(() => {
             registry = lib.createRegistry();
-            registry.apply({
+            registry.assign({
                 "name": "diko",
                 "0": [{
                     "id": 101,
