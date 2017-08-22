@@ -22,6 +22,10 @@ require("./string/bin2utf.js");
 require("./string/camelize.js");
 require("./string/uncamelize.js");
 
+require("./array/union-list.js");
+require("./array/intersect-list.js");
+require("./array/difference-list.js");
+
 require("./object/each.js");
 require("./object/assign.js");
 require("./object/fillin.js");
@@ -30,7 +34,6 @@ require("./object/contains.js");
 require("./object/clone.js");
 require("./object/compare.js");
 
-
 require("./json/parse-path.js");
 require("./json/find.js");
 require("./json/compare.js");
@@ -38,3 +41,6 @@ require("./json/clone.js");
 require("./json/set.js");
 require("./json/unset.js");
 require("./json/fill.js");
+
+require("./registry/get.js");
+require("./registry/set.js");

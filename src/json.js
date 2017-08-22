@@ -4,6 +4,8 @@ var TYPE = require("./type.js"),
     OBJECT = require("./object.js"),
     NUMERIC_RE = /^([1-9][0-9]*|0)$/,
     ARRAY_INDEX_RE = /^([1-9][0-9]*|0|)$/,
+    ERROR_NATIVE_OBJECT = "Root [subject] requires native Object to accept " +
+                            "non-numeric property name.",
     ERROR_PATH_INVALID = 'Invalid [path] parameter.',
     START = "start",
     START_ESCAPED = "start_escaped",
@@ -670,12 +672,15 @@ function fill(path, subject, value, overwrite) {
     var T = TYPE,
         O = OBJECT,
         typeArray = T.ARRAY,
+        array = T.array,
         object = T.object,
         getMax = O.maxObjectIndex,
         apply = O.assign,
         has = O.contains,
         arrayIndexRe = ARRAY_INDEX_RE,
-        iswritable = isJSONWritable;
+        iswritable = isJSONWritable,
+        isSubjectArray = array(subject);
+        
     var parent, c, l, item, parentIndex,
         property, arrayIndex, writable;
         
@@ -686,7 +691,7 @@ function fill(path, subject, value, overwrite) {
     }
     
     // root subject should be an object
-    if (!object(subject)) {
+    if (!object(subject) && !isSubjectArray) {
         return false;
     }
     
@@ -731,11 +736,15 @@ function fill(path, subject, value, overwrite) {
             }
 
         }
+        // error! unable to replace root object
+        else if (isSubjectArray && parent === subject && !arrayIndex) {
+            throw new Error(ERROR_NATIVE_OBJECT);
+        }
         // populate
         else {
             property = arrayIndex ? [] : {};
         }
-        //console.log('add ', parentIndex, ' to ', parent, ' = ', property);
+        
         parent = parent[parentIndex] = property;
         parentIndex = item;
         
@@ -762,7 +771,6 @@ function fill(path, subject, value, overwrite) {
     //}
     
     parent[parentIndex] = value;
-    //console.log('final: ', item, ' in ', parent, ' = ', value);
     
     return true;
     

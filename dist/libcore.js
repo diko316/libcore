@@ -282,7 +282,7 @@ var Obj = Object,
     EACH = typeof Obj.getOwnPropertyNames === 'function' ?
                 es5each : es3each,
     TYPE = __webpack_require__(0),
-    STRING = __webpack_require__(5),
+    STRING = __webpack_require__(6),
     OHasOwn = O.hasOwnProperty,
     NUMERIC_RE = /^[0-9]*$/,
     ARRAY_INDEX_RE = /^[1-9][0-9]*|0$/;
@@ -940,643 +940,14 @@ ROOT = win = doc = null;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-var TYPE = __webpack_require__(0),
-    //DETECT = require('./detect.js'),
-    G = global,
-    // 1 = namespace, 4 = position, 5 = item
-    NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
-    POSITION_BEFORE = 1,
-    POSITION_AFTER = 2,
-    RUNNERS = {},
-    NAMESPACES = {},
-    NATIVE_SET_IMMEDIATE = !!G.setImmediate,
-    EXPORTS = {
-        register: set,
-        run: run,
-        middleware: middlewareNamespace,
-        setAsync: NATIVE_SET_IMMEDIATE ?
-                        nativeSetImmediate : timeoutAsync,
-        clearAsync: NATIVE_SET_IMMEDIATE ?
-                        nativeClearImmediate : clearTimeoutAsync
-    };
-    
-
-    
-function set(name, handler) {
-    var parsed = parseName(name),
-        list = RUNNERS;
-    var access, items;
-    
-    if (parsed && handler instanceof Function) {
-        name = parsed[1];
-        access = ':' + name;
-        if (!(access in list)) {
-            list[access] = {
-                name: name,
-                before: [],
-                after: []
-            };
-        }
-        
-        items = list[access][getPositionAccess(parsed[0])];
-        
-        items[items.length] = handler;
-    }
-    
-    return EXPORTS.chain;
-}
-
-
-function run(name, args, scope) {
-    var runners = get(name);
-    var c, l;
-
-    if (runners) {
-        if (typeof scope === 'undefined') {
-            scope = null;
-        }
-        if (!(args instanceof Array)) {
-            args = [];
-        }
-        
-        for (c = -1, l = runners.length; l--;) {
-            runners[++c].apply(scope, args);
-        }
-        
-    }
-    
-    return EXPORTS.chain;
-}
-
-function get(name) {
-    var list = RUNNERS,
-        parsed = parseName(name);
-    var access;
-    
-    if (parsed) {
-        access = ':' + parsed[1];
-        
-        if (access in list) {
-            return list[access][getPositionAccess(parsed[0])];
-            
-        }
-    }
-    
-    return void(0);
-}
-
-function getPositionAccess(input) {
-    return  input === POSITION_BEFORE ? 'before' : 'after';
-}
-
-function parseName(name) {
-    var match = TYPE.string(name) && name.match(NAME_RE);
-    var position, namespace;
-    
-    
-    
-    
-    if (match) {
-        namespace = match[1];
-        position = match[4] === 'before' ? POSITION_BEFORE : POSITION_AFTER;
-        //console.log('parsed ', name, ' = ', [position, (namespace || '') + match[5]]);
-        return [position, (namespace || '') + match[5]];
-        
-    }
-    
-    return void(0);
-    
-}
-
-function middlewareNamespace(name) {
-    var list = NAMESPACES;
-    var access, register, run;
- 
-    if (TYPE.string(name)) {
-        access = name + '.';
-        if (!(access in list)) {
-            run = createRunInNamespace(access);
-            register = createRegisterInNamespace(access);
-            list[access] = register.chain = run.chain = {
-                                                        run: run,
-                                                        register: register
-                                                    };
-        }
-        return list[access];
-    }
-    return void(0);
-}
-
-function createRunInNamespace(ns) {
-    function nsRun(name, args, scope) {
-        run(ns + name, args, scope);
-        return nsRun.chain;
-    }
-    return nsRun;
-}
-
-function createRegisterInNamespace(ns) {
-    function nsRegister(name, handler) {
-        set(ns + name, handler);
-        return nsRegister.chain;
-    }
-    return nsRegister;
-}
-
-
-function timeoutAsync(handler) {
-    return G.setTimeout(handler, 1);
-}
-
-function clearTimeoutAsync(id) {
-    return G.clearTimeout(id);
-}
-
-function nativeSetImmediate (fn) {
-    return G.setImmediate(fn);
-}
-
-function nativeClearImmediate(id) {
-    return G.clearImmediate(id);
-}
-
-
-module.exports = EXPORTS.chain = EXPORTS;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var HALF_BYTE = 0x80,
-    SIX_BITS = 0x3f,
-    ONE_BYTE = 0xff,
-    fromCharCode = String.fromCharCode,
-    TYPE = __webpack_require__(0),
-    BASE64_MAP =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-    NOT_BASE64_RE = /[^a-zA-Z0-9\+\/\=]/g,
-    BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/,
-    CAMEL_RE = /[^a-z]+[a-z]/ig,
-    UNCAMEL_RE = /\-*[A-Z]/g,
-    INVALID_SUBJECT = 'Invalid [subject] parameter.';
-
-function base64Encode(subject) {
-    var map = BASE64_MAP,
-        buffer = [],
-        bl = 0,
-        c = -1,
-        excess = false,
-        pad = map.charAt(64);
-    var l, total, code, flag, end, chr;
-    
-    if (!TYPE.string(subject, true)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    // decode to ascii
-    subject = utf16ToUtf8(subject);
-    l = total = subject.length;
-    
-    for (; l--;) {
-        code = subject.charCodeAt(++c);
-        flag = c % 3;
-        
-        switch (flag) {
-        case 0:
-            chr = map.charAt((code & 0xfc) >> 2);
-            excess = (code & 0x03) << 4;
-            break;
-        case 1:
-            chr = map.charAt(excess | (code & 0xf0) >> 4);
-            excess = (code & 0x0f) << 2;
-            break;
-        case 2:
-            chr = map.charAt(excess | (code & 0xc0) >> 6);
-            excess = code & 0x3f;
-        }
-        buffer[bl++] = chr;
-        
-        end = !l;
-        if ((end || flag === 2)) {
-            buffer[bl++] = map.charAt(excess);
-        }
-        
-        
-        if (!l) {
-            l = bl % 4;
-            for (l = l && 4 - l; l--;) {
-                buffer[bl++] = pad;
-            }
-            break;
-        }
-    }
-    
-    return buffer.join('');
-    
-}
-
-function base64Decode(subject) {
-    var map = BASE64_MAP,
-        oneByte = ONE_BYTE,
-        buffer = [],
-        bl = 0,
-        c = -1,
-        code2str = fromCharCode;
-    var l, code, excess, chr, flag;
-    
-    if (!TYPE.string(subject, true) || NOT_BASE64_RE.test(subject)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    subject = subject.replace(BASE64_EXCESS_REMOVE_RE, '');
-    l = subject.length;
-    
-    for (; l--;) {
-        code = map.indexOf(subject.charAt(++c));
-        flag = c % 4;
-        
-        switch (flag) {
-        case 0:
-            chr = 0;
-            break;
-        case 1:
-            chr = ((excess << 2) | (code >> 4)) & oneByte;
-            break;
-        case 2:
-            chr = ((excess << 4) | (code >> 2)) & oneByte;
-            break;
-        case 3:
-            chr = ((excess << 6) | code) & oneByte;
-        }
-        
-        excess = code;
-        
-        if (!l && flag < 3 && chr < 64) {
-            break;
-        }
-
-        if (flag) {
-            buffer[bl++] = code2str(chr);
-        }
-    }
-    
-    //return decodeURIComponent(escape(buffer.join("")));
-    
-    return utf8ToUtf16(buffer.join(""));
-    //return binbuffer.join("");
-    
-}
-
-
-function utf16ToUtf8(subject) {
-    var half = HALF_BYTE,
-        sixBits = SIX_BITS,
-        code2char = fromCharCode,
-        utf8 = [],
-        ul = 0;
-    var code, c, l;
-    
-    if (!TYPE.string(subject, true)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    for (c = -1, l = subject.length; l--;) {
-        code = subject.charCodeAt(++c);
-        
-        if (code < half) {
-            utf8[ul++] = code2char(code);
-        }
-        else if (code < 0x800) {
-            utf8[ul++] = code2char(0xc0 | (code >> 6));
-            utf8[ul++] = code2char(half | (code & sixBits));
-        }
-        else if (code < 0xd800 || code > 0xdfff) {
-            utf8[ul++] = code2char(0xe0 | (code >> 12));
-            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
-            utf8[ul++] = code2char(half | (code  & sixBits));
-        }
-        else {
-            l--;
-            code = 0x10000 + (((code & 0x3ff)<<10)
-                      | (subject.charCodeAt(++c) & 0x3ff));
-            
-            utf8[ul++] = code2char(0xf0 | (code >> 18));
-            utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
-            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
-            utf8[ul++] = code2char(half | (code >> sixBits));
-            
-        }
-    }
-    
-    return utf8.join('');
-}
-
-
-// based from https://gist.github.com/weishuaiwang/4221687
-function utf8ToUtf16(subject) {
-    var code2char = fromCharCode;
-    var utf16, ul, c, l, code;
-    
-    if (!TYPE.string(subject, true)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    utf16 = [];
-    ul = 0;
-    for (c = -1, l = subject.length; l--;) {
-        code = subject.charCodeAt(++c);
-        switch (code >> 4) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-            // 0xxxxxxx
-            utf16[ul++] = subject.charAt(c);
-            break;
-        case 12:
-        case 13:
-            // 110x xxxx 10xx xxxx
-            l--;
-            utf16[ul++] = code2char(((code & 0x1F) << 6) |
-                                    (subject.charCodeAt(++c) & 0x3F));
-            break;
-        case 14:
-            // 1110 xxxx10xx xxxx10xx xxxx
-            utf16[ul++] = code2char(((code & 0x0F) << 12) |
-                                    ((subject.charCodeAt(++c) & 0x3F) << 6) |
-                                    ((subject.charCodeAt(++c) & 0x3F) << 0));
-            l -= 2;
-            break;
-        }
-    }
-    
-    return utf16.join("");
-}
-
-function camelize(subject) {
-    return subject.replace(CAMEL_RE, applyCamelize);
-}
-
-function applyCamelize(all) {
-    return all.charAt(all.length - 1).toUpperCase();
-}
-
-function uncamelize(subject) {
-    return subject.replace(UNCAMEL_RE, applyUncamelize);
-}
-
-function applyUncamelize(all) {
-    return '-' + all.charAt(all.length -1).toLowerCase();
-}
-
-module.exports = {
-    "encode64": base64Encode,
-    "decode64": base64Decode,
-    "utf2bin": utf16ToUtf8,
-    "bin2utf": utf8ToUtf16,
-    "camelize": camelize,
-    "uncamelize": uncamelize
-};
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var DETECT = __webpack_require__(3),
-    OBJECT = __webpack_require__(1),
-    PROCESSOR = __webpack_require__(4),
-    EXPORTS = {
-        env: DETECT
-    };
-
-OBJECT.assign(EXPORTS, __webpack_require__(0));
-OBJECT.assign(EXPORTS, OBJECT);
-OBJECT.assign(EXPORTS, __webpack_require__(7));
-OBJECT.assign(EXPORTS, __webpack_require__(5));
-OBJECT.assign(EXPORTS, PROCESSOR);
-OBJECT.assign(EXPORTS, __webpack_require__(10));
-OBJECT.assign(EXPORTS, __webpack_require__(8));
-
-PROCESSOR.chain = EXPORTS;
-
-// promise polyfill
-EXPORTS.Promise = __webpack_require__(9);
-EXPORTS['default'] = EXPORTS;
-
-module.exports = EXPORTS;
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var DETECT = __webpack_require__(3),
-    OBJECT = __webpack_require__(1),
-    A = Array.prototype;
-
-function indexOf(subject) {
-    /*jshint validthis:true */
-    var array = this,
-        l = array.length,
-        c = -1;
-    
-    for (; l--;) {
-        if (subject === array[++c]) {
-            array = null;
-            return c;
-        }
-    }
-    
-    return -1;
-}
-
-function lastIndexOf(subject) {
-    /*jshint validthis:true */
-    var array = this,
-        l = array.length;
-        
-    for (; l--;) {
-        if (subject === array[l]) {
-            array = null;
-            return l;
-        }
-    }
-    
-    return -1;
-}
-
-/**
- * Creates a union of two arrays
- * @name libcore.unionList
- * @function
- * @param {Array} array1 - source array
- * @param {Array} array2 - array to merge
- * @param {boolean} [clone] - Filters array1 parameter with union of array2
- *                          if this parameter is false. It returns a new set
- *                          of array containing union of array1 and array2
- *                          otherwise.
- * @returns {Array} union of first two array parameters
- */
-function union(array1, array2, clone) {
-    var subject, l, len, total;
-    
-    array1 = clone !== false ? array1 : array1.slice(0);
-    
-    // apply
-    array1.push.apply(array1, array2);
-    total = array1.length;
-    
-    // apply unique
-    found: for (l = total; l--;) {
-        subject = array1[l];
-        
-        // remove if not unique
-        for (len = total; len--;) {
-            if (l !== len && subject === array1[len]) {
-                total--;
-                array1.splice(l, 1);
-                continue found;
-            }
-        }
-    }
-    
-    return array1;
-}
-
-/**
- * Creates an intersection of two arrays
- * @name libcore.intersect
- * @function
- * @param {Array} array1 - source array 
- * @param {Array} array2 - array to intersect
- * @param {boolean} [clone] - Filters array1 parameter with intersection of
- *                          array2 if this parameter is false. It returns a
- *                          new set of array containing intersection of
- *                          array1 and array2 otherwise.
- * @returns {Array} intersection of first two array parameters
- */
-function intersect(array1, array2, clone) {
-    var total1 = array1.length,
-        total2 = array2.length;
-    var subject, l1, l2;
-        
-    // create a copy
-    array1 = clone !== false ? array1 : array1.slice(0);
-    
-    found: for (l1 = total1; l1--;) {
-        subject = array1[l1];
-        foundSame: for (l2 = total2; l2--;) {
-            if (subject === array2[l2]) {
-                // intersect must be unique
-                for (l2 = total1; l2--;) {
-                    if (l2 !== l1 && subject === array1[l2]) {
-                        break foundSame;
-                    }
-                }
-                continue found;
-            }
-        }
-        array1.splice(l1, 1);
-        total1--;
-    }
-    
-    return array1;
-}
-
-
-/**
- * Creates a difference of two arrays
- * @name libcore.differenceList
- * @function
- * @param {Array} array1 - source array 
- * @param {Array} array2 - array to be applied as difference of array1
- * @param {boolean} [clone] - Filters array1 parameter with difference of array2
- *                          if this parameter is false. It returns a new set
- *                          of array containing difference of
- *                          array1 and array2 otherwise.
- * @returns {Array} difference of first two array parameters
- */
-function difference(array1, array2, clone) {
-     var total1 = array1.length,
-        total2 = array2.length;
-    var subject, l1, l2;
-        
-    // create a copy
-    array1 = clone !== false ? array1 : array1.slice(0);
-    
-    found: for (l1 = total1; l1--;) {
-        subject = array1[l1];
-        
-        // remove if found
-        for (l2 = total2; l2--;) {
-            if (subject === array2[l2]) {
-                array1.splice(l1, 1);
-                total1--;
-                continue found;
-            }
-        }
-        
-        // diff must be unique
-        for (l2 = total1; l2--;) {
-            if (l2 !== l1 && subject === array1[l2]) {
-                array1.splice(l1, 1);
-                total1--;
-                continue found;
-            }
-        }
-    }
-    
-    return array1;
-}
-
-
-
-
-
-// apply polyfill
-if (!DETECT.indexOfSupport) {
-    OBJECT.assign(A, {
-        indexOf: indexOf,
-        lastIndexOf: lastIndexOf
-    });
-}
-
-module.exports = {
-    unionList: union,
-    intersectList: intersect,
-    differenceList: difference
-};
-
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
 
 
 var TYPE = __webpack_require__(0),
     OBJECT = __webpack_require__(1),
     NUMERIC_RE = /^([1-9][0-9]*|0)$/,
     ARRAY_INDEX_RE = /^([1-9][0-9]*|0|)$/,
+    ERROR_NATIVE_OBJECT = "Root [subject] requires native Object to accept " +
+                            "non-numeric property name.",
     ERROR_PATH_INVALID = 'Invalid [path] parameter.',
     START = "start",
     START_ESCAPED = "start_escaped",
@@ -2243,12 +1614,15 @@ function fill(path, subject, value, overwrite) {
     var T = TYPE,
         O = OBJECT,
         typeArray = T.ARRAY,
+        array = T.array,
         object = T.object,
         getMax = O.maxObjectIndex,
         apply = O.assign,
         has = O.contains,
         arrayIndexRe = ARRAY_INDEX_RE,
-        iswritable = isJSONWritable;
+        iswritable = isJSONWritable,
+        isSubjectArray = array(subject);
+        
     var parent, c, l, item, parentIndex,
         property, arrayIndex, writable;
         
@@ -2259,7 +1633,7 @@ function fill(path, subject, value, overwrite) {
     }
     
     // root subject should be an object
-    if (!object(subject)) {
+    if (!object(subject) && !isSubjectArray) {
         return false;
     }
     
@@ -2303,6 +1677,10 @@ function fill(path, subject, value, overwrite) {
                     [property] : {"": property};
             }
 
+        }
+        // force create child
+        else if (isSubjectArray && parent === subject && !arrayIndex) {
+            throw new Error(ERROR_NATIVE_OBJECT);
         }
         // populate
         else {
@@ -2353,6 +1731,672 @@ module.exports = {
 };
 
 /***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+var TYPE = __webpack_require__(0),
+    //DETECT = require('./detect.js'),
+    G = global,
+    // 1 = namespace, 4 = position, 5 = item
+    NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
+    POSITION_BEFORE = 1,
+    POSITION_AFTER = 2,
+    RUNNERS = {},
+    NAMESPACES = {},
+    NATIVE_SET_IMMEDIATE = !!G.setImmediate,
+    EXPORTS = {
+        register: set,
+        run: run,
+        middleware: middlewareNamespace,
+        setAsync: NATIVE_SET_IMMEDIATE ?
+                        nativeSetImmediate : timeoutAsync,
+        clearAsync: NATIVE_SET_IMMEDIATE ?
+                        nativeClearImmediate : clearTimeoutAsync
+    };
+    
+
+    
+function set(name, handler) {
+    var parsed = parseName(name),
+        list = RUNNERS;
+    var access, items;
+    
+    if (parsed && handler instanceof Function) {
+        name = parsed[1];
+        access = ':' + name;
+        if (!(access in list)) {
+            list[access] = {
+                name: name,
+                before: [],
+                after: []
+            };
+        }
+        
+        items = list[access][getPositionAccess(parsed[0])];
+        
+        items[items.length] = handler;
+    }
+    
+    return EXPORTS.chain;
+}
+
+
+function run(name, args, scope) {
+    var runners = get(name);
+    var c, l;
+
+    if (runners) {
+        if (typeof scope === 'undefined') {
+            scope = null;
+        }
+        if (!(args instanceof Array)) {
+            args = [];
+        }
+        
+        for (c = -1, l = runners.length; l--;) {
+            runners[++c].apply(scope, args);
+        }
+        
+    }
+    
+    return EXPORTS.chain;
+}
+
+function get(name) {
+    var list = RUNNERS,
+        parsed = parseName(name);
+    var access;
+    
+    if (parsed) {
+        access = ':' + parsed[1];
+        
+        if (access in list) {
+            return list[access][getPositionAccess(parsed[0])];
+            
+        }
+    }
+    
+    return void(0);
+}
+
+function getPositionAccess(input) {
+    return  input === POSITION_BEFORE ? 'before' : 'after';
+}
+
+function parseName(name) {
+    var match = TYPE.string(name) && name.match(NAME_RE);
+    var position, namespace;
+    
+    
+    
+    
+    if (match) {
+        namespace = match[1];
+        position = match[4] === 'before' ? POSITION_BEFORE : POSITION_AFTER;
+        //console.log('parsed ', name, ' = ', [position, (namespace || '') + match[5]]);
+        return [position, (namespace || '') + match[5]];
+        
+    }
+    
+    return void(0);
+    
+}
+
+function middlewareNamespace(name) {
+    var list = NAMESPACES;
+    var access, register, run;
+ 
+    if (TYPE.string(name)) {
+        access = name + '.';
+        if (!(access in list)) {
+            run = createRunInNamespace(access);
+            register = createRegisterInNamespace(access);
+            list[access] = register.chain = run.chain = {
+                                                        run: run,
+                                                        register: register
+                                                    };
+        }
+        return list[access];
+    }
+    return void(0);
+}
+
+function createRunInNamespace(ns) {
+    function nsRun(name, args, scope) {
+        run(ns + name, args, scope);
+        return nsRun.chain;
+    }
+    return nsRun;
+}
+
+function createRegisterInNamespace(ns) {
+    function nsRegister(name, handler) {
+        set(ns + name, handler);
+        return nsRegister.chain;
+    }
+    return nsRegister;
+}
+
+
+function timeoutAsync(handler) {
+    return G.setTimeout(handler, 1);
+}
+
+function clearTimeoutAsync(id) {
+    return G.clearTimeout(id);
+}
+
+function nativeSetImmediate (fn) {
+    return G.setImmediate(fn);
+}
+
+function nativeClearImmediate(id) {
+    return G.clearImmediate(id);
+}
+
+
+module.exports = EXPORTS.chain = EXPORTS;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var HALF_BYTE = 0x80,
+    SIX_BITS = 0x3f,
+    ONE_BYTE = 0xff,
+    fromCharCode = String.fromCharCode,
+    TYPE = __webpack_require__(0),
+    BASE64_MAP =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+    NOT_BASE64_RE = /[^a-zA-Z0-9\+\/\=]/g,
+    BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/,
+    CAMEL_RE = /[^a-z]+[a-z]/ig,
+    UNCAMEL_RE = /\-*[A-Z]/g,
+    INVALID_SUBJECT = 'Invalid [subject] parameter.';
+
+function base64Encode(subject) {
+    var map = BASE64_MAP,
+        buffer = [],
+        bl = 0,
+        c = -1,
+        excess = false,
+        pad = map.charAt(64);
+    var l, total, code, flag, end, chr;
+    
+    if (!TYPE.string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    // decode to ascii
+    subject = utf16ToUtf8(subject);
+    l = total = subject.length;
+    
+    for (; l--;) {
+        code = subject.charCodeAt(++c);
+        flag = c % 3;
+        
+        switch (flag) {
+        case 0:
+            chr = map.charAt((code & 0xfc) >> 2);
+            excess = (code & 0x03) << 4;
+            break;
+        case 1:
+            chr = map.charAt(excess | (code & 0xf0) >> 4);
+            excess = (code & 0x0f) << 2;
+            break;
+        case 2:
+            chr = map.charAt(excess | (code & 0xc0) >> 6);
+            excess = code & 0x3f;
+        }
+        buffer[bl++] = chr;
+        
+        end = !l;
+        if ((end || flag === 2)) {
+            buffer[bl++] = map.charAt(excess);
+        }
+        
+        
+        if (!l) {
+            l = bl % 4;
+            for (l = l && 4 - l; l--;) {
+                buffer[bl++] = pad;
+            }
+            break;
+        }
+    }
+    
+    return buffer.join('');
+    
+}
+
+function base64Decode(subject) {
+    var map = BASE64_MAP,
+        oneByte = ONE_BYTE,
+        buffer = [],
+        bl = 0,
+        c = -1,
+        code2str = fromCharCode;
+    var l, code, excess, chr, flag;
+    
+    if (!TYPE.string(subject, true) || NOT_BASE64_RE.test(subject)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    subject = subject.replace(BASE64_EXCESS_REMOVE_RE, '');
+    l = subject.length;
+    
+    for (; l--;) {
+        code = map.indexOf(subject.charAt(++c));
+        flag = c % 4;
+        
+        switch (flag) {
+        case 0:
+            chr = 0;
+            break;
+        case 1:
+            chr = ((excess << 2) | (code >> 4)) & oneByte;
+            break;
+        case 2:
+            chr = ((excess << 4) | (code >> 2)) & oneByte;
+            break;
+        case 3:
+            chr = ((excess << 6) | code) & oneByte;
+        }
+        
+        excess = code;
+        
+        if (!l && flag < 3 && chr < 64) {
+            break;
+        }
+
+        if (flag) {
+            buffer[bl++] = code2str(chr);
+        }
+    }
+    
+    //return decodeURIComponent(escape(buffer.join("")));
+    
+    return utf8ToUtf16(buffer.join(""));
+    //return binbuffer.join("");
+    
+}
+
+
+function utf16ToUtf8(subject) {
+    var half = HALF_BYTE,
+        sixBits = SIX_BITS,
+        code2char = fromCharCode,
+        utf8 = [],
+        ul = 0;
+    var code, c, l;
+    
+    if (!TYPE.string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    for (c = -1, l = subject.length; l--;) {
+        code = subject.charCodeAt(++c);
+        
+        if (code < half) {
+            utf8[ul++] = code2char(code);
+        }
+        else if (code < 0x800) {
+            utf8[ul++] = code2char(0xc0 | (code >> 6));
+            utf8[ul++] = code2char(half | (code & sixBits));
+        }
+        else if (code < 0xd800 || code > 0xdfff) {
+            utf8[ul++] = code2char(0xe0 | (code >> 12));
+            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+            utf8[ul++] = code2char(half | (code  & sixBits));
+        }
+        else {
+            l--;
+            code = 0x10000 + (((code & 0x3ff)<<10)
+                      | (subject.charCodeAt(++c) & 0x3ff));
+            
+            utf8[ul++] = code2char(0xf0 | (code >> 18));
+            utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
+            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+            utf8[ul++] = code2char(half | (code >> sixBits));
+            
+        }
+    }
+    
+    return utf8.join('');
+}
+
+
+// based from https://gist.github.com/weishuaiwang/4221687
+function utf8ToUtf16(subject) {
+    var code2char = fromCharCode;
+    var utf16, ul, c, l, code;
+    
+    if (!TYPE.string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    utf16 = [];
+    ul = 0;
+    for (c = -1, l = subject.length; l--;) {
+        code = subject.charCodeAt(++c);
+        switch (code >> 4) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            // 0xxxxxxx
+            utf16[ul++] = subject.charAt(c);
+            break;
+        case 12:
+        case 13:
+            // 110x xxxx 10xx xxxx
+            l--;
+            utf16[ul++] = code2char(((code & 0x1F) << 6) |
+                                    (subject.charCodeAt(++c) & 0x3F));
+            break;
+        case 14:
+            // 1110 xxxx10xx xxxx10xx xxxx
+            utf16[ul++] = code2char(((code & 0x0F) << 12) |
+                                    ((subject.charCodeAt(++c) & 0x3F) << 6) |
+                                    ((subject.charCodeAt(++c) & 0x3F) << 0));
+            l -= 2;
+            break;
+        }
+    }
+    
+    return utf16.join("");
+}
+
+function camelize(subject) {
+    return subject.replace(CAMEL_RE, applyCamelize);
+}
+
+function applyCamelize(all) {
+    return all.charAt(all.length - 1).toUpperCase();
+}
+
+function uncamelize(subject) {
+    return subject.replace(UNCAMEL_RE, applyUncamelize);
+}
+
+function applyUncamelize(all) {
+    return '-' + all.charAt(all.length -1).toLowerCase();
+}
+
+module.exports = {
+    "encode64": base64Encode,
+    "decode64": base64Decode,
+    "utf2bin": utf16ToUtf8,
+    "bin2utf": utf8ToUtf16,
+    "camelize": camelize,
+    "uncamelize": uncamelize
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var DETECT = __webpack_require__(3),
+    OBJECT = __webpack_require__(1),
+    PROCESSOR = __webpack_require__(5),
+    EXPORTS = {
+        env: DETECT
+    };
+
+OBJECT.assign(EXPORTS, __webpack_require__(0));
+OBJECT.assign(EXPORTS, OBJECT);
+OBJECT.assign(EXPORTS, __webpack_require__(8));
+OBJECT.assign(EXPORTS, __webpack_require__(6));
+OBJECT.assign(EXPORTS, PROCESSOR);
+OBJECT.assign(EXPORTS, __webpack_require__(10));
+OBJECT.assign(EXPORTS, __webpack_require__(4));
+
+PROCESSOR.chain = EXPORTS;
+
+// promise polyfill
+EXPORTS.Promise = __webpack_require__(9);
+EXPORTS['default'] = EXPORTS;
+
+module.exports = EXPORTS;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+
+// motivation of set operations:
+// https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
+var DETECT = __webpack_require__(3),
+    OBJECT = __webpack_require__(1),
+    TYPE = __webpack_require__(0),
+    INVALID_ARRAY1 = 'Invalid [array1] parameter.',
+    INVALID_ARRAY2 = 'Invalid [array2] parameter.',
+    A = Array.prototype;
+
+function indexOf(subject) {
+    /*jshint validthis:true */
+    var array = this,
+        l = array.length,
+        c = -1;
+    
+    for (; l--;) {
+        if (subject === array[++c]) {
+            array = null;
+            return c;
+        }
+    }
+    
+    return -1;
+}
+
+function lastIndexOf(subject) {
+    /*jshint validthis:true */
+    var array = this,
+        l = array.length;
+        
+    for (; l--;) {
+        if (subject === array[l]) {
+            array = null;
+            return l;
+        }
+    }
+    
+    return -1;
+}
+
+/**
+ * Creates a union of two arrays
+ * @name libcore.unionList
+ * @function
+ * @param {Array} array1 - source array
+ * @param {Array} array2 - array to merge
+ * @param {boolean} [clone] - Filters array1 parameter with union of array2
+ *                          if this parameter is false. It returns a new set
+ *                          of array containing union of array1 and array2
+ *                          otherwise.
+ * @returns {Array} union of first two array parameters
+ */
+function union(array1, array2, clone) {
+    var isarray = TYPE.array;
+    var subject, l, len, total;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
+    }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    array1 = clone === true ? array1.slice(0) : array1;
+    
+    // apply
+    array1.push.apply(array1, array2);
+    total = array1.length;
+    
+    // apply unique
+    found: for (l = total; l--;) {
+        subject = array1[l];
+        
+        // remove if not unique
+        for (len = total; len--;) {
+            if (l !== len && subject === array1[len]) {
+                total--;
+                array1.splice(l, 1);
+                continue found;
+            }
+        }
+    }
+    
+    return array1;
+}
+
+/**
+ * Creates an intersection of two arrays
+ * @name libcore.intersect
+ * @function
+ * @param {Array} array1 - source array 
+ * @param {Array} array2 - array to intersect
+ * @param {boolean} [clone] - Filters array1 parameter with intersection of
+ *                          array2 if this parameter is false. It returns a
+ *                          new set of array containing intersection of
+ *                          array1 and array2 otherwise.
+ * @returns {Array} intersection of first two array parameters
+ */
+function intersect(array1, array2, clone) {
+    var isarray = TYPE.array;
+    var subject, l1, l2, total1, total2;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
+    }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    total1 = array1.length;
+    total2 = array2.length;
+        
+    // create a copy
+    array1 = clone === true ? array1.slice(0) : array1;
+    
+    found: for (l1 = total1; l1--;) {
+        subject = array1[l1];
+        foundSame: for (l2 = total2; l2--;) {
+            if (subject === array2[l2]) {
+                // intersect must be unique
+                for (l2 = total1; l2--;) {
+                    if (l2 !== l1 && subject === array1[l2]) {
+                        break foundSame;
+                    }
+                }
+                continue found;
+            }
+        }
+        array1.splice(l1, 1);
+        total1--;
+    }
+    
+    return array1;
+}
+
+
+/**
+ * Creates a difference of two arrays
+ * @name libcore.differenceList
+ * @function
+ * @param {Array} array1 - source array 
+ * @param {Array} array2 - array to be applied as difference of array1
+ * @param {boolean} [clone] - Filters array1 parameter with difference of array2
+ *                          if this parameter is false. It returns a new set
+ *                          of array containing difference of
+ *                          array1 and array2 otherwise.
+ * @returns {Array} difference of first two array parameters
+ */
+function difference(array1, array2, clone) {
+    var isarray = TYPE.array;
+    var subject, l1, l2, total1, total2;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
+    }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    total1 = array1.length;
+    total2 = array2.length;
+        
+    // create a copy
+    array1 = clone === true ? array1.slice(0) : array1;
+    
+    found: for (l1 = total1; l1--;) {
+        subject = array1[l1];
+        
+        // remove if found
+        for (l2 = total2; l2--;) {
+            if (subject === array2[l2]) {
+                array1.splice(l1, 1);
+                total1--;
+                continue found;
+            }
+        }
+        
+        // diff must be unique
+        for (l2 = total1; l2--;) {
+            if (l2 !== l1 && subject === array1[l2]) {
+                array1.splice(l1, 1);
+                total1--;
+                continue found;
+            }
+        }
+    }
+    
+    return array1;
+}
+
+
+
+
+
+// apply polyfill
+if (!DETECT.indexOfSupport) {
+    OBJECT.assign(A, {
+        indexOf: indexOf,
+        lastIndexOf: lastIndexOf
+    });
+}
+
+module.exports = {
+    unionList: union,
+    intersectList: intersect,
+    differenceList: difference
+};
+
+
+
+/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2361,7 +2405,7 @@ module.exports = {
 
 var TYPE = __webpack_require__(0),
     OBJECT = __webpack_require__(1),
-    PROCESSOR = __webpack_require__(4),
+    PROCESSOR = __webpack_require__(5),
     slice = Array.prototype.slice,
     G = global,
     INDEX_STATUS = 0,
@@ -2602,10 +2646,23 @@ G = null;
 
 
 var TYPE = __webpack_require__(0),
-    OBJECT = __webpack_require__(1);
+    OBJECT = __webpack_require__(1),
+    JSON_OP = __webpack_require__(4),
+    ERROR_NAME = 'Invalid [name] parameter.',
+    ERROR_PATH = 'Invalid [path] parameter.';
 
 function create() {
     return new Registry();
+}
+
+function isIndex(name) {
+    var T = TYPE;
+    
+    switch (T.signature(name)) {
+    case T.STRING:
+    case T.NUMBER: return true;
+    }
+    return false;
 }
 
 function Registry() {
@@ -2614,8 +2671,21 @@ function Registry() {
 
 Registry.prototype = {
     constructor: Registry,
+    
+    onApply: function (value) {
+        OBJECT.assign(this.data, value);
+    },
+    
+    onSet: function (name, value) {
+        this.data[name] = value;
+    },
+    
     get: function (name) {
         var list = this.data;
+        
+        if (!isIndex(name)) {
+            throw new Error(ERROR_NAME);
+        }
         
         if (OBJECT.contains(list, name)) {
             return list[name];
@@ -2625,10 +2695,21 @@ Registry.prototype = {
     },
     
     set: function (name, value) {
-        var list = this.data;
+        var T = TYPE;
         
-        if (TYPE.string(name) || TYPE.number(name)) {
-            list[name] = value;
+        switch (T.signature(name)) {
+        case T.OBJECT:
+        case T.ARRAY:
+            this.onApply(name);
+            break;
+        
+        case T.STRING:
+        case T.NUMBER:
+            this.onSet(name, value);
+            break;
+            
+        default:
+            throw new Error(ERROR_NAME);
         }
         
         return this;
@@ -2637,6 +2718,10 @@ Registry.prototype = {
     unset: function (name) {
         var list = this.data;
         
+        if (!isIndex(name)) {
+            throw new Error(ERROR_NAME);
+        }
+        
         if (OBJECT.contains(list, name)) {
             delete list[name];
         }
@@ -2644,8 +2729,51 @@ Registry.prototype = {
         return this;
     },
     
+    find: function (path) {
+        if (!TYPE.string(path)) {
+            throw new Error(ERROR_PATH);
+        }
+        
+        return JSON_OP.jsonFind(path, this.data);
+    },
+    
+    insert: function (path) {
+        if (!TYPE.string(path)) {
+            throw new Error(ERROR_PATH);
+        }
+        
+        return JSON_OP.jsonFill(path, this.data, true);
+    },
+    
+    remove: function (path) {
+        if (!TYPE.string(path)) {
+            throw new Error(ERROR_PATH);
+        }
+        
+        return JSON_OP.jsonUnset(path, this.data);
+    },
+    
     exists: function (name) {
+        if (!isIndex(name)) {
+            throw new Error(ERROR_NAME);
+        }
+        
         return OBJECT.contains(this.data, name);
+    },
+    
+    apply: function(value) {
+        var T = TYPE;
+        
+        switch (T.signature(value)) {
+        case T.OBJECT:
+        case T.ARRAY:
+            this.onApply(value);
+            return this;
+        
+        default:
+            throw new Error("Invalid [value] parameter");
+        }
+        
     },
     
     clear: function () {
@@ -2669,7 +2797,7 @@ module.exports = {
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(6);
+module.exports = __webpack_require__(7);
 
 
 /***/ })

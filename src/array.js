@@ -1,7 +1,13 @@
 'use strict';
 
+
+// motivation of set operations:
+// https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
 var DETECT = require('./detect.js'),
     OBJECT = require('./object.js'),
+    TYPE = require('./type.js'),
+    INVALID_ARRAY1 = 'Invalid [array1] parameter.',
+    INVALID_ARRAY2 = 'Invalid [array2] parameter.',
     A = Array.prototype;
 
 function indexOf(subject) {
@@ -48,9 +54,18 @@ function lastIndexOf(subject) {
  * @returns {Array} union of first two array parameters
  */
 function union(array1, array2, clone) {
+    var isarray = TYPE.array;
     var subject, l, len, total;
     
-    array1 = clone !== false ? array1 : array1.slice(0);
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
+    }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    array1 = clone === true ? array1.slice(0) : array1;
     
     // apply
     array1.push.apply(array1, array2);
@@ -86,12 +101,22 @@ function union(array1, array2, clone) {
  * @returns {Array} intersection of first two array parameters
  */
 function intersect(array1, array2, clone) {
-    var total1 = array1.length,
-        total2 = array2.length;
-    var subject, l1, l2;
+    var isarray = TYPE.array;
+    var subject, l1, l2, total1, total2;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
+    }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    total1 = array1.length;
+    total2 = array2.length;
         
     // create a copy
-    array1 = clone !== false ? array1 : array1.slice(0);
+    array1 = clone === true ? array1.slice(0) : array1;
     
     found: for (l1 = total1; l1--;) {
         subject = array1[l1];
@@ -127,12 +152,22 @@ function intersect(array1, array2, clone) {
  * @returns {Array} difference of first two array parameters
  */
 function difference(array1, array2, clone) {
-     var total1 = array1.length,
-        total2 = array2.length;
-    var subject, l1, l2;
+    var isarray = TYPE.array;
+    var subject, l1, l2, total1, total2;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
+    }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    total1 = array1.length;
+    total2 = array2.length;
         
     // create a copy
-    array1 = clone !== false ? array1 : array1.slice(0);
+    array1 = clone === true ? array1.slice(0) : array1;
     
     found: for (l1 = total1; l1--;) {
         subject = array1[l1];
