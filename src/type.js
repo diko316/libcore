@@ -146,6 +146,51 @@ function isRegExp(subject) {
 }
 
 
+function isThenable(subject) {
+    // filter non-thenable scalar natives
+    switch (subject) {
+    case undefined:
+    case null:
+    case true:
+    case false:
+    case NaN: return false;
+    }
+    // filter scalar
+    switch (objectSignature(subject)) {
+    case NUMBER_SIGNATURE:
+    case STRING_SIGNATURE:
+    case BOOLEAN_SIGNATURE: return false;
+    }
+    
+    return 'then' in subject && isFunction(subject.then);
+}
+
+function isIterable(subject) {
+    
+    // filter non-iterable scalar natives
+    switch (subject) {
+    case undefined:
+    case null:
+    case true:
+    case false:
+    case NaN: return false;
+    }
+    
+    // try signature
+    switch (objectSignature(subject)) {
+    case NUMBER_SIGNATURE:
+    case BOOLEAN_SIGNATURE:
+        // bogus js engines provides readonly "length" property to functions
+    case METHOD_SIGNATURE: return false;
+
+    case STRING_SIGNATURE:
+    case ARRAY_SIGNATURE: return true;
+    }
+    
+    return 'length' in subject && isNumber(subject.length);
+}
+
+
 module.exports = {
     OBJECT: OBJECT_SIGNATURE,
     ARRAY: ARRAY_SIGNATURE,
@@ -180,5 +225,9 @@ module.exports = {
     
     regex: isRegExp,
     
-    type: isType
+    type: isType,
+    
+    thenable: isThenable,
+    
+    iterable: isIterable
 };

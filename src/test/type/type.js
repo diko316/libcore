@@ -1,17 +1,18 @@
 'use strict';
 
 
-describe('Checks if Mixed [subject] is an instance of [type] ' +
-         ' using type(subject:Mixed, type:String) method.',
+describe('Inspects if Mixed [subject] is an instance of simplified [type] ' +
+         'signature using type(subject:Mixed, type:String) method.',
         () => {
             var lib = global.libcore;
             
             it('1. Should accept Mixed [subject] and returns true if ' +
                '[subject] is a "string" [type].',
                () => {
+                    var S = String;
                     expect(lib.type("test", "string")).toBe(true);
                     expect(lib.type("", "string")).toBe(true);
-                    expect(lib.type(new String("test"), "string")).toBe(true);
+                    expect(lib.type(new S("test"), "string")).toBe(true);
                });
             
             it('2. Should accept Mixed [subject] and returns false if ' +

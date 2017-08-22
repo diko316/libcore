@@ -1,7 +1,7 @@
 'use strict';
 
 
-describe('Checks if Mixed [subject] is RegExp using regex(subject:Mixed)',
+describe('Inspects if Mixed [subject] is RegExp using regex(subject:Mixed)',
         () => {
             var lib = global.libcore;
             

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Checks if Mixed [subject] is raw Native Javascript Object using ' +
+describe('Inspects if Mixed [subject] is raw Native Javascript Object using ' +
          'nativeObject(subject:Mixed)',
         () => {
             var lib = global.libcore;

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Checks if Mixed [subject] is String using ' +
+describe('Inspects if Mixed [subject] is String using ' +
          'string(subject:Mixed, [allowEmpty:Boolean])',
         () => {
             var lib = global.libcore;

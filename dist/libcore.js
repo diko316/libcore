@@ -229,6 +229,51 @@ function isRegExp(subject) {
 }
 
 
+function isThenable(subject) {
+    // filter non-thenable scalar natives
+    switch (subject) {
+    case undefined:
+    case null:
+    case true:
+    case false:
+    case NaN: return false;
+    }
+    // filter scalar
+    switch (objectSignature(subject)) {
+    case NUMBER_SIGNATURE:
+    case STRING_SIGNATURE:
+    case BOOLEAN_SIGNATURE: return false;
+    }
+    
+    return 'then' in subject && isFunction(subject.then);
+}
+
+function isIterable(subject) {
+    
+    // filter non-iterable scalar natives
+    switch (subject) {
+    case undefined:
+    case null:
+    case true:
+    case false:
+    case NaN: return false;
+    }
+    
+    // try signature
+    switch (objectSignature(subject)) {
+    case NUMBER_SIGNATURE:
+    case BOOLEAN_SIGNATURE:
+        // bogus js engines provides readonly "length" property to functions
+    case METHOD_SIGNATURE: return false;
+
+    case STRING_SIGNATURE:
+    case ARRAY_SIGNATURE: return true;
+    }
+    
+    return 'length' in subject && isNumber(subject.length);
+}
+
+
 module.exports = {
     OBJECT: OBJECT_SIGNATURE,
     ARRAY: ARRAY_SIGNATURE,
@@ -263,7 +308,11 @@ module.exports = {
     
     regex: isRegExp,
     
-    type: isType
+    type: isType,
+    
+    thenable: isThenable,
+    
+    iterable: isIterable
 };
 
 /***/ }),
@@ -2445,19 +2494,14 @@ var TYPE = __webpack_require__(0),
     PROCESSOR = __webpack_require__(5),
     slice = Array.prototype.slice,
     G = global,
+    ERROR_ITERABLE = 'Invalid [iterable] parameter.',
     INDEX_STATUS = 0,
     INDEX_DATA = 1,
     INDEX_PENDING = 2;
 
-function isPromise(object) {
-    var T = TYPE;
-    return T.object(object) &&
-            'then' in object &&
-            T.method(object.then);
-}
-
 function createPromise(instance) {
     var Class = Promise;
+    
     if (!(instance instanceof Class)) {
         instance = OBJECT.instantiate(Class);
     }
@@ -2479,10 +2523,12 @@ function resolveValue(data, callback) {
             callback(false, error);
         }
     }
-    if (isPromise(data)) {
-        data.then(resolve, function (error) {
-                                callback(false, error);
-                            });
+    
+    if (TYPE.thenable(data)) {
+        data.then(resolve,
+                  function (error) {
+                        callback(false, error);
+                    });
     }
     else {
         resolve(data);
@@ -2503,9 +2549,9 @@ function finalizeValue(promise, success, data) {
     }
 }
 
-function Promise(tryout) {
-    var instance = createPromise(this),
-        finalized = false;
+function Promise(resolver) {
+    var finalized = false;
+    var instance;
     
     function onFinalize(success, data) {
         finalizeValue(instance, success, data);
@@ -2525,8 +2571,14 @@ function Promise(tryout) {
         }
     }
     
+    if (!TYPE.method(resolver)) {
+        throw new Error('Promise resolver is not a function.');
+    }
+    
+    instance = createPromise(this);
+    
     try {
-        tryout(resolve, reject);
+        resolver(resolve, reject);
     }
     catch (error) {
         reject(error);
@@ -2547,54 +2599,62 @@ function reject(reason) {
     });
 }
 
-function all(promises) {
+function all(iterable) {
     var total;
-    promises = slice.call(promises, 0);
-    total = promises.length;
+    
+    function resolver(resolve, reject) {
+        var list = iterable,
+            remaining = total,
+            stopped = false,
+            l = remaining,
+            c = 0,
+            result = [];
+
+        function process(index, item) {
+            function finalize(success, data) {
+                var found = result;
+                
+                if (stopped) { return; }
+                
+                if (!success) {
+                    reject(data);
+                    stopped = true;
+                    return;
+                }
+                
+                found[index] = data;
+                
+                if (!--remaining) {
+                    resolve(found);
+                }
+            }
+            resolveValue(item, finalize);
+        }
+        
+        for (result.length = l; l--; c++) {
+            process(c, list[c]);
+        }
+    }
+    
+    if (!TYPE.iterable(iterable)) {
+        throw new TypeError(ERROR_ITERABLE);
+    }
+    
+    iterable = slice.call(iterable, 0);
+    total = iterable.length;
+    
     if (!total) {
         return resolve([]);
     }
-    return new Promise(function (resolve, reject) {
-                var list = promises,
-                    remaining = total,
-                    stopped = false,
-                    l = remaining,
-                    c = 0,
-                    result = [];
-
-                function process(index, item) {
-                    function finalize(success, data) {
-                        var found = result;
-                        
-                        if (stopped) { return; }
-                        
-                        if (!success) {
-                            reject(data);
-                            stopped = true;
-                            return;
-                        }
-                        
-                        found[index] = data;
-                        
-                        if (!--remaining) {
-                            resolve(found);
-                        }
-                    }
-                    resolveValue(item, finalize);
-                }
-                
-                for (result.length = l; l--; c++) {
-                    process(c, list[c]);
-                }
-            });
+    
+    return new Promise(resolver);
 }
 
-function race(promises) {
-    promises = slice.call(promises, 0);
-    return new Promise(function (resolve, reject) {
+function race(iterable) {
+    function resolver(resolve, reject) {
         var stopped = false,
             tryResolve = resolveValue,
-            list = promises,
+            list = iterable,
             c = -1,
             l = list.length;
         
@@ -2608,7 +2668,15 @@ function race(promises) {
         for (; l--;) {
             tryResolve(list[++c], onFulfill);
         }
-    });
+    }
+    
+    if (!TYPE.iterable(iterable)) {
+        throw new TypeError(ERROR_ITERABLE);
+    }
+    
+    iterable = slice.call(iterable, 0);
+    
+    return new Promise(resolver);
 }
 
 Promise.prototype = {
@@ -2621,15 +2689,18 @@ Promise.prototype = {
             instance = createPromise();
             
         function run(success, data) {
-            var handle = success ? onFulfill : onReject;
+            var finalize = finalizeValue,
+                handle = success ? onFulfill : onReject;
+            
             if (TYPE.method(handle)) {
                 try {
                     data = handle(data);
-                    resolveValue(
-                        data,
-                        function (success, data) {
-                            finalizeValue(instance, success, data);
-                        });
+                    resolveValue(data,
+                                function (success, data) {
+                                    finalize(instance,
+                                             success,
+                                             data);
+                                });
                     return;
                 }
                 catch (error) {
@@ -2637,7 +2708,7 @@ Promise.prototype = {
                     success = false;
                 }
             }
-            finalizeValue(instance, success, data);
+            finalize(instance, success, data);
         }
         
         if (success === null) {

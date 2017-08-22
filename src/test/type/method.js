@@ -1,7 +1,7 @@
 'use strict';
 
 
-describe('Checks if Mixed [subject] is Function using ' +
+describe('Inspects if Mixed [subject] is Function using ' +
          'method(subject:Mixed) method.',
         () => {
             var lib = global.libcore;

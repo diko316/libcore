@@ -14,6 +14,8 @@ require("./type/scalar.js");
 require("./type/date.js");
 require("./type/regex.js");
 require("./type/type.js");
+require("./type/iterable.js");
+require("./type/thenable.js");
 
 require("./string/encode64.js");
 require("./string/decode64.js");
@@ -52,3 +54,7 @@ require("./registry/find.js");
 require("./registry/insert.js");
 require("./registry/remove.js");
 require("./registry/path-exists.js");
+
+require("./promise/constructor.js");
+require("./promise/all.js");
+require("./promise/race.js");

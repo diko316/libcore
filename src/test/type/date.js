@@ -1,7 +1,7 @@
 'use strict';
 
 
-describe('Checks if Mixed [subject] is Date using date(subject:Mixed)',
+describe('Inspects if Mixed [subject] is Date using date(subject:Mixed)',
         () => {
             var lib = global.libcore;
             

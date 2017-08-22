@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Checks if Mixed [subject] is Array using ' +
+describe('Inspects if Mixed [subject] is Array using ' +
          'array(subject:Mixed, [nonEmpty:Boolean]) method',
         () => {
             var lib = global.libcore;

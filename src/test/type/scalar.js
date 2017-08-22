@@ -1,7 +1,7 @@
 'use strict';
 
 
-describe('Checks if Mixed [subject] is Scalar using scalar(subject:Mixed)',
+describe('Inspects if Mixed [subject] is Scalar using scalar(subject:Mixed)',
         () => {
             var lib = global.libcore;
             

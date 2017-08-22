@@ -1,7 +1,7 @@
 'use strict';
 
 
-describe('Checks if Mixed [subject] is Number using number(subject:Mixed)',
+describe('Inspects if Mixed [subject] is Number using number(subject:Mixed)',
         () => {
             var lib = global.libcore;
             
