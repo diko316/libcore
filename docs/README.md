@@ -244,7 +244,7 @@ Param | Type | Details
 subject | `Object` | The object source.
 handler | `Function` | The callback of each iteration of "subject" object's property.
 scope   | `{*}` | "this" object to use inside the "handler" parameter
-hasown _optional_ | `Boolean` | performs checking to only include source object property that is overridden (Object.protototype.hasOwnProperty() returns true) when this parameter is set to true.
+hasown _(optional)_ | `Boolean` | performs checking to only include source object property that is overridden (Object.protototype.hasOwnProperty() returns true) when this parameter is set to true.
 
 **Returns**
 
@@ -433,6 +433,7 @@ ___
 Param | Type | Details
 --- | --- | ---
 subject | `{*}` | The subject to check.
+allowEmpty | `Boolean` | Trigger to allow empty string or not.
 
 **Returns**
 
@@ -443,6 +444,8 @@ string("test"); // true
 string(new String("test")); // true
 string(""); // false
 string(null); // false
+
+string("", true); // true
 ```
 ___
 
@@ -455,7 +458,7 @@ subject | `{*}` | The subject to check.
 
 **Returns**
 
-`Boolean` True, if subject is a number type, false otherwise.
+`Boolean` True, if subject is a number type and not a NaN, false otherwise.
 
 ```js
 number(101); // true
@@ -557,7 +560,7 @@ signature({}); // '[object Object]'
 ___
 
 #### `scalar(subject);`
-> Inspects if Mixed [subject] is Scalar.
+> Inspects if Mixed [subject] is Scalar (String, finite Number, Boolean).
 
 Param | Type | Details
 --- | --- | ---
@@ -565,7 +568,7 @@ subject | `{*}` | The subject to check.
 
 **Returns**
 
-`Boolean` True, if subject is a primitive or scalar type, false otherwise.
+`Boolean` True, if subject is a scalar type, false otherwise.
 
 ```js
 scalar(101); // true
@@ -1031,7 +1034,7 @@ var subject = {
         }
     };
 
-jsonClone('grid.paging', subject); // equals to subject.grid.paging
+jsonClone('grid.paging', subject); // returns a clone as grid.paging object
 ```
 ___
 
