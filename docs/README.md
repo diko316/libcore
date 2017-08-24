@@ -701,7 +701,7 @@ ___
 
 ## Registry
 
-#### `assign(value);`
+#### `Registry.prototype.assign(value);`
 > Assign [value] Object properties or Array items into the registry.
 
 Param | Type | Details
@@ -713,6 +713,8 @@ value | `Object` or `Array`  | The value to be assigned.
 `Object` The registry object.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = { "id": 100 };
@@ -722,7 +724,7 @@ registry.assign(object1);
 ```
 ___
 
-#### `exists(name);`
+#### `Registry.prototype.exists(name);`
 > Inspects the registry storage if String or Number [name] exists.
 
 Param | Type | Details
@@ -734,6 +736,8 @@ name | `String`  | The name of the registry.
 `Boolean` True if indexed String or Number [name] exists in registry.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = { "id": 100, "100": "^10" };
@@ -747,7 +751,7 @@ registry.exists(100); // true
 ```
 ___
 
-#### `find(path);`
+#### `Registry.prototype.find(path);`
 > Retrieves registry value based from String json path [path].
 
 Param | Type | Details
@@ -759,6 +763,8 @@ path | `String`  | The name of the registry.
 `{*}` The value that has been found.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = {
@@ -778,7 +784,7 @@ registry.find("[0].0.id"); // 101
 ```
 ___
 
-#### `get(name);`
+#### `Registry.prototype.get(name);`
 > Retrieves registry value based from [name] index.
 
 Param | Type | Details
@@ -790,6 +796,8 @@ path | `String`  | The name of the registry.
 `{*}` The registry value.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = {
@@ -809,7 +817,7 @@ registry.get("0"); // object1[0]
 ```
 ___
 
-#### `insert(path, value);`
+#### `Registry.prototype.insert(path, value);`
 > Inserts registry [value] into String json path [path] relative to registry storage.
 
 Param | Type | Details
@@ -822,6 +830,8 @@ value | `{*}` | The value to be inserted.
 `Object` The registry object.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = {
@@ -842,7 +852,7 @@ registry.find("[0].0.id"); // "Common"
 ```
 ___
 
-#### `pathExists(path);`
+#### `Registry.prototype.pathExists(path);`
 > Inspects if String json [path] exists in registry.
 
 Param | Type | Details
@@ -854,6 +864,8 @@ path | `String`  | The path to be checked.
 `Boolean` True, if the path exists, false otherwise.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = {
@@ -878,7 +890,7 @@ registry.pathExists("2[90].label"); // false
 ```
 ___
 
-#### `remove(path);`
+#### `Registry.prototype.remove(path);`
 > Removes registry value with the given String json path [path] relative to registry storage.
 
 Param | Type | Details
@@ -890,6 +902,8 @@ path | `String`  | The path to the registry storage.
 `Object` The registry object.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = {
@@ -916,7 +930,7 @@ registry.pathExists("0"); // false
 ```
 ___
 
-### `set(name, value);`
+### `Registry.prototype.set(name, value);`
 > Sets registry [value] indexed with [name].
 
 Param | Type | Details
@@ -929,6 +943,8 @@ value | `{*}` | The value to set.
 `Object` The registry object.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = {
@@ -952,7 +968,7 @@ registry.get("5"); // 'another one'
 ```
 ___
 
-### `unset(name);`
+### `Registry.prototype.unset(name);`
 > Removes registry [value] indexed with [name].
 
 Param | Type | Details
@@ -964,6 +980,8 @@ name | `String`, `Number`, `Object` or `Array` | The name to unset.
 `Object` The registry object.
 
 ```js
+import { createRegistry } from "libcore";
+
 // instantiate registry
 var registry = createRegistry(),
     object1 = {
@@ -1221,7 +1239,9 @@ ___
 
 ## Promise
 
-#### `all(iterable);`
+A polyfill for browsers which do not use [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+
+#### `Promise.all(iterable);`
 > Creates a promise from [iterable] values or promises that resolves
  if all items in [iterable] fulfills or rejects if all items in
  [iterable] rejects.
@@ -1235,7 +1255,9 @@ iterable | `{*}` | Iterable object or Objects with "length" number of items.
 `Object` The Promise object.
 
 ```js
-var p = Promise, // assume imported Promise
+import { Promise } from "libcore";
+
+var p = Promise,
     callback = {
             isRejected: false,
             result: null,
@@ -1267,8 +1289,6 @@ P.all([1, 'test', P.resolve("100")]).
 ```
 ___
 
-## Promise
-
 #### `new Promise(resolver(resolve, reject));`
 > Creates a promise from [iterable] values or promises that resolves
  if all items in [iterable] fulfills or rejects if all items in
@@ -1283,7 +1303,9 @@ resolver | `Object` | The object resolver function.
 `Object` The Promise object.
 
 ```js
-var P = Promise, // assume imported Promise
+import { Promise } from "libcore";
+
+var P = Promise,
     good = (resolve) => {
         resolve('good');
     };
@@ -1304,12 +1326,12 @@ then(resolver.goodResult,
 ```
 ___
 
-#### `race(iterable);`
+#### `Promise.race(iterable);`
 > Creates a promise from [iterable] values or promises
  then resolves or rejects if one of the item in
  [iterable] is settled.
 
-Param | Type | Details
+Param | Type | Detailslibcore
 --- | --- | ---
 iterable | `{*}` | Iterable object or Objects with "length" number of items.
 
@@ -1318,7 +1340,9 @@ iterable | `{*}` | Iterable object or Objects with "length" number of items.
 `Object` The Promise object.
 
 ```js
-var p = Promise, // assume imported Promise
+import { Promise } from "libcore";
+
+var p = Promise,
     callback = {
             isRejected: false,
             result: null,
