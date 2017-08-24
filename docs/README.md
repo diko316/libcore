@@ -706,7 +706,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-value | `Object | Array`  | The value to be assigned.
+value | `Object` or `Array`  | The value to be assigned.
 
 **Returns**
 
@@ -921,7 +921,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-name | `String|Number|Object|Array`  | The name to set.
+name | `String`, `Number`, `Object` or `Array` | The name to set.
 value | `{*}` | The value to set.
 
 **Returns**
@@ -957,7 +957,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-name | `String|Number|Object|Array` | The name to unset.
+name | `String`, `Number`, `Object` or `Array` | The name to unset.
 
 **Returns**
 
