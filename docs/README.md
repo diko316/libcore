@@ -1244,6 +1244,43 @@ ___
 
 A polyfill for browsers which do not use [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise).
 
+#### `Promise.protototype.constructor(resolver);`
+> Creates a promise from [iterable] values or promises that resolves
+ if all items in [iterable] fulfills or rejects if all items in
+ [iterable] rejects.
+
+Param | Type | Details
+--- | --- | ---
+resolver | `Object` | The object resolver function.
+
+**Returns**
+
+`Object` The Promise object.
+
+```js
+import { Promise } from "libcore";
+
+var P = Promise,
+    good = (resolve) => {
+        resolve('good');
+    };
+
+(new P(good)).
+then(resolver.goodResult,
+     resolver.badResult);
+
+ setTimeout(() => {
+    // called with "good"
+    console.log(resolver.goodResult);
+
+    // not called
+    // resolver.badResult
+
+    // done
+}, 10);
+```
+___
+
 #### `Promise.all(iterable);`
 > Creates a promise from [iterable] values or promises that resolves
  if all items in [iterable] fulfills or rejects if all items in
@@ -1289,43 +1326,6 @@ P.all([1, 'test', P.resolve("100")]).
     // done
 
  }, 1000);
-```
-___
-
-#### `new Promise(resolver(resolve, reject));`
-> Creates a promise from [iterable] values or promises that resolves
- if all items in [iterable] fulfills or rejects if all items in
- [iterable] rejects.
-
-Param | Type | Details
---- | --- | ---
-resolver | `Object` | The object resolver function.
-
-**Returns**
-
-`Object` The Promise object.
-
-```js
-import { Promise } from "libcore";
-
-var P = Promise,
-    good = (resolve) => {
-        resolve('good');
-    };
-
-(new P(good)).
-then(resolver.goodResult,
-     resolver.badResult);
-
- setTimeout(() => {
-    // called with "good"
-    console.log(resolver.goodResult);
-
-    // not called
-    // resolver.badResult
-
-    // done
-}, 10);
 ```
 ___
 
