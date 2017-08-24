@@ -1334,7 +1334,7 @@ ___
  then resolves or rejects if one of the item in
  [iterable] is settled.
 
-Param | Type | Detailslibcore
+Param | Type | Details
 --- | --- | ---
 iterable | `{*}` | Iterable object or Objects with "length" number of items.
 
