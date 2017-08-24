@@ -28,7 +28,7 @@ ___
 
 ## Module API
 
-Please refer to [API Documentation](docs/API.md) for more information and usage of this library.
+Please refer to [API Documentation](docs/README.md) for more information and usage of this library.
 
 
 ## License
