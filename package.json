@@ -1,8 +1,8 @@
 {
   "name": "libcore",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Kicks-start helpers for cross-browser libraries and different versions of nodejs",
-  "main": "dist/index.js",
+  "main": "dist/libcore.js",
   "scripts": {
     "test": "export BUILD_MODE=unit-test && xvfb-run node_modules/.bin/karma start karma.config.js",
     "prestart": "node_modules/.bin/webpack --hide-modules",
