@@ -398,7 +398,7 @@ compare(object2, object3); // false
 ___
 
 #### `fillin(object1, object1);`
-> Deep compares two Native or non-Native Javascript objects.
+> Apply properties of [source] object to [target] object only if property in [target] do not exist or not an updated property.
 
 Param | Type | Details
 --- | --- | ---
