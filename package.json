@@ -1,9 +1,10 @@
 {
   "name": "libcore",
-  "version": "0.3.2",
+  "version": "0.3.5",
   "description": "Kicks-start helpers for cross-browser libraries and different versions of nodejs",
   "main": "dist/libcore.js",
   "module": "dist/libcore.es.js",
+  "jsnext:main": "dist/libcore.es.js",
   "scripts": {
     "test": "bin/build-bundle.sh test || exit 1",
     "start": "bin/build-bundle.sh start || exit 1",
