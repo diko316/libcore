@@ -1,10 +1,14 @@
 // Karma configuration
 // Generated on Tue Jan 31 2017 23:33:24 GMT+0000 (UTC)
 
-var webpackConfig = require("./webpack.config.js");
+var rollupConfig = require("./rollup.config.js");
 
 
 module.exports = function(config) {
+    
+    rollupConfig.sourcemap = 'inline';
+    
+    
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -30,7 +34,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-        'src/**/*.js': ['webpack']
+        'src/**/*.js': ['rollup']
     },
     
     // test results reporter to use
@@ -73,13 +77,7 @@ module.exports = function(config) {
     concurrency: Infinity,
     
     
-    webpack: webpackConfig,
-    
-    webpackMiddleware: {
-        // webpack-dev-middleware configuration
-        // i. e.
-        stats: 'errors-only'
-    }
+    rollupPreprocessor: rollupConfig
     
   });
 };
