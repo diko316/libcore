@@ -15,7 +15,7 @@ if npm run test; then
     npm run build
     npm run build-optimized
     
-    if cp -R ${ROOT}/test/assets/* ${ROOT}/dist/; then
+    if cp -R ${ROOT}/dist/* ${ROOT}/dist/; then
         chown $(stat -c '%u:%g' ${ROOT}/dist) -R ${ROOT}/dist/*
         echo "Built all sources to output directory."
         

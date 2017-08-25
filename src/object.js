@@ -4,15 +4,34 @@
  * @external libcore
  */
 
+import {
+            object,
+            string,
+            number,
+            array,
+            regex,
+            date,
+            nativeObject,
+            signature as objectSignature,
+            REGEX,
+            DATE,
+            ARRAY,
+            OBJECT,
+            METHOD
+            
+        } from "./type.js";
+
+//import * as STRING from "./string.js";
+
 var Obj = Object,
     O = Obj.prototype,
     EACH = typeof Obj.getOwnPropertyNames === 'function' ?
                 es5each : es3each,
-    TYPE = require("./type.js"),
-    STRING = require("./string.js"),
+    //STRING = require("./string.js"),
     OHasOwn = O.hasOwnProperty,
-    NUMERIC_RE = /^[0-9]*$/,
-    ARRAY_INDEX_RE = /^[1-9][0-9]*|0$/;
+    //NUMERIC_RE = /^[0-9]*$/,
+    ARRAY_INDEX_RE = /^[1-9][0-9]*|0$/,
+    EXPORTS;
     
 
 function empty() {
@@ -20,15 +39,14 @@ function empty() {
 }
 
 function isValidObject(target) {
-    var T = TYPE,
-        signature = T.signature(target);
+    var signature = objectSignature(target);
     
     switch (signature) {
-    case T.REGEX:
-    case T.DATE:
-    case T.ARRAY:
-    case T.OBJECT:
-    case T.METHOD: return signature;
+    case REGEX:
+    case DATE:
+    case ARRAY:
+    case OBJECT:
+    case METHOD: return signature;
     }
     return false;
 }
@@ -45,39 +63,7 @@ function isValidObject(target) {
  * @param {Boolean} [ownedOnly] - only assign properties owned by "source"
  * @returns {Object} target object from first parameter
  */
-function assign(target, source, defaults, ownedOnly) {
-    var onAssign = apply,
-        is = isValidObject,
-        eachProperty = EACH,
-        len = arguments.length;
-    
-    if (!is(target)) {
-        throw new Error("Invalid [target] parameter.");
-    }
-    
-    if (!is(source)) {
-        throw new Error("Invalid [source] parameter.");
-    }
-    
-    if (typeof defaults === 'boolean') {
-        ownedOnly = defaults;
-        len = 2;
-    }
-    else {
-        ownedOnly = ownedOnly !== false;
-    }
-    
-    if (is(defaults)) {
-        eachProperty(defaults, onAssign, target, ownedOnly);
-    }
-    else if (len > 2) {
-        throw new Error("Invalid [defaults] parameter.");
-    }
-    
-    eachProperty(source, onAssign, target, ownedOnly);
-    
-    return target;
-}
+
 
 function apply(value, name) {
     /*jshint validthis:true */
@@ -98,26 +84,7 @@ function apply(value, name) {
  *                          property value. (e.g. { "newname": "from source" })
  * @returns {Object} target object from first parameter
  */
-function assignProperties(target, source, access) {
-    var is = isValidObject,
-        context = [target, source];
-        
-    if (!is(target)) {
-        throw new Error("Invalid [target] parameter.");
-    }
-    
-    if (!is(source)) {
-        throw new Error("Invalid [source] parameter.");
-    }
-    
-    if (!TYPE.object(access)) {
-        throw new Error("Invalid [access] parameter.");
-    }
-    
-    EACH(access, applyProperties, context);
-    context = context[0] = context[1] =  null;
-    return target;
-}
+
 
 function applyProperties(value, name) {
     /*jshint validthis:true */
@@ -223,15 +190,7 @@ function es5each(subject, handler, scope, hasown) {
  *                      False if subject Object's property do not exist or not
  *                      dirty.
  */
-function contains(subject, property) {
-    var type = TYPE;
-    
-    if (!type.string(property) && !type.number(property)) {
-        throw new Error("Invalid [property] parameter.");
-    }
-    
-    return OHasOwn.call(subject, property);
-}
+
 
 
 
@@ -243,12 +202,6 @@ function contains(subject, property) {
  * @param {Object} subject
  * @returns {Object} subject parameter.
  */
-function clear(subject) {
-    EACH(subject, applyClear, null, true);
-    return subject;
-}
-
-
 
 function applyClear() {
     delete arguments[2][arguments[1]];
@@ -294,14 +247,7 @@ function applyFillin(value, name) {
  * @returns {Object} Instance created from Class without executing
  *                      its constructor.
  */
-function buildInstance(Class, overrides) {
-    empty.prototype = Class.prototype;
-    
-    if (TYPE.object(overrides)) {
-        return assign(new empty(), overrides);
-    }
-    return new empty();
-}
+
 
 /**
  * Deep compares two scalar, array, object, regex and date objects
@@ -312,16 +258,13 @@ function buildInstance(Class, overrides) {
  * @returns {boolean} True if scalar, regex, date, object properties, or array
  *                      items of object1 is identical to object2.
  */
-function compare(object1, object2) {
-    return compareLookback(object1, object2, []);
-}
+
 
 function compareLookback(object1, object2, references) {
-    var T = TYPE,
-        isObject = T.object,
-        isArray = T.array,
-        isRegex = T.regex,
-        isDate = T.date,
+    var isObject = object,
+        isArray = array,
+        isRegex = regex,
+        isDate = date,
         onCompare = onEachCompareObject,
         each = EACH,
         me = compareLookback,
@@ -431,35 +374,7 @@ function onEachCompareObject(value, name) {
  *                          array items.
  * @returns {*} Cloned object based from data
  */
-function clone(data, deep) {
-    var T = TYPE,
-        isNative = T.nativeObject(data);
-    
-    deep = deep === true;
-    
-    if (isNative || T.array(data)) {
-        return deep ?
-                    
-                    (isNative ? cloneObject : cloneArray)(data, [], []) :
-                    
-                    (isNative ? assignAll({}, data) : data.slice(0));
-    }
-    
-    if (T.regex(data)) {
-        return new RegExp(data.source, data.flags);
-    }
-    else if (T.date(data)) {
-        return new Date(data.getFullYear(),
-                    data.getMonth(),
-                    data.getDate(),
-                    data.getHours(),
-                    data.getMinutes(),
-                    data.getSeconds(),
-                    data.getMilliseconds());
-    }
-    
-    return data;
-}
+
 
 
 function cloneObject(data, parents, cloned) {
@@ -505,15 +420,14 @@ function cloneArray(data, parents, cloned) {
 }
 
 function onEachClonedProperty(value, name) {
-    var T = TYPE,
-        /* jshint validthis:true */
+    var /* jshint validthis:true */
         context = this,
-        isNative = T.nativeObject(value),
+        isNative = nativeObject(value),
         parents = context[1],
         cloned = context[2];
     var index;
     
-    if (isNative || T.array(value)) {
+    if (isNative || array(value)) {
         index = parents.lastIndexOf(value);
         value = index === -1 ?
                     (isNative ?
@@ -535,33 +449,163 @@ function onMaxNumericIndex(value, name, context) {
     }
 }
 
-function maxNumericIndex(subject) {
-    var context;
-    
-    if (TYPE.array(subject)) {
-        return subject.length - 1;
-    }
-    
-    if (isValidObject(subject)) {
+
+
+export { EACH as each };
+
+export
+    function assign(target, source, defaults, ownedOnly) {
+        var onAssign = apply,
+            is = isValidObject,
+            eachProperty = EACH,
+            len = arguments.length;
         
-        context = [-1];
-        EACH(subject, onMaxNumericIndex, context);
-        return context[0];
+        if (!is(target)) {
+            throw new Error("Invalid [target] parameter.");
+        }
+        
+        if (!is(source)) {
+            throw new Error("Invalid [source] parameter.");
+        }
+        
+        if (typeof defaults === 'boolean') {
+            ownedOnly = defaults;
+            len = 2;
+        }
+        else {
+            ownedOnly = ownedOnly !== false;
+        }
+        
+        if (is(defaults)) {
+            eachProperty(defaults, onAssign, target, ownedOnly);
+        }
+        else if (len > 2) {
+            throw new Error("Invalid [defaults] parameter.");
+        }
+        
+        eachProperty(source, onAssign, target, ownedOnly);
+        
+        return target;
     }
-    return false;
-}
 
+export 
+    function rehash(target, source, access) {
+        var is = isValidObject,
+            context = [target, source];
+            
+        if (!is(target)) {
+            throw new Error("Invalid [target] parameter.");
+        }
+        
+        if (!is(source)) {
+            throw new Error("Invalid [source] parameter.");
+        }
+        
+        if (!object(access)) {
+            throw new Error("Invalid [access] parameter.");
+        }
+        
+        EACH(access, applyProperties, context);
+        context = context[0] = context[1] =  null;
+        return target;
+    }
 
-module.exports = {
-    each: EACH,
-    assign: assign,
-    rehash: assignProperties,
-    contains: contains,
-    instantiate: buildInstance,
-    clone: clone,
-    compare: compare,
-    fillin: fillin,
-    //urlFill: jsonFill,
-    clear: clear,
-    maxObjectIndex: maxNumericIndex
-};
+export
+    function contains(subject, property) {
+    
+        if (!string(property) && !number(property)) {
+            throw new Error("Invalid [property] parameter.");
+        }
+        
+        return OHasOwn.call(subject, property);
+    }
+
+export
+    function instantiate(Class, overrides) {
+        empty.prototype = Class.prototype;
+        
+        if (object(overrides)) {
+            return assign(new empty(), overrides);
+        }
+        return new empty();
+    }
+    
+export
+    function clone(data, deep) {
+        var isNative = nativeObject(data);
+        
+        deep = deep === true;
+        
+        if (isNative || array(data)) {
+            return deep ?
+                        
+                        (isNative ? cloneObject : cloneArray)(data, [], []) :
+                        
+                        (isNative ? assignAll({}, data) : data.slice(0));
+        }
+        
+        if (regex(data)) {
+            return new RegExp(data.source, data.flags);
+        }
+        else if (date(data)) {
+            return new Date(data.getFullYear(),
+                        data.getMonth(),
+                        data.getDate(),
+                        data.getHours(),
+                        data.getMinutes(),
+                        data.getSeconds(),
+                        data.getMilliseconds());
+        }
+        
+        return data;
+    }
+    
+export
+    function compare(object1, object2) {
+        return compareLookback(object1, object2, []);
+    }
+    
+export
+    function fillin(target, source, hasown) {
+        if (!isValidObject(target)) {
+            throw new Error("Invalid [target] parameter");
+        }
+        EACH(source, applyFillin, target, hasown !== false);
+        return target;
+    }
+
+export
+    function clear(subject) {
+        EACH(subject, applyClear, null, true);
+        return subject;
+    }
+    
+export
+    function maxObjectIndex(subject) {
+        var context;
+        
+        if (array(subject)) {
+            return subject.length - 1;
+        }
+        
+        if (isValidObject(subject)) {
+            
+            context = [-1];
+            EACH(subject, onMaxNumericIndex, context);
+            return context[0];
+        }
+        return false;
+    }
+
+//export default {
+//        each: EACH,
+//        assign: assign,
+//        rehash: rehash,
+//        contains: contains,
+//        instantiate: instantiate,
+//        clone: clone,
+//        compare: compare,
+//        fillin: fillin,
+//        clear: clear,
+//        maxObjectIndex: maxObjectIndex
+//    };

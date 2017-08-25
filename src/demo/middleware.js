@@ -1,6 +1,6 @@
 'use strict';
 
-var processor = require("../processor.js");
+import * as processor from "../processor.js";
 
 var namespace = processor.middleware('test.innerTest');
 

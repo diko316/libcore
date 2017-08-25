@@ -1,8 +1,11 @@
 'use strict';
 
-var object = require("../object.js"),
-    libjson = require("../json.js"),
-    redundant = {
+import * as object from "../object.js";
+
+import * as libjson from "../json.js";
+
+
+var redundant = {
                     label: "redundant",
                     child: {
                         name: "very"
@@ -36,13 +39,13 @@ console.log(' compare object: cloned(redundant), redundant', object.compare(obje
 console.log(' -------------------------------------json fill');
 
 var json = {};
-libjson.jsonFill(json, 'root[]', 'root[]');
-libjson.jsonFill(json, 'root[names][]', 'root[names][]');
-libjson.jsonFill(json, 'root[names][]', 'root[names][]');
-libjson.jsonFill(json, 'root[names][]', 'root[names][]');
+libjson.jsonFill('root[]', json, 'root[]');
+libjson.jsonFill('root[names][]', json, 'root[names][]');
+libjson.jsonFill('root[names][]', json, 'root[names][]');
+libjson.jsonFill('root[names][]', json, 'root[names][]');
 
-libjson.jsonFill(json, 'root[][test]', 'root[][test]');
-libjson.jsonFill(json, 'root[][test]', 'root[][test]');
+libjson.jsonFill('root[][test]', json, 'root[][test]');
+libjson.jsonFill('root[][test]', json, 'root[][test]');
 
 
 console.log(json);

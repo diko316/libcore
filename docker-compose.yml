@@ -5,7 +5,7 @@ services:
   server:
     build: .
     image: libcore:latest
-    container_name: "libdocore-test"
+    container_name: "libcore-test"
     hostname: libdom
     command: bin/run-devserver.sh
 

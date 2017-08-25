@@ -3,10 +3,21 @@
 
 // motivation of set operations:
 // https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
-var DETECT = require('./detect.js'),
-    OBJECT = require('./object.js'),
-    TYPE = require('./type.js'),
-    INVALID_ARRAY1 = 'Invalid [array1] parameter.',
+import { indexOfSupport } from './detect.js';
+
+import {
+            assign
+        } from "./object.js";
+
+import {
+            array as isArray
+        } from "./type.js";
+
+    //DETECT = require('./detect.js'),
+    //OBJECT = require('./object.js'),
+    //TYPE = require('./type.js'),
+
+var INVALID_ARRAY1 = 'Invalid [array1] parameter.',
     INVALID_ARRAY2 = 'Invalid [array2] parameter.',
     A = Array.prototype;
 
@@ -54,7 +65,7 @@ function lastIndexOf(subject) {
  * @returns {Array} union of first two array parameters
  */
 function union(array1, array2, clone) {
-    var isarray = TYPE.array;
+    var isarray = isArray;
     var subject, l, len, total;
     
     if (!isarray(array1)) {
@@ -101,7 +112,7 @@ function union(array1, array2, clone) {
  * @returns {Array} intersection of first two array parameters
  */
 function intersect(array1, array2, clone) {
-    var isarray = TYPE.array;
+    var isarray = isArray;
     var subject, l1, l2, total1, total2;
     
     if (!isarray(array1)) {
@@ -152,7 +163,7 @@ function intersect(array1, array2, clone) {
  * @returns {Array} difference of first two array parameters
  */
 function difference(array1, array2, clone) {
-    var isarray = TYPE.array;
+    var isarray = isArray;
     var subject, l1, l2, total1, total2;
     
     if (!isarray(array1)) {
@@ -199,16 +210,16 @@ function difference(array1, array2, clone) {
 
 
 // apply polyfill
-if (!DETECT.indexOfSupport) {
-    OBJECT.assign(A, {
+if (!indexOfSupport) {
+    assign(A, {
         indexOf: indexOf,
         lastIndexOf: lastIndexOf
     });
 }
 
-module.exports = {
-    unionList: union,
-    intersectList: intersect,
-    differenceList: difference
+export {
+    union as unionList,
+    intersect as intersectList,
+    difference as differenceList
 };
 

@@ -1,18 +1,14 @@
 'use strict';
 
-import {
-            name as packageName,
-            main as dest,
-            module as moduleName
-            
-        } from "./package.json";
-        
-import configure from "./config/base.js";
 
-let meta = {
-        name: packageName,
-        target: dest,
-        moduleTarget: moduleName
+
+
+let pkg = require('./package.json'),
+    configure = require('./config/base.js'),
+    meta = {
+        name: pkg.name,
+        target: pkg.main,
+        moduleTarget: pkg.moduleName
     },
     config = {};
 
@@ -21,12 +17,21 @@ configure(config, meta);
 
 // setup by env
 switch (process.env.BUILD_MODE) {
+case 'production':
+    require("./config/production.js")(config, meta);
+    break;
+
+case 'compressed':
+    require("./config/compressed.js")(config, meta);
+    break;
+
 case 'unit-test':
     require("./config/unit-test.js")(config, meta);
     break;
+
 default:
     require("./config/devel.js")(config, meta);
 }
 
 
-export default config;
+module.exports = config;

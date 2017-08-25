@@ -1,10 +1,14 @@
 'use strict';
 
+
+import {
+        string
+    } from "./type.js";
+
 var HALF_BYTE = 0x80,
     SIX_BITS = 0x3f,
     ONE_BYTE = 0xff,
     fromCharCode = String.fromCharCode,
-    TYPE = require('./type.js'),
     BASE64_MAP =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
     NOT_BASE64_RE = /[^a-zA-Z0-9\+\/\=]/g,
@@ -22,7 +26,7 @@ function base64Encode(subject) {
         pad = map.charAt(64);
     var l, total, code, flag, end, chr;
     
-    if (!TYPE.string(subject, true)) {
+    if (!string(subject, true)) {
         throw new Error(INVALID_SUBJECT);
     }
     
@@ -77,7 +81,7 @@ function base64Decode(subject) {
         code2str = fromCharCode;
     var l, code, excess, chr, flag;
     
-    if (!TYPE.string(subject, true) || NOT_BASE64_RE.test(subject)) {
+    if (!string(subject, true) || NOT_BASE64_RE.test(subject)) {
         throw new Error(INVALID_SUBJECT);
     }
     
@@ -129,7 +133,7 @@ function utf16ToUtf8(subject) {
         ul = 0;
     var code, c, l;
     
-    if (!TYPE.string(subject, true)) {
+    if (!string(subject, true)) {
         throw new Error(INVALID_SUBJECT);
     }
     
@@ -170,7 +174,7 @@ function utf8ToUtf16(subject) {
     var code2char = fromCharCode;
     var utf16, ul, c, l, code;
     
-    if (!TYPE.string(subject, true)) {
+    if (!string(subject, true)) {
         throw new Error(INVALID_SUBJECT);
     }
     
@@ -226,11 +230,11 @@ function applyUncamelize(all) {
     return '-' + all.charAt(all.length -1).toLowerCase();
 }
 
-module.exports = {
-    "encode64": base64Encode,
-    "decode64": base64Decode,
-    "utf2bin": utf16ToUtf8,
-    "bin2utf": utf8ToUtf16,
-    "camelize": camelize,
-    "uncamelize": uncamelize
-};
+export {
+        camelize,
+        uncamelize,
+        base64Encode as encode64,
+        base64Decode as decode64,
+        utf16ToUtf8 as utf2bin,
+        utf8ToUtf16 as bin2utf
+    };

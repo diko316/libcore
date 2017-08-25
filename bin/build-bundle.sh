@@ -4,16 +4,23 @@ ROOT=$(dirname $(dirname $(readlink -f $0)))
 
 cd "${ROOT}"
 
+echo "building... ${1}";
+
 case "${1}" in
     "start")
         export BUILD_MODE=devel
-        node_modules/.bin/rollup --config &&
-            node webpack.dev.server.js || exit $?
+        node_modules/.bin/rollup --config || exit $?
+        ;;
+        
+    "sync-demo")
+        export BUILD_MODE=demo
+        node_modules/.bin/rollup --config 'rollup.config.demo.js' || exit $?
         ;;
         
     "build")
         export BUILD_MODE=production
         node_modules/.bin/rollup --config || exit $?
+        echo "built.";
         ;;
         
     "build-optimized")

@@ -1,25 +1,17 @@
 'use strict';
 
-var webpack = require("webpack"),
-    UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+var APPEND_MIN_RE = /(\.js)$/i;
 
-function augment(config, definition) {
-    var wp = webpack,
-        name = definition.name;
+function augment(config) {
+    var output = config.output,
+        dest = output.file;
     
+    // rename ".js" suffix to "min.js"
+    output.file = dest.replace(APPEND_MIN_RE, ".min.js");
     
-    config.entry[name + '.min'] = config.entry[name];
-    delete config.entry[name];
-    
-    config.plugins = [new wp.LoaderOptionsPlugin({
-                            minimize: true,
-                            debug: false
-                        }),
-                        new wp.optimize.UglifyJsPlugin({
-                            beautify: false,
-                            comments: false
-                        })];
-        //new UglifyJSPlugin()];
+    config.plugins.
+        push(require('rollup-plugin-uglify')({
+        }));
     
 }
 

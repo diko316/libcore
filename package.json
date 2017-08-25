@@ -3,6 +3,7 @@
   "version": "0.3.2",
   "description": "Kicks-start helpers for cross-browser libraries and different versions of nodejs",
   "main": "dist/libcore.js",
+  "module": "src/index.js",
   "scripts": {
     "test": "bin/build-bundle.sh test || exit 1",
     "start": "bin/build-bundle.sh start || exit 1",
@@ -26,13 +27,20 @@
   },
   "homepage": "https://github.com/diko316/libcore#readme",
   "devDependencies": {
+    "jasmine-core": "^2.8.0",
     "karma": "^1.7.0",
     "karma-firefox-launcher": "^1.0.1",
     "karma-jasmine": "^1.1.0",
     "karma-mocha-reporter": "^2.2.4",
     "karma-rollup-preprocessor": "^5.0.1",
     "rollup": "^0.48.2",
+    "rollup-plugin-browsersync": "^0.2.4",
+    "rollup-plugin-buble": "^0.15.0",
     "rollup-plugin-commonjs": "^8.2.0",
-    "rollup-plugin-node-resolve": "^3.0.0"
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.1.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1"
   }
 }

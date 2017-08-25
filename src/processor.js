@@ -1,8 +1,9 @@
 'use strict';
 
-var TYPE = require('./type.js'),
-    //DETECT = require('./detect.js'),
-    G = global,
+import { string } from "./type.js";
+
+
+var G = global,
     // 1 = namespace, 4 = position, 5 = item
     NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/,
     POSITION_BEFORE = 1,
@@ -10,16 +11,7 @@ var TYPE = require('./type.js'),
     RUNNERS = {},
     NAMESPACES = {},
     NATIVE_SET_IMMEDIATE = !!G.setImmediate,
-    EXPORTS = {
-        register: set,
-        run: run,
-        middleware: middlewareNamespace,
-        setAsync: NATIVE_SET_IMMEDIATE ?
-                        nativeSetImmediate : timeoutAsync,
-        clearAsync: NATIVE_SET_IMMEDIATE ?
-                        nativeClearImmediate : clearTimeoutAsync
-    };
-    
+    CHAIN = {};
 
     
 function set(name, handler) {
@@ -43,7 +35,7 @@ function set(name, handler) {
         items[items.length] = handler;
     }
     
-    return EXPORTS.chain;
+    return CHAIN;
 }
 
 
@@ -65,7 +57,7 @@ function run(name, args, scope) {
         
     }
     
-    return EXPORTS.chain;
+    return CHAIN;
 }
 
 function get(name) {
@@ -90,7 +82,7 @@ function getPositionAccess(input) {
 }
 
 function parseName(name) {
-    var match = TYPE.string(name) && name.match(NAME_RE);
+    var match = string(name) && name.match(NAME_RE);
     var position, namespace;
     
     
@@ -112,7 +104,7 @@ function middlewareNamespace(name) {
     var list = NAMESPACES;
     var access, register, run;
  
-    if (TYPE.string(name)) {
+    if (string(name)) {
         access = name + '.';
         if (!(access in list)) {
             run = createRunInNamespace(access);
@@ -160,5 +152,20 @@ function nativeClearImmediate(id) {
     return G.clearImmediate(id);
 }
 
+export
+    function setModuleChain(chain) {
+        CHAIN = chain;
+    }
+    
+export {
+        run,
+        set as register,
+        middlewareNamespace as middleware
+    };
 
-module.exports = EXPORTS.chain = EXPORTS;
+export let
+        setAsync = NATIVE_SET_IMMEDIATE ?
+                        nativeSetImmediate : timeoutAsync,
+        clearAsync = NATIVE_SET_IMMEDIATE ?
+                        nativeClearImmediate : clearTimeoutAsync;
+

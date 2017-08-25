@@ -1,10 +1,33 @@
 'use strict';
 
-var TYPE = require("./type.js"),
-    OBJECT = require("./object.js"),
-    JSON_OP = require("./json.js"),
-    isString = TYPE.string,
-    ERROR_NAME = 'Invalid [name] parameter.',
+
+import {
+            string,
+            signature,
+            
+            STRING,
+            NUMBER,
+            OBJECT,
+            ARRAY
+
+        } from "./type.js";
+        
+import {
+            assign,
+            contains,
+            clear,
+            clone
+        } from "./object.js";
+        
+import {
+            jsonFind,
+            jsonFill,
+            jsonUnset,
+            jsonExists
+        } from "./json.js";
+
+
+var ERROR_NAME = 'Invalid [name] parameter.',
     ERROR_PATH = 'Invalid [path] parameter.';
 
 function create() {
@@ -12,11 +35,9 @@ function create() {
 }
 
 function isIndex(name) {
-    var T = TYPE;
-    
-    switch (T.signature(name)) {
-    case T.STRING:
-    case T.NUMBER: return true;
+    switch (signature(name)) {
+    case STRING:
+    case NUMBER: return true;
     }
     return false;
 }
@@ -29,7 +50,7 @@ Registry.prototype = {
     constructor: Registry,
     
     onApply: function (value) {
-        OBJECT.assign(this.data, value, true);
+        assign(this.data, value, true);
     },
     
     onSet: function (name, value) {
@@ -43,7 +64,7 @@ Registry.prototype = {
             throw new Error(ERROR_NAME);
         }
         
-        if (OBJECT.contains(list, name)) {
+        if (contains(list, name)) {
             return list[name];
         }
         
@@ -51,16 +72,14 @@ Registry.prototype = {
     },
     
     set: function (name, value) {
-        var T = TYPE;
-        
-        switch (T.signature(name)) {
-        case T.OBJECT:
-        case T.ARRAY:
+        switch (signature(name)) {
+        case OBJECT:
+        case ARRAY:
             this.onApply(name);
             break;
         
-        case T.STRING:
-        case T.NUMBER:
+        case STRING:
+        case NUMBER:
             this.onSet(name, value);
             break;
             
@@ -78,7 +97,7 @@ Registry.prototype = {
             throw new Error(ERROR_NAME);
         }
         
-        if (OBJECT.contains(list, name)) {
+        if (contains(list, name)) {
             delete list[name];
         }
         
@@ -86,30 +105,30 @@ Registry.prototype = {
     },
     
     find: function (path) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        return JSON_OP.jsonFind(path, this.data);
+        return jsonFind(path, this.data);
     },
     
     insert: function (path, value) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        JSON_OP.jsonFill(path, this.data, value, true);
+        jsonFill(path, this.data, value, true);
         
         return this;
     
     },
     
     remove: function (path) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        JSON_OP.jsonUnset(path, this.data);
+        jsonUnset(path, this.data);
         
         return this;
     },
@@ -119,23 +138,21 @@ Registry.prototype = {
             throw new Error(ERROR_NAME);
         }
         
-        return OBJECT.contains(this.data, name);
+        return contains(this.data, name);
     },
     
     pathExists: function (path) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
-        return JSON_OP.jsonExists(path, this.data);
+        return jsonExists(path, this.data);
     },
     
     assign: function(value) {
-        var T = TYPE;
-        
-        switch (T.signature(value)) {
-        case T.OBJECT:
-        case T.ARRAY:
+        switch (signature(value)) {
+        case OBJECT:
+        case ARRAY:
             this.onApply(value);
             return this;
         
@@ -146,17 +163,18 @@ Registry.prototype = {
     },
     
     clear: function () {
-        OBJECT.clear(this.data);
+        clear(this.data);
         return this;
     },
     
     clone: function () {
         var list = this.data;
-        return OBJECT.clone(list, true);
+        return clone(list, true);
     }
+    
 };
 
-module.exports = {
-    createRegistry: create
-};
+
+export default create;
+
 

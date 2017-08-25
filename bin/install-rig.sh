@@ -26,10 +26,16 @@
 
 npm install -y -d --save-dev \
     rollup \
-    rollup-plugin-node-resolve \
+    rollup-plugin-buble \
     rollup-plugin-commonjs \
     rollup-plugin-browsersync \
+    rollup-plugin-node-resolve \
+    rollup-plugin-node-globals \
+    rollup-plugin-node-builtins \
+    rollup-plugin-json \
+    rollup-plugin-uglify \
     \
+    jasmine-core \
     karma \
     karma-firefox-launcher \
     karma-jasmine \

@@ -1,8 +1,9 @@
 'use strict';
 
-var DETECTED = require('./detect.js'),
-    validSignature = DETECTED.validSignature,
-    OBJECT_SIGNATURE = '[object Object]',
+import { validSignature } from "./detect.js";
+
+
+var OBJECT_SIGNATURE = '[object Object]',
     ARRAY_SIGNATURE = '[object Array]',
     NULL_SIGNATURE = '[object Null]',
     UNDEFINED_SIGNATURE = '[object Undefined]',
@@ -191,43 +192,43 @@ function isIterable(subject) {
 }
 
 
-module.exports = {
-    OBJECT: OBJECT_SIGNATURE,
-    ARRAY: ARRAY_SIGNATURE,
-    NULL: NULL_SIGNATURE,
-    UNDEFINED: UNDEFINED_SIGNATURE,
-    NUMBER: NUMBER_SIGNATURE,
-    STRING: STRING_SIGNATURE,
-    BOOLEAN: BOOLEAN_SIGNATURE,
-    METHOD: METHOD_SIGNATURE,
-    FUNCTION: METHOD_SIGNATURE,
-    DATE: DATE_SIGNATURE,
-    REGEX: REGEX_SIGNATURE,
-    
-    signature: isSignature,
-    
-    object: validSignature ?
-                isObject : ieIsObject,
-    
-    nativeObject: isNativeObject,
-    
-    string: isString,
-    
-    number: isNumber,
-    
-    scalar: isScalar,
-    
-    array: isArray,
-    
-    method: isFunction,
-    
-    date: isDate,
-    
-    regex: isRegExp,
-    
-    type: isType,
-    
-    thenable: isThenable,
-    
-    iterable: isIterable
-};
+export let object = validSignature ?
+                        isObject : ieIsObject;
+
+export {
+        OBJECT_SIGNATURE as OBJECT,
+        ARRAY_SIGNATURE as ARRAY,
+        NULL_SIGNATURE as NULL,
+        UNDEFINED_SIGNATURE as UNDEFINED,
+        NUMBER_SIGNATURE as NUMBER,
+        STRING_SIGNATURE as STRING,
+        BOOLEAN_SIGNATURE as BOOLEAN,
+        METHOD_SIGNATURE as METHOD,
+        METHOD_SIGNATURE as FUNCTION,
+        DATE_SIGNATURE as DATE,
+        REGEX_SIGNATURE as REGEX,
+        
+        isSignature as signature,
+        
+        isNativeObject as nativeObject,
+        
+        isString as string,
+        
+        isNumber as number,
+        
+        isScalar as scalar,
+        
+        isArray as array,
+        
+        isFunction as method,
+        
+        isDate as date,
+        
+        isRegExp as regex,
+        
+        isType as type,
+        
+        isThenable as thenable,
+        
+        isIterable as iterable 
+    };

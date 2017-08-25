@@ -1,10 +1,10 @@
 'use strict';
 
-var PROMISE = require("../promise.js");
+import PROMISE from "../promise.js";
 
 console.log('run');
 
-var promise = PROMISE(function (resolve) {
+PROMISE(function (resolve) {
         resolve({ name: "resolved" });
     }).
     then(function (data) {

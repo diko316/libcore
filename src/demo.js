@@ -1,9 +1,12 @@
 'use strict';
 
+import "./index.js";
 
+import "./demo/object.js";
 
+import "./demo/promise.js";
 
-require("./demo/object.js");
-require("./demo/promise.js");
-require("./demo/registry.js");
-require("./demo/middleware.js");
+import "./demo/registry.js";
+
+import "./demo/middleware.js";
+

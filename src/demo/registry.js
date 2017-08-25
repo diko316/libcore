@@ -1,6 +1,6 @@
 'use strict';
 
-var REGISTRY = require("../registry.js");
+import createRegistry from "../registry.js";
 
 
-REGISTRY.createRegistry().set('diko', 'buang');
+createRegistry().set('diko', 'buang');

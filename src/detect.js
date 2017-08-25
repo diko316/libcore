@@ -1,70 +1,117 @@
 'use strict';
 
+
 var ROOT = global,
-    doc = ROOT.document,
-    win = ROOT.window,
-    toString = Object.prototype.toString,
-    objectSignature = '[object Object]',
-    BROWSER = !!doc && !!win &&
-                win.self === (doc.defaultView || doc.parentWindow),
-    NODEVERSIONS = BROWSER ? false :
-                    (function () {
-                        return ('process' in global &&
-                                global.process.versions) || false;
-                    })(),
-    CONSOLE = {},
-    CONSOLE_NAMES = [
-        'log',
-        'info',
-        'warn',
-        'error',
-        'assert'
-    ],
-    EXPORTS = {
-        browser: BROWSER,
-        nodejs: NODEVERSIONS && !!NODEVERSIONS.node,
-        userAgent: BROWSER ?
-                        ROOT.navigator.userAgent :
-                        NODEVERSIONS ?
-                            nodeUserAgent() : 'Unknown',
-                        
-        validSignature: toString.call(null) !== objectSignature ||
-                        toString.call(void(0)) !== objectSignature,
-                        
-        ajax: ROOT.XMLHttpRequest,
-        indexOfSupport: 'indexOf' in Array.prototype
-    };
-    
-var c, l;
+    browser = isBrowser(),
+    nodeVersions = nodeVersion(browser),
+    nodejs = nodeVersions && !!nodeVersions.node,
+    userAgent = getUserAgent(browser,
+                             nodeVersions),
+    validSignature = hasValidSignature(),
+    ajax = ROOT.XMLHttpRequest || null,
+    indexOfSupport = typeof Array.prototype.indexOf !== "undefined";
 
-function nodeUserAgent() {
-    var PROCESS = 'process' in global ? global.process : null,
-        VERSIONS = NODEVERSIONS,
-        str = ['Node ',
-                VERSIONS.node,
-                '(',
-                    PROCESS.platform,
-                    '; V8 ',
-                    VERSIONS.v8 || 'unknown',
-                    '; arch ',
-                    PROCESS.arch,
-                ')'];
 
-    return str.join('');
+// detect browser
+function isBrowser() {
+    var G = ROOT,
+        win = G.document,
+        doc = G,
+        result = !!doc && !!win &&
+                win.self === (doc.defaultView || doc.parentWindow);
+    // cleanup
+    G = win = doc = null;
+    return result;
 }
 
-function empty() {
+// detect nodejs info
+function nodeVersion(browser) {
+    var G = ROOT,
+        result = browser ?
+                    false :
+                    ('process' in G && G.process.versions) || false;
+    G = null;
     
+    return result;
 }
 
-// console polyfill so that IE 8 will not have fatal errors
-//      for not openning dev tool window
-if (!ROOT.console) {
-    for (c = 0, l = CONSOLE_NAMES.length; l--; c++) {
-        CONSOLE[CONSOLE_NAMES[c]] = empty;
+// detect userAgent
+function getUserAgent(browser, nodeVersions) {
+    var G = ROOT,
+        result = 'Unknown',
+        proc = null;
+    
+    if (browser) {
+        result = G.navigator.userAgent;
+        
     }
+    else if (nodeVersions && 'process' in G) {
+        proc = G.process;
+        result = (['Node ',
+                    nodeVersions.node,
+                    '(',
+                        proc.platform,
+                        '; V8 ',
+                        nodeVersions.v8 || 'unknown',
+                        '; arch ',
+                        proc.arch,
+                    ')']).
+                    join('');
+    }
+    
+    G = proc = null;
+    
+    return result;       
+    
 }
 
-module.exports = EXPORTS;
+function hasValidSignature() {
+    var toString = Object.prototype.toString,
+        objectSignature = '[object Object]';
+        
+    return toString.call(null) !== objectSignature ||
+                        toString.call(void(0)) !== objectSignature;
+}
 
-ROOT = win = doc = null;
+// empty function for unsupported "console"
+//function empty() {
+//    
+//}
+//function polyfillConsole() {
+//    var cons = {},
+//        names = [
+//            'log',
+//            'info',
+//            'warn',
+//            'error',
+//            'assert'
+//        ],
+//        original = ROOT.console;
+//    var l;
+//    
+//    // console polyfill so that IE 8 will not have fatal errors
+//    //      for not openning dev tool window
+//    if (!original) {
+//        for (l = names.length; l--;) {
+//            cons[l] = empty;
+//        }
+//    }
+//}
+//
+//polyfillConsole();
+
+ROOT = null;
+
+
+
+export {
+    browser,
+    nodeVersions,
+    nodejs,
+    userAgent,
+    validSignature,
+    ajax,
+    indexOfSupport
+};
+
+

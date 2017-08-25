@@ -1,11 +1,9 @@
 'use strict';
 
-import resolve from 'rollup-plugin-node-resolve';
-
-import commonjs from 'rollup-plugin-commonjs';
-
 let plugins = [
-        resolve({
+        require('rollup-plugin-node-globals')(),
+        require('rollup-plugin-node-builtins')(),
+        require('rollup-plugin-node-resolve')({
             // use "jsnext:main" if possible
             // see https://github.com/rollup/rollup/wiki/jsnext:main
             jsnext: true,  // Default: false
@@ -17,7 +15,7 @@ let plugins = [
 
         }),
         
-        commonjs({
+        require('rollup-plugin-commonjs')({
             // non-CommonJS modules will be ignored, but you can also
             // specifically include/exclude files
             include: 'node_modules/**',  // Default: undefined
@@ -44,22 +42,26 @@ let plugins = [
             // or a `id => boolean` function. Only use this
             // option if you know what you're doing!
             //ignore: [ 'conditional-runtime-dependency' ]
-        })
+        }),
+        require('rollup-plugin-buble')()
     ];
-
-export default
-    function configure(config, meta) {
+    
+function configure(config, meta) {
         
-        config.entry = 'src/index.js';
+        config.input = 'src/index.js';
         
         config.plugins = plugins;
         
-        config.targets = [{
-            dest: meta.target,
+        config.output = {
+            file: meta.target,
             format: 'umd',
-            moduleName: meta.name,
-            sourceMap: true
-        }];
+            name: meta.name,
+            exports: 'named',
+            sourcemap: true
+        };
         
         return config;
     }
+
+module.exports = configure;
+    

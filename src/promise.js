@@ -1,9 +1,24 @@
 'use strict';
 
-var TYPE = require("./type.js"),
-    OBJECT = require("./object.js"),
-    PROCESSOR = require("./processor.js"),
-    slice = Array.prototype.slice,
+import {
+
+            method,
+            thenable,
+            iterable as isIterable
+
+        } from "./type.js";
+    
+import {
+
+            assign,
+            instantiate
+
+        } from "./object.js";
+
+import { setAsync } from "./processor.js";
+
+
+var slice = Array.prototype.slice,
     G = global,
     ERROR_ITERABLE = 'Invalid [iterable] parameter.',
     INDEX_STATUS = 0,
@@ -14,7 +29,7 @@ function createPromise(instance) {
     var Class = Promise;
     
     if (!(instance instanceof Class)) {
-        instance = OBJECT.instantiate(Class);
+        instance = instantiate(Class);
     }
     
     instance.__state = [null,
@@ -35,7 +50,7 @@ function resolveValue(data, callback) {
         }
     }
     
-    if (TYPE.thenable(data)) {
+    if (thenable(data)) {
         data.then(resolve,
                   function (error) {
                         callback(false, error);
@@ -82,7 +97,7 @@ function Promise(resolver) {
         }
     }
     
-    if (!TYPE.method(resolver)) {
+    if (!method(resolver)) {
         throw new Error('Promise resolver is not a function.');
     }
     
@@ -147,7 +162,7 @@ function all(iterable) {
         }
     }
     
-    if (!TYPE.iterable(iterable)) {
+    if (!isIterable(iterable)) {
         throw new TypeError(ERROR_ITERABLE);
     }
     
@@ -181,7 +196,7 @@ function race(iterable) {
         }
     }
     
-    if (!TYPE.iterable(iterable)) {
+    if (!isIterable(iterable)) {
         throw new TypeError(ERROR_ITERABLE);
     }
     
@@ -203,7 +218,7 @@ Promise.prototype = {
             var finalize = finalizeValue,
                 handle = success ? onFulfill : onReject;
             
-            if (TYPE.method(handle)) {
+            if (method(handle)) {
                 try {
                     data = handle(data);
                     resolveValue(data,
@@ -226,7 +241,7 @@ Promise.prototype = {
             list[list.length] = run;
         }
         else {
-            PROCESSOR.setAsync(function () {
+            setAsync(function () {
                 run(success, state[INDEX_DATA]);
             });
         }
@@ -240,7 +255,7 @@ Promise.prototype = {
 };
 
 // static methods
-OBJECT.assign(Promise, {
+assign(Promise, {
     all: all,
     race: race,
     reject: reject,
@@ -248,9 +263,11 @@ OBJECT.assign(Promise, {
 });
 
 // Polyfill if promise is not supported
-if (!TYPE.method(G.Promise)) {
+if (!method(G.Promise)) {
     G.Promise = Promise;
 }
 
-module.exports = Promise;
 G = null;
+
+export default Promise;
+
