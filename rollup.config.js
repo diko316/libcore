@@ -7,6 +7,7 @@ let pkg = require('./package.json'),
     configure = require('./config/base.js'),
     meta = {
         name: pkg.name,
+        esTarget: pkg.module,
         target: pkg.main,
         moduleTarget: pkg.moduleName
     },

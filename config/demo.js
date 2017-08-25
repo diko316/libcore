@@ -2,7 +2,7 @@
 
 
 function augment(config) {
-    var output = config.output;
+    var output = config.output = {};
     
     config.input = 'src/demo.js';
     output.file = 'dist/demo.js';
@@ -11,6 +11,7 @@ function augment(config) {
     output.exports = 'named';
     output.sourcemap = 'inline';
     
+    delete config.targets;
 }
 
 module.exports = augment;

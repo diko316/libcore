@@ -3,7 +3,7 @@
   "version": "0.3.2",
   "description": "Kicks-start helpers for cross-browser libraries and different versions of nodejs",
   "main": "dist/libcore.js",
-  "module": "src/index.js",
+  "module": "dist/libcore.es.js",
   "scripts": {
     "test": "bin/build-bundle.sh test || exit 1",
     "start": "bin/build-bundle.sh start || exit 1",

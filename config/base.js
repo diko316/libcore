@@ -48,18 +48,27 @@ let plugins = [
     
 function configure(config, meta) {
         
+        var umd = meta.umd = {
+                    file: meta.target,
+                    format: 'umd',
+                    name: meta.name,
+                    exports: 'named',
+                    sourcemap: true
+                },
+            es = meta.es = {
+                file: meta.esTarget,
+                format: 'es',
+                name: meta.name,
+                exports: 'named',
+                sourcemap: true
+            };
+        
         config.input = 'src/index.js';
         
         config.plugins = plugins;
         
-        config.output = {
-            file: meta.target,
-            format: 'umd',
-            name: meta.name,
-            exports: 'named',
-            sourcemap: true
-        };
-        
+        config.output = [umd, es];
+
         return config;
     }
 

@@ -1,9 +1,3 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.libcore = {})));
-}(this, (function (exports) { 'use strict';
-
 var global$1 = typeof global !== "undefined" ? global :
             typeof self !== "undefined" ? self :
             typeof window !== "undefined" ? window : {};
@@ -2742,70 +2736,6 @@ var BUNDLE$1 = Object.freeze({
 
 setModuleChain(BUNDLE$1);
 
-exports['default'] = BUNDLE$1;
-exports.env = env;
-exports.createRegistry = create;
-exports.Promise = Promise;
-exports.each = EACH;
-exports.assign = assign;
-exports.rehash = rehash;
-exports.contains = contains;
-exports.instantiate = instantiate;
-exports.clone = clone;
-exports.compare = compare;
-exports.fillin = fillin;
-exports.clear = clear;
-exports.maxObjectIndex = maxObjectIndex;
-exports.setModuleChain = setModuleChain;
-exports.run = run;
-exports.register = set;
-exports.middleware = middlewareNamespace;
-exports.setAsync = setAsync;
-exports.clearAsync = clearAsync;
-exports.object = object;
-exports.OBJECT = OBJECT_SIGNATURE;
-exports.ARRAY = ARRAY_SIGNATURE;
-exports.NULL = NULL_SIGNATURE;
-exports.UNDEFINED = UNDEFINED_SIGNATURE;
-exports.NUMBER = NUMBER_SIGNATURE;
-exports.STRING = STRING_SIGNATURE;
-exports.BOOLEAN = BOOLEAN_SIGNATURE;
-exports.METHOD = METHOD_SIGNATURE;
-exports.FUNCTION = METHOD_SIGNATURE;
-exports.DATE = DATE_SIGNATURE;
-exports.REGEX = REGEX_SIGNATURE;
-exports.signature = isSignature;
-exports.nativeObject = isNativeObject;
-exports.string = isString;
-exports.number = isNumber;
-exports.scalar = isScalar;
-exports.array = isArray;
-exports.method = isFunction;
-exports.date = isDate;
-exports.regex = isRegExp;
-exports.type = isType;
-exports.thenable = isThenable;
-exports.iterable = isIterable;
-exports.unionList = union;
-exports.intersectList = intersect;
-exports.differenceList = difference;
-exports.camelize = camelize;
-exports.uncamelize = uncamelize;
-exports.encode64 = base64Encode;
-exports.decode64 = base64Decode;
-exports.utf2bin = utf16ToUtf8;
-exports.bin2utf = utf8ToUtf16;
-exports.jsonParsePath = jsonParsePath;
-exports.jsonFind = jsonFind;
-exports.jsonCompare = jsonCompare;
-exports.jsonClone = jsonClone;
-exports.jsonEach = jsonEach;
-exports.jsonSet = jsonSet;
-exports.jsonUnset = jsonUnset;
-exports.jsonFill = jsonFill;
-exports.jsonExists = jsonExists;
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
-//# sourceMappingURL=libcore.js.map
+export { env, create as createRegistry, Promise, EACH as each, assign, rehash, contains, instantiate, clone, compare, fillin, clear, maxObjectIndex, setModuleChain, run, set as register, middlewareNamespace as middleware, setAsync, clearAsync, object, OBJECT_SIGNATURE as OBJECT, ARRAY_SIGNATURE as ARRAY, NULL_SIGNATURE as NULL, UNDEFINED_SIGNATURE as UNDEFINED, NUMBER_SIGNATURE as NUMBER, STRING_SIGNATURE as STRING, BOOLEAN_SIGNATURE as BOOLEAN, METHOD_SIGNATURE as METHOD, METHOD_SIGNATURE as FUNCTION, DATE_SIGNATURE as DATE, REGEX_SIGNATURE as REGEX, isSignature as signature, isNativeObject as nativeObject, isString as string, isNumber as number, isScalar as scalar, isArray as array, isFunction as method, isDate as date, isRegExp as regex, isType as type, isThenable as thenable, isIterable as iterable, union as unionList, intersect as intersectList, difference as differenceList, camelize, uncamelize, base64Encode as encode64, base64Decode as decode64, utf16ToUtf8 as utf2bin, utf8ToUtf16 as bin2utf, jsonParsePath, jsonFind, jsonCompare, jsonClone, jsonEach, jsonSet, jsonUnset, jsonFill, jsonExists };
+export default BUNDLE$1;
+//# sourceMappingURL=libcore.es.js.map
