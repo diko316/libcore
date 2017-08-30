@@ -2,7 +2,9 @@
 
 import * as BUNDLE from "./all.js";
 
-BUNDLE.setModuleChain(BUNDLE);
+import { use } from "./chain.js";
+
+use(BUNDLE);
 
 export * from "./all.js";
 

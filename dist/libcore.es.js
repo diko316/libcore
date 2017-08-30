@@ -110,7 +110,7 @@ ROOT = null;
 
 
 
-var DETECT = Object.freeze({
+var detect = Object.freeze({
 	browser: browser,
 	nodeVersions: nodeVersions,
 	nodejs: nodejs,
@@ -869,61 +869,34 @@ function maxObjectIndex(subject) {
 //        maxObjectIndex: maxObjectIndex
 //    };
 
+var CHAIN = null;
+
+function use(chain) {
+        CHAIN = chain;
+    }
+    
+function getModule() {
+        return CHAIN;
+    }
+
 var G = global$1;
 var NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/;
 var POSITION_BEFORE = 1;
 var POSITION_AFTER = 2;
 var RUNNERS = {};
 var NAMESPACES = {};
+var INVALID_HANDLER = 'Invalid [handler] parameter.';
 var NATIVE_SET_IMMEDIATE = !!G.setImmediate;
-var CHAIN = {};
+var setAsync = NATIVE_SET_IMMEDIATE ?
+                    nativeSetImmediate : timeoutAsync;
+var clearAsync = NATIVE_SET_IMMEDIATE ?
+                    nativeClearImmediate : clearTimeoutAsync;
 
     
-function set(name, handler) {
-    var parsed = parseName(name),
-        list = RUNNERS;
-    var access, items;
-    
-    if (parsed && handler instanceof Function) {
-        name = parsed[1];
-        access = ':' + name;
-        if (!(access in list)) {
-            list[access] = {
-                name: name,
-                before: [],
-                after: []
-            };
-        }
-        
-        items = list[access][getPositionAccess(parsed[0])];
-        
-        items[items.length] = handler;
-    }
-    
-    return CHAIN;
-}
 
 
-function run(name, args, scope) {
-    var runners = get(name);
-    var c, l;
 
-    if (runners) {
-        if (typeof scope === 'undefined') {
-            scope = null;
-        }
-        if (!(args instanceof Array)) {
-            args = [];
-        }
-        
-        for (c = -1, l = runners.length; l--;) {
-            runners[++c].apply(scope, args);
-        }
-        
-    }
-    
-    return CHAIN;
-}
+
 
 function get(name) {
     var list = RUNNERS,
@@ -965,36 +938,16 @@ function parseName(name) {
     
 }
 
-function middlewareNamespace(name) {
-    var list = NAMESPACES;
-    var access, register, run;
- 
-    if (isString(name)) {
-        access = name + '.';
-        if (!(access in list)) {
-            run = createRunInNamespace(access);
-            register = createRegisterInNamespace(access);
-            list[access] = register.chain = run.chain = {
-                                                        run: run,
-                                                        register: register
-                                                    };
-        }
-        return list[access];
-    }
-    return void(0);
-}
-
 function createRunInNamespace(ns) {
     function nsRun(name, args, scope) {
-        run(ns + name, args, scope);
-        return nsRun.chain;
+        return run(ns + name, args, scope);
     }
     return nsRun;
 }
 
 function createRegisterInNamespace(ns) {
     function nsRegister(name, handler) {
-        set(ns + name, handler);
+        register(ns + name, handler);
         return nsRegister.chain;
     }
     return nsRegister;
@@ -1002,29 +955,102 @@ function createRegisterInNamespace(ns) {
 
 
 function timeoutAsync(handler) {
+    if (!isFunction(handler)) {
+        throw new Error(INVALID_HANDLER);
+    }
     return G.setTimeout(handler, 1);
 }
 
 function clearTimeoutAsync(id) {
-    return G.clearTimeout(id);
+    try {
+        G.clearTimeout(id);
+    }
+    catch (e) {}
+    return getModule();
 }
 
-function nativeSetImmediate (fn) {
-    return G.setImmediate(fn);
+function nativeSetImmediate (handler) {
+    if (!isFunction(handler)) {
+        throw new Error(INVALID_HANDLER);
+    }
+    return G.setImmediate(handler);
 }
 
 function nativeClearImmediate(id) {
-    return G.clearImmediate(id);
+    try {
+        G.clearImmediate(id);
+    }
+    catch (e) {}
+    return getModule();
 }
 
-function setModuleChain(chain) {
-        CHAIN = chain;
-    }
+function run(name, args, scope) {
+        var runners = get(name),
+            returned = true;
+        var c, l;
     
-var setAsync = NATIVE_SET_IMMEDIATE ?
-                        nativeSetImmediate : timeoutAsync;
-var clearAsync = NATIVE_SET_IMMEDIATE ?
-                        nativeClearImmediate : clearTimeoutAsync;
+        if (runners) {
+            
+            if (typeof scope === 'undefined') {
+                scope = null;
+            }
+            if (!(args instanceof Array)) {
+                args = [];
+            }
+            
+            for (c = -1, l = runners.length; l--;) {
+                if (runners[++c].apply(scope, args) === false) {
+                    returned = false;
+                }
+            }
+            
+        }
+        
+        return returned;
+    }
+
+function register(name, handler) {
+        var parsed = parseName(name),
+            list = RUNNERS;
+        var access, items;
+        
+        if (parsed && handler instanceof Function) {
+            name = parsed[1];
+            access = ':' + name;
+            if (!(access in list)) {
+                list[access] = {
+                    name: name,
+                    before: [],
+                    after: []
+                };
+            }
+            
+            items = list[access][getPositionAccess(parsed[0])];
+            
+            items[items.length] = handler;
+        }
+        
+        return getModule();
+    }
+
+function middleware(name) {
+        var list = NAMESPACES;
+        var access, register, run;
+     
+        if (isString(name)) {
+            access = name + '.';
+            if (!(access in list)) {
+                run = createRunInNamespace(access);
+                register = createRegisterInNamespace(access);
+                list[access] = register.chain = {
+                                                run: run,
+                                                register: register
+                                            };
+            }
+            return list[access];
+        }
+        return void(0);
+    }
 
 // motivation of set operations:
 // https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
@@ -2664,14 +2690,10 @@ if (!isFunction(G$1.Promise)) {
 
 G$1 = null;
 
-var env = DETECT;
-
-
-
 
 
 var BUNDLE$1 = Object.freeze({
-	env: env,
+	env: detect,
 	createRegistry: create,
 	Promise: Promise,
 	each: EACH,
@@ -2684,12 +2706,11 @@ var BUNDLE$1 = Object.freeze({
 	fillin: fillin,
 	clear: clear,
 	maxObjectIndex: maxObjectIndex,
-	setModuleChain: setModuleChain,
-	run: run,
-	register: set,
-	middleware: middlewareNamespace,
 	setAsync: setAsync,
 	clearAsync: clearAsync,
+	run: run,
+	register: register,
+	middleware: middleware,
 	object: object,
 	OBJECT: OBJECT_SIGNATURE,
 	ARRAY: ARRAY_SIGNATURE,
@@ -2734,8 +2755,8 @@ var BUNDLE$1 = Object.freeze({
 	jsonExists: jsonExists
 });
 
-setModuleChain(BUNDLE$1);
+use(BUNDLE$1);
 
-export { env, create as createRegistry, Promise, EACH as each, assign, rehash, contains, instantiate, clone, compare, fillin, clear, maxObjectIndex, setModuleChain, run, set as register, middlewareNamespace as middleware, setAsync, clearAsync, object, OBJECT_SIGNATURE as OBJECT, ARRAY_SIGNATURE as ARRAY, NULL_SIGNATURE as NULL, UNDEFINED_SIGNATURE as UNDEFINED, NUMBER_SIGNATURE as NUMBER, STRING_SIGNATURE as STRING, BOOLEAN_SIGNATURE as BOOLEAN, METHOD_SIGNATURE as METHOD, METHOD_SIGNATURE as FUNCTION, DATE_SIGNATURE as DATE, REGEX_SIGNATURE as REGEX, isSignature as signature, isNativeObject as nativeObject, isString as string, isNumber as number, isScalar as scalar, isArray as array, isFunction as method, isDate as date, isRegExp as regex, isType as type, isThenable as thenable, isIterable as iterable, union as unionList, intersect as intersectList, difference as differenceList, camelize, uncamelize, base64Encode as encode64, base64Decode as decode64, utf16ToUtf8 as utf2bin, utf8ToUtf16 as bin2utf, jsonParsePath, jsonFind, jsonCompare, jsonClone, jsonEach, jsonSet, jsonUnset, jsonFill, jsonExists };
+export { detect as env, create as createRegistry, Promise, EACH as each, assign, rehash, contains, instantiate, clone, compare, fillin, clear, maxObjectIndex, setAsync, clearAsync, run, register, middleware, object, OBJECT_SIGNATURE as OBJECT, ARRAY_SIGNATURE as ARRAY, NULL_SIGNATURE as NULL, UNDEFINED_SIGNATURE as UNDEFINED, NUMBER_SIGNATURE as NUMBER, STRING_SIGNATURE as STRING, BOOLEAN_SIGNATURE as BOOLEAN, METHOD_SIGNATURE as METHOD, METHOD_SIGNATURE as FUNCTION, DATE_SIGNATURE as DATE, REGEX_SIGNATURE as REGEX, isSignature as signature, isNativeObject as nativeObject, isString as string, isNumber as number, isScalar as scalar, isArray as array, isFunction as method, isDate as date, isRegExp as regex, isType as type, isThenable as thenable, isIterable as iterable, union as unionList, intersect as intersectList, difference as differenceList, camelize, uncamelize, base64Encode as encode64, base64Decode as decode64, utf16ToUtf8 as utf2bin, utf8ToUtf16 as bin2utf, jsonParsePath, jsonFind, jsonCompare, jsonClone, jsonEach, jsonSet, jsonUnset, jsonFill, jsonExists };
 export default BUNDLE$1;
 //# sourceMappingURL=libcore.es.js.map

@@ -2,7 +2,9 @@
 
 import * as DETECT from "./detect.js";
 
-export let env = DETECT;
+export {
+            DETECT as env
+    };
 
 export * from "./object.js";
 

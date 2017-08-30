@@ -1,6 +1,11 @@
 'use strict';
 
-import { string } from "./type.js";
+import {
+            string,
+            method
+        } from "./type.js";
+
+import { getModule } from "./chain.js";
 
 
 var G = global,
@@ -10,55 +15,18 @@ var G = global,
     POSITION_AFTER = 2,
     RUNNERS = {},
     NAMESPACES = {},
+    INVALID_HANDLER = 'Invalid [handler] parameter.',
     NATIVE_SET_IMMEDIATE = !!G.setImmediate,
-    CHAIN = {};
+    setAsync = NATIVE_SET_IMMEDIATE ?
+                    nativeSetImmediate : timeoutAsync,
+    clearAsync = NATIVE_SET_IMMEDIATE ?
+                    nativeClearImmediate : clearTimeoutAsync;
 
     
-function set(name, handler) {
-    var parsed = parseName(name),
-        list = RUNNERS;
-    var access, items;
-    
-    if (parsed && handler instanceof Function) {
-        name = parsed[1];
-        access = ':' + name;
-        if (!(access in list)) {
-            list[access] = {
-                name: name,
-                before: [],
-                after: []
-            };
-        }
-        
-        items = list[access][getPositionAccess(parsed[0])];
-        
-        items[items.length] = handler;
-    }
-    
-    return CHAIN;
-}
 
 
-function run(name, args, scope) {
-    var runners = get(name);
-    var c, l;
 
-    if (runners) {
-        if (typeof scope === 'undefined') {
-            scope = null;
-        }
-        if (!(args instanceof Array)) {
-            args = [];
-        }
-        
-        for (c = -1, l = runners.length; l--;) {
-            runners[++c].apply(scope, args);
-        }
-        
-    }
-    
-    return CHAIN;
-}
+
 
 function get(name) {
     var list = RUNNERS,
@@ -100,36 +68,16 @@ function parseName(name) {
     
 }
 
-function middlewareNamespace(name) {
-    var list = NAMESPACES;
-    var access, register, run;
- 
-    if (string(name)) {
-        access = name + '.';
-        if (!(access in list)) {
-            run = createRunInNamespace(access);
-            register = createRegisterInNamespace(access);
-            list[access] = register.chain = run.chain = {
-                                                        run: run,
-                                                        register: register
-                                                    };
-        }
-        return list[access];
-    }
-    return void(0);
-}
-
 function createRunInNamespace(ns) {
     function nsRun(name, args, scope) {
-        run(ns + name, args, scope);
-        return nsRun.chain;
+        return run(ns + name, args, scope);
     }
     return nsRun;
 }
 
 function createRegisterInNamespace(ns) {
     function nsRegister(name, handler) {
-        set(ns + name, handler);
+        register(ns + name, handler);
         return nsRegister.chain;
     }
     return nsRegister;
@@ -137,35 +85,113 @@ function createRegisterInNamespace(ns) {
 
 
 function timeoutAsync(handler) {
+    if (!method(handler)) {
+        throw new Error(INVALID_HANDLER);
+    }
     return G.setTimeout(handler, 1);
 }
 
 function clearTimeoutAsync(id) {
-    return G.clearTimeout(id);
+    try {
+        G.clearTimeout(id);
+    }
+    catch (e) {}
+    return getModule();
 }
 
-function nativeSetImmediate (fn) {
-    return G.setImmediate(fn);
+function nativeSetImmediate (handler) {
+    if (!method(handler)) {
+        throw new Error(INVALID_HANDLER);
+    }
+    return G.setImmediate(handler);
 }
 
 function nativeClearImmediate(id) {
-    return G.clearImmediate(id);
+    try {
+        G.clearImmediate(id);
+    }
+    catch (e) {}
+    return getModule();
 }
 
 export
-    function setModuleChain(chain) {
-        CHAIN = chain;
-    }
-    
-export {
-        run,
-        set as register,
-        middlewareNamespace as middleware
+    {
+        setAsync,
+        clearAsync
     };
 
-export let
-        setAsync = NATIVE_SET_IMMEDIATE ?
-                        nativeSetImmediate : timeoutAsync,
-        clearAsync = NATIVE_SET_IMMEDIATE ?
-                        nativeClearImmediate : clearTimeoutAsync;
+export
+    function run(name, args, scope) {
+        var runners = get(name),
+            returned = true;
+        var c, l;
+    
+        if (runners) {
+            
+            if (typeof scope === 'undefined') {
+                scope = null;
+            }
+            if (!(args instanceof Array)) {
+                args = [];
+            }
+            
+            for (c = -1, l = runners.length; l--;) {
+                if (runners[++c].apply(scope, args) === false) {
+                    returned = false;
+                }
+            }
+            
+        }
+        
+        return returned;
+    }
+
+export
+    function register(name, handler) {
+        var parsed = parseName(name),
+            list = RUNNERS;
+        var access, items;
+        
+        if (parsed && handler instanceof Function) {
+            name = parsed[1];
+            access = ':' + name;
+            if (!(access in list)) {
+                list[access] = {
+                    name: name,
+                    before: [],
+                    after: []
+                };
+            }
+            
+            items = list[access][getPositionAccess(parsed[0])];
+            
+            items[items.length] = handler;
+        }
+        
+        return getModule();
+    }
+
+export
+    function middleware(name) {
+        var list = NAMESPACES;
+        var access, register, run;
+     
+        if (string(name)) {
+            access = name + '.';
+            if (!(access in list)) {
+                run = createRunInNamespace(access);
+                register = createRegisterInNamespace(access);
+                list[access] = register.chain = {
+                                                run: run,
+                                                register: register
+                                            };
+            }
+            return list[access];
+        }
+        return void(0);
+    }
+
+
+
+        
 

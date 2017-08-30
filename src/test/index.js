@@ -59,6 +59,9 @@ import "./promise/constructor.js";
 import "./promise/all.js";
 import "./promise/race.js";
 
+import "./processor/set-async.js";
+import "./processor/clear-async.js";
+import "./processor/run.js";
 
 //global.libcore = require("../index.js");
 
