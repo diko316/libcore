@@ -167,6 +167,7 @@ function isThenable(subject) {
 }
 
 function isIterable(subject) {
+    var len;
     
     // filter non-iterable scalar natives
     switch (subject) {
@@ -187,8 +188,10 @@ function isIterable(subject) {
     case STRING_SIGNATURE:
     case ARRAY_SIGNATURE: return true;
     }
-    
-    return 'length' in subject && isNumber(subject.length);
+
+    return 'length' in subject &&
+            isNumber(len = subject.length) &&
+            len > -1;
 }
 
 

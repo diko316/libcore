@@ -26,9 +26,9 @@ describe('Runs a registered middleware callback using ' +
                 }
             };
             
-            spyOn(registered, 'before');
-            spyOn(registered, 'after');
-            spyOn(registered, 'normal');
+            spyOn(registered, 'before').and.callThrough();
+            spyOn(registered, 'after').and.callThrough();
+            spyOn(registered, 'normal').and.callThrough();
             
             lib.register(beforeRunName, registered.before);
             lib.register(afterRunName, registered.after);

@@ -284,6 +284,7 @@ function isThenable(subject) {
 }
 
 function isIterable(subject) {
+    var len;
     
     // filter non-iterable scalar natives
     switch (subject) {
@@ -304,8 +305,10 @@ function isIterable(subject) {
     case STRING_SIGNATURE:
     case ARRAY_SIGNATURE: return true;
     }
-    
-    return 'length' in subject && isNumber(subject.length);
+
+    return 'length' in subject &&
+            isNumber(len = subject.length) &&
+            len > -1;
 }
 
 
@@ -885,18 +888,15 @@ var POSITION_BEFORE = 1;
 var POSITION_AFTER = 2;
 var RUNNERS = {};
 var NAMESPACES = {};
+var INVALID_NAME = 'Invalid [name] parameter.';
 var INVALID_HANDLER = 'Invalid [handler] parameter.';
 var NATIVE_SET_IMMEDIATE = !!G.setImmediate;
 var setAsync = NATIVE_SET_IMMEDIATE ?
                     nativeSetImmediate : timeoutAsync;
 var clearAsync = NATIVE_SET_IMMEDIATE ?
                     nativeClearImmediate : clearTimeoutAsync;
-
-    
-
-
-
-
+function empty$1() {
+}
 
 function get(name) {
     var list = RUNNERS,
@@ -929,7 +929,6 @@ function parseName(name) {
     if (match) {
         namespace = match[1];
         position = match[4] === 'before' ? POSITION_BEFORE : POSITION_AFTER;
-        //console.log('parsed ', name, ' = ', [position, (namespace || '') + match[5]]);
         return [position, (namespace || '') + match[5]];
         
     }
@@ -938,18 +937,24 @@ function parseName(name) {
     
 }
 
-function createRunInNamespace(ns) {
+function applyNamespaceCallback(access, registered) {
     function nsRun(name, args, scope) {
-        return run(ns + name, args, scope);
+        return run(access + name, args, scope);
     }
+    
+    registered.constructor.prototype.run = nsRun;
+    
     return nsRun;
 }
 
-function createRegisterInNamespace(ns) {
+function applyNamespaceRegister(access, registered) {
     function nsRegister(name, handler) {
-        register(ns + name, handler);
-        return nsRegister.chain;
+        register(access + name, handler);
+        return registered;
     }
+    
+    registered.constructor.prototype.register = nsRegister;
+    
     return nsRegister;
 }
 
@@ -984,40 +989,66 @@ function nativeClearImmediate(id) {
     return getModule();
 }
 
+function BaseMiddleware() {
+}
+
+BaseMiddleware.prototype = {
+    constructor: BaseMiddleware
+};
+
 function run(name, args, scope) {
-        var runners = get(name),
-            returned = true;
-        var c, l;
-    
+        var c, l, runners, result;
+        
+        if (!isString(name)) {
+            throw new Error(INVALID_NAME);
+        }
+        
+        runners = get(name);
+        
         if (runners) {
             
             if (typeof scope === 'undefined') {
                 scope = null;
             }
-            if (!(args instanceof Array)) {
-                args = [];
-            }
+            
+            args = isIterable(args) ?
+                    Array.prototype.slice.call(args, 0) : [];
             
             for (c = -1, l = runners.length; l--;) {
-                if (runners[++c].apply(scope, args) === false) {
-                    returned = false;
+                result = runners[++c].apply(scope, args);
+                if (result !== undefined) {
+                    args = [result];
                 }
             }
             
+            args.splice(0, args.length);
+            
+            return result;
         }
         
-        return returned;
+        return undefined;
     }
 
 function register(name, handler) {
-        var parsed = parseName(name),
-            list = RUNNERS;
-        var access, items;
+        var list = RUNNERS;
+        var access, items, parsed;
         
-        if (parsed && handler instanceof Function) {
+        if (!isString(name)) {
+            throw new Error(INVALID_NAME);
+        }
+        
+        parsed = parseName(name);
+        
+        if (!isFunction(handler)) {
+            throw new Error(INVALID_HANDLER);
+        }
+        
+        if (parsed) {
+            
             name = parsed[1];
             access = ':' + name;
             if (!(access in list)) {
+                
                 list[access] = {
                     name: name,
                     before: [],
@@ -1035,21 +1066,33 @@ function register(name, handler) {
 
 function middleware(name) {
         var list = NAMESPACES;
-        var access, register, run;
-     
-        if (isString(name)) {
-            access = name + '.';
-            if (!(access in list)) {
-                run = createRunInNamespace(access);
-                register = createRegisterInNamespace(access);
-                list[access] = register.chain = {
-                                                run: run,
-                                                register: register
-                                            };
-            }
-            return list[access];
+        var access, registered, proto;
+        
+        function Middleware() {
+            BaseMiddleware.apply(this, arguments);
         }
-        return void(0);
+        
+        if (!isString(name)) {
+            throw new Error(INVALID_NAME);
+        }
+
+        access = name + '.';
+        if (!(access in list)) {
+            empty$1.prototype = BaseMiddleware.prototype;
+            proto = new empty$1(access);
+            proto.constructor = Middleware;
+            proto.access = access;
+            Middleware.prototype = Middleware;
+            
+            list[access] = registered = new Middleware();
+            
+            applyNamespaceCallback(access, registered);
+            applyNamespaceRegister(access, registered);
+            
+            return registered;
+        }
+        
+        return list[access];
     }
 
 // motivation of set operations:

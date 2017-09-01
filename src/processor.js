@@ -2,7 +2,8 @@
 
 import {
             string,
-            method
+            method,
+            iterable
         } from "./type.js";
 
 import { getModule } from "./chain.js";
@@ -15,18 +16,15 @@ var G = global,
     POSITION_AFTER = 2,
     RUNNERS = {},
     NAMESPACES = {},
+    INVALID_NAME = 'Invalid [name] parameter.',
     INVALID_HANDLER = 'Invalid [handler] parameter.',
     NATIVE_SET_IMMEDIATE = !!G.setImmediate,
     setAsync = NATIVE_SET_IMMEDIATE ?
                     nativeSetImmediate : timeoutAsync,
     clearAsync = NATIVE_SET_IMMEDIATE ?
                     nativeClearImmediate : clearTimeoutAsync;
-
-    
-
-
-
-
+function empty() {
+}
 
 function get(name) {
     var list = RUNNERS,
@@ -59,7 +57,6 @@ function parseName(name) {
     if (match) {
         namespace = match[1];
         position = match[4] === 'before' ? POSITION_BEFORE : POSITION_AFTER;
-        //console.log('parsed ', name, ' = ', [position, (namespace || '') + match[5]]);
         return [position, (namespace || '') + match[5]];
         
     }
@@ -68,18 +65,24 @@ function parseName(name) {
     
 }
 
-function createRunInNamespace(ns) {
+function applyNamespaceCallback(access, registered) {
     function nsRun(name, args, scope) {
-        return run(ns + name, args, scope);
+        return run(access + name, args, scope);
     }
+    
+    registered.constructor.prototype.run = nsRun;
+    
     return nsRun;
 }
 
-function createRegisterInNamespace(ns) {
+function applyNamespaceRegister(access, registered) {
     function nsRegister(name, handler) {
-        register(ns + name, handler);
-        return nsRegister.chain;
+        register(access + name, handler);
+        return registered;
     }
+    
+    registered.constructor.prototype.register = nsRegister;
+    
     return nsRegister;
 }
 
@@ -114,6 +117,13 @@ function nativeClearImmediate(id) {
     return getModule();
 }
 
+function BaseMiddleware() {
+}
+
+BaseMiddleware.prototype = {
+    constructor: BaseMiddleware
+};
+
 export
     {
         setAsync,
@@ -122,40 +132,59 @@ export
 
 export
     function run(name, args, scope) {
-        var runners = get(name),
-            returned = true;
-        var c, l;
-    
+        var c, l, runners, result;
+        
+        if (!string(name)) {
+            throw new Error(INVALID_NAME);
+        }
+        
+        runners = get(name);
+        
         if (runners) {
             
             if (typeof scope === 'undefined') {
                 scope = null;
             }
-            if (!(args instanceof Array)) {
-                args = [];
-            }
+            
+            args = iterable(args) ?
+                    Array.prototype.slice.call(args, 0) : [];
             
             for (c = -1, l = runners.length; l--;) {
-                if (runners[++c].apply(scope, args) === false) {
-                    returned = false;
+                result = runners[++c].apply(scope, args);
+                if (result !== undefined) {
+                    args = [result];
                 }
             }
             
+            args.splice(0, args.length);
+            
+            return result;
         }
         
-        return returned;
+        return undefined;
     }
 
 export
     function register(name, handler) {
-        var parsed = parseName(name),
-            list = RUNNERS;
-        var access, items;
+        var list = RUNNERS;
+        var access, items, parsed;
         
-        if (parsed && handler instanceof Function) {
+        if (!string(name)) {
+            throw new Error(INVALID_NAME);
+        }
+        
+        parsed = parseName(name);
+        
+        if (!method(handler)) {
+            throw new Error(INVALID_HANDLER);
+        }
+        
+        if (parsed) {
+            
             name = parsed[1];
             access = ':' + name;
             if (!(access in list)) {
+                
                 list[access] = {
                     name: name,
                     before: [],
@@ -174,21 +203,33 @@ export
 export
     function middleware(name) {
         var list = NAMESPACES;
-        var access, register, run;
-     
-        if (string(name)) {
-            access = name + '.';
-            if (!(access in list)) {
-                run = createRunInNamespace(access);
-                register = createRegisterInNamespace(access);
-                list[access] = register.chain = {
-                                                run: run,
-                                                register: register
-                                            };
-            }
-            return list[access];
+        var access, registered, proto;
+        
+        function Middleware() {
+            BaseMiddleware.apply(this, arguments);
         }
-        return void(0);
+        
+        if (!string(name)) {
+            throw new Error(INVALID_NAME);
+        }
+
+        access = name + '.';
+        if (!(access in list)) {
+            empty.prototype = BaseMiddleware.prototype;
+            proto = new empty(access);
+            proto.constructor = Middleware;
+            proto.access = access;
+            Middleware.prototype = Middleware;
+            
+            list[access] = registered = new Middleware();
+            
+            applyNamespaceCallback(access, registered);
+            applyNamespaceRegister(access, registered);
+            
+            return registered;
+        }
+        
+        return list[access];
     }
 
 
