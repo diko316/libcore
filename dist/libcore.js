@@ -901,19 +901,33 @@ var setAsync = NATIVE_SET_IMMEDIATE ?
                     nativeSetImmediate : timeoutAsync;
 var clearAsync = NATIVE_SET_IMMEDIATE ?
                     nativeClearImmediate : clearTimeoutAsync;
+                    
 function empty$1() {
 }
 
 function get(name) {
+    var info = getRunners(name);
+    
+    if (info) {
+        return info[0][info[1]];
+    }
+    
+    return void(0);
+}
+
+function getRunners(name) {
     var list = RUNNERS,
         parsed = parseName(name);
-    var access;
+    var access, position;
     
     if (parsed) {
         access = ':' + parsed[1];
         
         if (access in list) {
-            return list[access][getPositionAccess(parsed[0])];
+            position = parsed[0];
+            return [list[access],
+                    getPositionAccess(position),
+                    position];
             
         }
     }
@@ -921,16 +935,50 @@ function get(name) {
     return void(0);
 }
 
+function purgeRunners(name, after) {
+    var info = getRunners(name);
+    var runners, access;
+    
+    if (info) {
+        access = info[1];
+        
+        switch (after) {
+        case true:
+            access = 'after';
+            break;
+        
+        case false:
+            access = 'before';
+            break;
+        
+        case null:
+        case undefined:
+            access = false;
+        }
+
+        if (!access || access === 'before') {
+            runners = info[0].before;
+            runners.splice(0, runners.length);
+        }
+        
+        if (!access || access === 'after') {
+            runners = info[0].after;
+            runners.splice(0, runners.length);
+        }
+        
+        
+    }
+    
+    return getModule();
+}
+
 function getPositionAccess(input) {
-    return  input === POSITION_BEFORE ? 'before' : 'after';
+    return input === POSITION_BEFORE ? 'before' : 'after';
 }
 
 function parseName(name) {
     var match = isString(name) && name.match(NAME_RE);
     var position, namespace;
-    
-    
-    
     
     if (match) {
         namespace = match[1];
@@ -942,28 +990,6 @@ function parseName(name) {
     return void(0);
     
 }
-
-function applyNamespaceCallback(access, registered) {
-    function nsRun(name, args, scope) {
-        return run(access + name, args, scope);
-    }
-    
-    registered.constructor.prototype.run = nsRun;
-    
-    return nsRun;
-}
-
-function applyNamespaceRegister(access, registered) {
-    function nsRegister(name, handler) {
-        register(access + name, handler);
-        return registered;
-    }
-    
-    registered.constructor.prototype.register = nsRegister;
-    
-    return nsRegister;
-}
-
 
 function timeoutAsync(handler) {
     if (!isFunction(handler)) {
@@ -999,7 +1025,34 @@ function BaseMiddleware() {
 }
 
 BaseMiddleware.prototype = {
-    constructor: BaseMiddleware
+    constructor: BaseMiddleware,
+    
+    run: function (name, args, scope) {
+        return run(this.access + name, args, scope);
+    },
+    
+    register: function (name, handler) {
+        register(this.access + name, handler);
+        
+        return this;
+    },
+    
+    purge: function (name, after) {
+        var access = this.access;
+        
+        if (!isString(name)) {
+            throw new Error(INVALID_NAME);
+        }
+        
+        if (arguments.length > 1) {
+            purgeRunners(access + name, after);
+        }
+        else {
+            purgeRunners(access + name);
+        }
+        return this;
+        
+    }
 };
 
 function run(name, args, scope) {
@@ -1069,6 +1122,22 @@ function register(name, handler) {
         
         return getModule();
     }
+    
+function clearRunner(name, after) {
+        
+        if (!isString(name)) {
+            throw new Error(INVALID_NAME);
+        }
+        
+        if (arguments.length > 1) {
+            purgeRunners(name, after);
+        }
+        else {
+            purgeRunners(name);
+        }
+        
+        return getModule();
+    }
 
 function middleware(name) {
         var list = NAMESPACES;
@@ -1088,12 +1157,9 @@ function middleware(name) {
             proto = new empty$1(access);
             proto.constructor = Middleware;
             proto.access = access;
-            Middleware.prototype = Middleware;
+            Middleware.prototype = proto;
             
             list[access] = registered = new Middleware();
-            
-            applyNamespaceCallback(access, registered);
-            applyNamespaceRegister(access, registered);
             
             return registered;
         }
@@ -2759,6 +2825,7 @@ var BUNDLE$1 = Object.freeze({
 	clearAsync: clearAsync,
 	run: run,
 	register: register,
+	clearRunner: clearRunner,
 	middleware: middleware,
 	object: object,
 	OBJECT: OBJECT_SIGNATURE,
@@ -2824,6 +2891,7 @@ exports.setAsync = setAsync;
 exports.clearAsync = clearAsync;
 exports.run = run;
 exports.register = register;
+exports.clearRunner = clearRunner;
 exports.middleware = middleware;
 exports.object = object;
 exports.OBJECT = OBJECT_SIGNATURE;

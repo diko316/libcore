@@ -63,6 +63,7 @@ import "./processor/set-async.js";
 import "./processor/clear-async.js";
 import "./processor/run.js";
 import "./processor/register.js";
+import "./processor/clear-runner.js";
 import "./processor/middleware.js";
 
 //global.libcore = require("../index.js");
