@@ -5,13 +5,9 @@
 // https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
 import { indexOfSupport } from './detect.js';
 
-import {
-            assign
-        } from "./object.js";
+import { assign } from "./object.js";
 
-import {
-            array as isArray
-        } from "./type.js";
+import { array as isArray } from "./type.js";
 
     //DETECT = require('./detect.js'),
     //OBJECT = require('./object.js'),
@@ -52,6 +48,14 @@ function lastIndexOf(subject) {
     return -1;
 }
 
+// apply polyfill
+if (!indexOfSupport) {
+    assign(A, {
+        indexOf: indexOf,
+        lastIndexOf: lastIndexOf
+    });
+}
+
 /**
  * Creates a union of two arrays
  * @name libcore.unionList
@@ -64,40 +68,41 @@ function lastIndexOf(subject) {
  *                          otherwise.
  * @returns {Array} union of first two array parameters
  */
-function union(array1, array2, clone) {
-    var isarray = isArray;
-    var subject, l, len, total;
-    
-    if (!isarray(array1)) {
-        throw new Error(INVALID_ARRAY1);
-    }
-    
-    if (!isarray(array2)) {
-        throw new Error(INVALID_ARRAY2);
-    }
-    
-    array1 = clone === true ? array1.slice(0) : array1;
-    
-    // apply
-    array1.push.apply(array1, array2);
-    total = array1.length;
-    
-    // apply unique
-    found: for (l = total; l--;) {
-        subject = array1[l];
+export
+    function unionList(array1, array2, clone) {
+        var isarray = isArray;
+        var subject, l, len, total;
         
-        // remove if not unique
-        for (len = total; len--;) {
-            if (l !== len && subject === array1[len]) {
-                total--;
-                array1.splice(l, 1);
-                continue found;
+        if (!isarray(array1)) {
+            throw new Error(INVALID_ARRAY1);
+        }
+        
+        if (!isarray(array2)) {
+            throw new Error(INVALID_ARRAY2);
+        }
+        
+        array1 = clone === true ? array1.slice(0) : array1;
+        
+        // apply
+        array1.push.apply(array1, array2);
+        total = array1.length;
+        
+        // apply unique
+        found: for (l = total; l--;) {
+            subject = array1[l];
+            
+            // remove if not unique
+            for (len = total; len--;) {
+                if (l !== len && subject === array1[len]) {
+                    total--;
+                    array1.splice(l, 1);
+                    continue found;
+                }
             }
         }
+        
+        return array1;
     }
-    
-    return array1;
-}
 
 /**
  * Creates an intersection of two arrays
@@ -111,43 +116,44 @@ function union(array1, array2, clone) {
  *                          array1 and array2 otherwise.
  * @returns {Array} intersection of first two array parameters
  */
-function intersect(array1, array2, clone) {
-    var isarray = isArray;
-    var subject, l1, l2, total1, total2;
-    
-    if (!isarray(array1)) {
-        throw new Error(INVALID_ARRAY1);
-    }
-    
-    if (!isarray(array2)) {
-        throw new Error(INVALID_ARRAY2);
-    }
-    
-    total1 = array1.length;
-    total2 = array2.length;
+export 
+    function intersectList(array1, array2, clone) {
+        var isarray = isArray;
+        var subject, l1, l2, total1, total2;
         
-    // create a copy
-    array1 = clone === true ? array1.slice(0) : array1;
-    
-    found: for (l1 = total1; l1--;) {
-        subject = array1[l1];
-        foundSame: for (l2 = total2; l2--;) {
-            if (subject === array2[l2]) {
-                // intersect must be unique
-                for (l2 = total1; l2--;) {
-                    if (l2 !== l1 && subject === array1[l2]) {
-                        break foundSame;
-                    }
-                }
-                continue found;
-            }
+        if (!isarray(array1)) {
+            throw new Error(INVALID_ARRAY1);
         }
-        array1.splice(l1, 1);
-        total1--;
+        
+        if (!isarray(array2)) {
+            throw new Error(INVALID_ARRAY2);
+        }
+        
+        total1 = array1.length;
+        total2 = array2.length;
+            
+        // create a copy
+        array1 = clone === true ? array1.slice(0) : array1;
+        
+        found: for (l1 = total1; l1--;) {
+            subject = array1[l1];
+            foundSame: for (l2 = total2; l2--;) {
+                if (subject === array2[l2]) {
+                    // intersect must be unique
+                    for (l2 = total1; l2--;) {
+                        if (l2 !== l1 && subject === array1[l2]) {
+                            break foundSame;
+                        }
+                    }
+                    continue found;
+                }
+            }
+            array1.splice(l1, 1);
+            total1--;
+        }
+        
+        return array1;
     }
-    
-    return array1;
-}
 
 
 /**
@@ -162,64 +168,47 @@ function intersect(array1, array2, clone) {
  *                          array1 and array2 otherwise.
  * @returns {Array} difference of first two array parameters
  */
-function difference(array1, array2, clone) {
-    var isarray = isArray;
-    var subject, l1, l2, total1, total2;
-    
-    if (!isarray(array1)) {
-        throw new Error(INVALID_ARRAY1);
-    }
-    
-    if (!isarray(array2)) {
-        throw new Error(INVALID_ARRAY2);
-    }
-    
-    total1 = array1.length;
-    total2 = array2.length;
+export
+    function differenceList(array1, array2, clone) {
+        var isarray = isArray;
+        var subject, l1, l2, total1, total2;
         
-    // create a copy
-    array1 = clone === true ? array1.slice(0) : array1;
-    
-    found: for (l1 = total1; l1--;) {
-        subject = array1[l1];
+        if (!isarray(array1)) {
+            throw new Error(INVALID_ARRAY1);
+        }
         
-        // remove if found
-        for (l2 = total2; l2--;) {
-            if (subject === array2[l2]) {
-                array1.splice(l1, 1);
-                total1--;
-                continue found;
+        if (!isarray(array2)) {
+            throw new Error(INVALID_ARRAY2);
+        }
+        
+        total1 = array1.length;
+        total2 = array2.length;
+            
+        // create a copy
+        array1 = clone === true ? array1.slice(0) : array1;
+        
+        found: for (l1 = total1; l1--;) {
+            subject = array1[l1];
+            
+            // remove if found
+            for (l2 = total2; l2--;) {
+                if (subject === array2[l2]) {
+                    array1.splice(l1, 1);
+                    total1--;
+                    continue found;
+                }
+            }
+            
+            // diff must be unique
+            for (l2 = total1; l2--;) {
+                if (l2 !== l1 && subject === array1[l2]) {
+                    array1.splice(l1, 1);
+                    total1--;
+                    continue found;
+                }
             }
         }
         
-        // diff must be unique
-        for (l2 = total1; l2--;) {
-            if (l2 !== l1 && subject === array1[l2]) {
-                array1.splice(l1, 1);
-                total1--;
-                continue found;
-            }
-        }
+        return array1;
     }
-    
-    return array1;
-}
-
-
-
-
-
-// apply polyfill
-if (!indexOfSupport) {
-    assign(A, {
-        indexOf: indexOf,
-        lastIndexOf: lastIndexOf
-    });
-}
-
-export {
-    union as unionList,
-    intersect as intersectList,
-    difference as differenceList
-};
 

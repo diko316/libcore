@@ -159,7 +159,7 @@ BaseMiddleware.prototype = {
         return this;
     },
     
-    purge: function (name, after) {
+    clear: function (name, after) {
         var access = this.access;
         
         if (!string(name)) {

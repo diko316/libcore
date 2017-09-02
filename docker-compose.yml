@@ -4,7 +4,7 @@ services:
 
   server:
     build: .
-    image: libcore:latest
+    image: libcore
     container_name: "libcore-test"
     hostname: libdom
     command: bin/run-devserver.sh
@@ -16,7 +16,7 @@ services:
       - "3000:3000"
       
   builder:
-    image: libcore:latest
+    image: libcore
     container_name: "libcore-builder"
     command: bin/autosync-builds.sh
     

@@ -18,61 +18,10 @@ var OBJECT_SIGNATURE = '[object Object]',
     BOOLEAN = 'boolean',
     OBJECT = Object,
     O = OBJECT.prototype,
-    toString = O.toString,
-    isSignature = objectSignature;
-
-/** is object signature **/
-function objectSignature(subject) {
-    if (subject === undefined) {
-        return UNDEFINED_SIGNATURE;
-    }
-    
-    if (subject === null ||
-        (typeof subject === NUMBER && !isFinite(subject))) {
-        return NULL_SIGNATURE;
-    }
-    
-    return toString.call(subject);
-}
-
-function isType(subject, type) {
-    var len;
-    switch (type) {
-    case "scalar":
-        switch (isSignature(subject)) {
-        case STRING_SIGNATURE:
-        case NUMBER_SIGNATURE:
-        case BOOLEAN_SIGNATURE: return true;
-        }
-        return false;
-    
-    case "regexp":
-    case "regex":
-        type = "RegExp";
-        break;
-    
-    case "method":
-        type = "Function";
-        break;
-    
-    case "native":
-    case "nativeObject":
-        return isNativeObject(subject);
-    }
-    if (typeof type === STRING) {
-        len = type.length;
-        if (len) {
-            return isSignature(subject) === '[object ' +
-                                        type.charAt(0).toUpperCase() +
-                                        type.substring(1, len) +
-                                        ']';
-        }
-    }
-    return false;
-}
+    toString = O.toString;
 
 /** is object **/
-function isObject(subject) {
+function w3cIsObject(subject) {
     return toString.call(subject) === OBJECT_SIGNATURE;
 }
 
@@ -82,123 +31,11 @@ function ieIsObject(subject) {
             toString.call(subject) === OBJECT_SIGNATURE;
 }
 
-function isNativeObject(subject) {
-    var O = OBJECT;
-    var constructor, result;
-    
-    if (isSignature(subject) === OBJECT_SIGNATURE) {
-        constructor = subject.constructor;
-        
-        // check constructor
-        if (O.hasOwnProperty.call(subject, 'constructor')) {
-            delete subject.constructor;
-            result = subject.constructor === O;
-            subject.constructor = constructor;
-            return result;
-        }
-        return constructor === O;
-    }
-    
-    return false;
-}
-
-/** is string **/
-function isString(subject, allowEmpty) {
-    return (typeof subject === STRING ||
-            O.toString.call(subject) === STRING_SIGNATURE) &&
-
-            (allowEmpty === true || subject.length !== 0);
-}
-
-/** is number **/
-function isNumber(subject) {
-    return typeof subject === NUMBER && isFinite(subject);
-}
-
-/** is scalar **/
-function isScalar(subject) {
-    switch (typeof subject) {
-    case NUMBER: return isFinite(subject);
-    case BOOLEAN:
-    case STRING: return true;
-    }
-    return false;
-}
-
-/** is function **/
-function isFunction(subject) {
-    return toString.call(subject) === METHOD_SIGNATURE;
-}
-
-/** is array **/
-function isArray(subject, notEmpty) {
-    return toString.call(subject) === ARRAY_SIGNATURE &&
-            (notEmpty !== true || subject.length !== 0);
-}
-
-/** is date **/
-function isDate(subject) {
-    return toString.call(subject) === DATE_SIGNATURE;
-}
-
-/** is regexp **/
-function isRegExp(subject) {
-    return toString.call(subject) === REGEX_SIGNATURE;
-}
-
-
-function isThenable(subject) {
-    // filter non-thenable scalar natives
-    switch (subject) {
-    case undefined:
-    case null:
-    case true:
-    case false:
-    case NaN: return false;
-    }
-    // filter scalar
-    switch (objectSignature(subject)) {
-    case NUMBER_SIGNATURE:
-    case STRING_SIGNATURE:
-    case BOOLEAN_SIGNATURE: return false;
-    }
-    
-    return 'then' in subject && isFunction(subject.then);
-}
-
-function isIterable(subject) {
-    var len;
-    
-    // filter non-iterable scalar natives
-    switch (subject) {
-    case undefined:
-    case null:
-    case true:
-    case false:
-    case NaN: return false;
-    }
-    
-    // try signature
-    switch (objectSignature(subject)) {
-    case NUMBER_SIGNATURE:
-    case BOOLEAN_SIGNATURE:
-        // bogus js engines provides readonly "length" property to functions
-    case METHOD_SIGNATURE: return false;
-
-    case STRING_SIGNATURE:
-    case ARRAY_SIGNATURE: return true;
-    }
-
-    return 'length' in subject &&
-            isNumber(len = subject.length) &&
-            len > -1;
-}
-
-
 export let object = validSignature ?
-                        isObject : ieIsObject;
+                        w3cIsObject : ieIsObject;
 
 export {
+
         OBJECT_SIGNATURE as OBJECT,
         ARRAY_SIGNATURE as ARRAY,
         NULL_SIGNATURE as NULL,
@@ -209,29 +46,185 @@ export {
         METHOD_SIGNATURE as METHOD,
         METHOD_SIGNATURE as FUNCTION,
         DATE_SIGNATURE as DATE,
-        REGEX_SIGNATURE as REGEX,
-        
-        isSignature as signature,
-        
-        isNativeObject as nativeObject,
-        
-        isString as string,
-        
-        isNumber as number,
-        
-        isScalar as scalar,
-        
-        isArray as array,
-        
-        isFunction as method,
-        
-        isDate as date,
-        
-        isRegExp as regex,
-        
-        isType as type,
-        
-        isThenable as thenable,
-        
-        isIterable as iterable 
+        REGEX_SIGNATURE as REGEX
+
     };
+
+/** is object signature **/
+export
+    function signature(subject) {
+        if (subject === undefined) {
+            return UNDEFINED_SIGNATURE;
+        }
+        
+        if (subject === null ||
+            (typeof subject === NUMBER && !isFinite(subject))) {
+            return NULL_SIGNATURE;
+        }
+        
+        return toString.call(subject);
+    }
+
+/** is native object **/
+export
+    function nativeObject(subject) {
+        var O = OBJECT;
+        var constructor, result;
+        
+        if (signature(subject) === OBJECT_SIGNATURE) {
+            constructor = subject.constructor;
+            
+            // check constructor
+            if (O.hasOwnProperty.call(subject, 'constructor')) {
+                delete subject.constructor;
+                result = subject.constructor === O;
+                subject.constructor = constructor;
+                return result;
+            }
+            return constructor === O;
+        }
+        
+        return false;
+    }
+    
+/** is string **/
+export
+    function string(subject, allowEmpty) {
+        return (typeof subject === STRING ||
+                O.toString.call(subject) === STRING_SIGNATURE) &&
+    
+                (allowEmpty === true || subject.length !== 0);
+    }
+    
+/** is number **/
+export
+    function number(subject) {
+        return typeof subject === NUMBER && isFinite(subject);
+    }
+    
+/** is scalar **/
+export
+    function scalar(subject) {
+        switch (typeof subject) {
+        case NUMBER: return isFinite(subject);
+        case BOOLEAN:
+        case STRING: return true;
+        }
+        return false;
+    }
+    
+/** is array **/
+export
+    function array(subject, notEmpty) {
+        return toString.call(subject) === ARRAY_SIGNATURE &&
+                (notEmpty !== true || subject.length !== 0);
+    }
+    
+/** is function **/
+export
+    function method(subject) {
+        return toString.call(subject) === METHOD_SIGNATURE;
+    }
+
+
+
+/** is date **/
+export
+    function date(subject) {
+        return toString.call(subject) === DATE_SIGNATURE;
+    }
+
+/** is regexp **/
+export
+    function regex(subject) {
+        return toString.call(subject) === REGEX_SIGNATURE;
+    }
+
+/** is promise or thenable **/
+export
+    function thenable(subject) {
+        // filter non-thenable scalar natives
+        switch (subject) {
+        case undefined:
+        case null:
+        case true:
+        case false:
+        case NaN: return false;
+        }
+        // filter scalar
+        switch (signature(subject)) {
+        case NUMBER_SIGNATURE:
+        case STRING_SIGNATURE:
+        case BOOLEAN_SIGNATURE: return false;
+        }
+        
+        return 'then' in subject && method(subject.then);
+    }
+    
+/** is array-like iterable **/
+export
+    function iterable(subject) {
+        var len;
+        
+        // filter non-iterable scalar natives
+        switch (subject) {
+        case undefined:
+        case null:
+        case true:
+        case false:
+        case NaN: return false;
+        }
+        
+        // try signature
+        switch (signature(subject)) {
+        case NUMBER_SIGNATURE:
+        case BOOLEAN_SIGNATURE:
+            // bogus js engines provides readonly "length" property to functions
+        case METHOD_SIGNATURE: return false;
+    
+        case STRING_SIGNATURE:
+        case ARRAY_SIGNATURE: return true;
+        }
+    
+        return 'length' in subject &&
+                number(len = subject.length) &&
+                len > -1;
+    }
+    
+export
+    function type(subject, isType) {
+        var len;
+        switch (isType) {
+        case "scalar":
+            switch (signature(subject)) {
+            case STRING_SIGNATURE:
+            case NUMBER_SIGNATURE:
+            case BOOLEAN_SIGNATURE: return true;
+            }
+            return false;
+        
+        case "regexp":
+        case "regex":
+            isType = "RegExp";
+            break;
+        
+        case "method":
+            isType = "Function";
+            break;
+        
+        case "native":
+        case "nativeObject":
+            return nativeObject(subject);
+        }
+        
+        if (typeof isType === STRING) {
+            len = isType.length;
+            if (len) {
+                return signature(subject) === '[object ' +
+                                            isType.charAt(0).toUpperCase() +
+                                            isType.substring(1, len) +
+                                            ']';
+            }
+        }
+        return false;
+    }

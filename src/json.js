@@ -830,14 +830,3 @@ export
         return operation[1];
     }
     
-//export {
-//    parsePath as jsonParsePath,
-//    find as jsonFind,
-//    compare as jsonCompare,
-//    clone as jsonClone,
-//    eachPath as jsonEach,
-//    assign as jsonSet,
-//    remove as jsonUnset,
-//    fill as jsonFill,
-//    exists as jsonExists
-//}

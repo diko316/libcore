@@ -73,32 +73,6 @@ function hasValidSignature() {
                         toString.call(void(0)) !== objectSignature;
 }
 
-// empty function for unsupported "console"
-//function empty() {
-//    
-//}
-//function polyfillConsole() {
-//    var cons = {},
-//        names = [
-//            'log',
-//            'info',
-//            'warn',
-//            'error',
-//            'assert'
-//        ],
-//        original = ROOT.console;
-//    var l;
-//    
-//    // console polyfill so that IE 8 will not have fatal errors
-//    //      for not openning dev tool window
-//    if (!original) {
-//        for (l = names.length; l--;) {
-//            cons[l] = empty;
-//        }
-//    }
-//}
-//
-//polyfillConsole();
 
 ROOT = null;
 

@@ -21,17 +21,13 @@ import {
             
         } from "./type.js";
 
-//import * as STRING from "./string.js";
 
 var Obj = Object,
     O = Obj.prototype,
     EACH = typeof Obj.getOwnPropertyNames === 'function' ?
                 es5each : es3each,
-    //STRING = require("./string.js"),
     OHasOwn = O.hasOwnProperty,
-    //NUMERIC_RE = /^[0-9]*$/,
-    ARRAY_INDEX_RE = /^[1-9][0-9]*|0$/,
-    EXPORTS;
+    ARRAY_INDEX_RE = /^[1-9][0-9]*|0$/;
     
 
 function empty() {
@@ -596,16 +592,3 @@ export
         }
         return false;
     }
-
-//export default {
-//        each: EACH,
-//        assign: assign,
-//        rehash: rehash,
-//        contains: contains,
-//        instantiate: instantiate,
-//        clone: clone,
-//        compare: compare,
-//        fillin: fillin,
-//        clear: clear,
-//        maxObjectIndex: maxObjectIndex
-//    };

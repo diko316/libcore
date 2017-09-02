@@ -74,32 +74,6 @@ function hasValidSignature() {
                         toString.call(void(0)) !== objectSignature;
 }
 
-// empty function for unsupported "console"
-//function empty() {
-//    
-//}
-//function polyfillConsole() {
-//    var cons = {},
-//        names = [
-//            'log',
-//            'info',
-//            'warn',
-//            'error',
-//            'assert'
-//        ],
-//        original = ROOT.console;
-//    var l;
-//    
-//    // console polyfill so that IE 8 will not have fatal errors
-//    //      for not openning dev tool window
-//    if (!original) {
-//        for (l = names.length; l--;) {
-//            cons[l] = empty;
-//        }
-//    }
-//}
-//
-//polyfillConsole();
 
 ROOT = null;
 
@@ -136,60 +110,9 @@ var BOOLEAN = 'boolean';
 var OBJECT = Object;
 var O$1 = OBJECT.prototype;
 var toString = O$1.toString;
-var isSignature = objectSignature;
-
-/** is object signature **/
-function objectSignature(subject) {
-    if (subject === undefined) {
-        return UNDEFINED_SIGNATURE;
-    }
-    
-    if (subject === null ||
-        (typeof subject === NUMBER && !isFinite(subject))) {
-        return NULL_SIGNATURE;
-    }
-    
-    return toString.call(subject);
-}
-
-function isType(subject, type) {
-    var len;
-    switch (type) {
-    case "scalar":
-        switch (isSignature(subject)) {
-        case STRING_SIGNATURE:
-        case NUMBER_SIGNATURE:
-        case BOOLEAN_SIGNATURE: return true;
-        }
-        return false;
-    
-    case "regexp":
-    case "regex":
-        type = "RegExp";
-        break;
-    
-    case "method":
-        type = "Function";
-        break;
-    
-    case "native":
-    case "nativeObject":
-        return isNativeObject(subject);
-    }
-    if (typeof type === STRING) {
-        len = type.length;
-        if (len) {
-            return isSignature(subject) === '[object ' +
-                                        type.charAt(0).toUpperCase() +
-                                        type.substring(1, len) +
-                                        ']';
-        }
-    }
-    return false;
-}
 
 /** is object **/
-function isObject(subject) {
+function w3cIsObject(subject) {
     return toString.call(subject) === OBJECT_SIGNATURE;
 }
 
@@ -199,127 +122,179 @@ function ieIsObject(subject) {
             toString.call(subject) === OBJECT_SIGNATURE;
 }
 
-function isNativeObject(subject) {
-    var O = OBJECT;
-    var constructor, result;
-    
-    if (isSignature(subject) === OBJECT_SIGNATURE) {
-        constructor = subject.constructor;
-        
-        // check constructor
-        if (O.hasOwnProperty.call(subject, 'constructor')) {
-            delete subject.constructor;
-            result = subject.constructor === O;
-            subject.constructor = constructor;
-            return result;
+var object = validSignature ?
+                        w3cIsObject : ieIsObject;
+
+/** is object signature **/
+function signature(subject) {
+        if (subject === undefined) {
+            return UNDEFINED_SIGNATURE;
         }
-        return constructor === O;
+        
+        if (subject === null ||
+            (typeof subject === NUMBER && !isFinite(subject))) {
+            return NULL_SIGNATURE;
+        }
+        
+        return toString.call(subject);
+    }
+
+/** is native object **/
+function nativeObject(subject) {
+        var O = OBJECT;
+        var constructor, result;
+        
+        if (signature(subject) === OBJECT_SIGNATURE) {
+            constructor = subject.constructor;
+            
+            // check constructor
+            if (O.hasOwnProperty.call(subject, 'constructor')) {
+                delete subject.constructor;
+                result = subject.constructor === O;
+                subject.constructor = constructor;
+                return result;
+            }
+            return constructor === O;
+        }
+        
+        return false;
     }
     
-    return false;
-}
-
 /** is string **/
-function isString(subject, allowEmpty) {
-    return (typeof subject === STRING ||
-            O$1.toString.call(subject) === STRING_SIGNATURE) &&
-
-            (allowEmpty === true || subject.length !== 0);
-}
-
-/** is number **/
-function isNumber(subject) {
-    return typeof subject === NUMBER && isFinite(subject);
-}
-
-/** is scalar **/
-function isScalar(subject) {
-    switch (typeof subject) {
-    case NUMBER: return isFinite(subject);
-    case BOOLEAN:
-    case STRING: return true;
+function string(subject, allowEmpty) {
+        return (typeof subject === STRING ||
+                O$1.toString.call(subject) === STRING_SIGNATURE) &&
+    
+                (allowEmpty === true || subject.length !== 0);
     }
-    return false;
-}
-
-/** is function **/
-function isFunction(subject) {
-    return toString.call(subject) === METHOD_SIGNATURE;
-}
-
+    
+/** is number **/
+function number(subject) {
+        return typeof subject === NUMBER && isFinite(subject);
+    }
+    
+/** is scalar **/
+function scalar(subject) {
+        switch (typeof subject) {
+        case NUMBER: return isFinite(subject);
+        case BOOLEAN:
+        case STRING: return true;
+        }
+        return false;
+    }
+    
 /** is array **/
-function isArray(subject, notEmpty) {
-    return toString.call(subject) === ARRAY_SIGNATURE &&
-            (notEmpty !== true || subject.length !== 0);
-}
+function array(subject, notEmpty) {
+        return toString.call(subject) === ARRAY_SIGNATURE &&
+                (notEmpty !== true || subject.length !== 0);
+    }
+    
+/** is function **/
+function method(subject) {
+        return toString.call(subject) === METHOD_SIGNATURE;
+    }
+
+
 
 /** is date **/
-function isDate(subject) {
-    return toString.call(subject) === DATE_SIGNATURE;
-}
+function date(subject) {
+        return toString.call(subject) === DATE_SIGNATURE;
+    }
 
 /** is regexp **/
-function isRegExp(subject) {
-    return toString.call(subject) === REGEX_SIGNATURE;
-}
-
-
-function isThenable(subject) {
-    // filter non-thenable scalar natives
-    switch (subject) {
-    case undefined:
-    case null:
-    case true:
-    case false:
-    case NaN: return false;
+function regex(subject) {
+        return toString.call(subject) === REGEX_SIGNATURE;
     }
-    // filter scalar
-    switch (objectSignature(subject)) {
-    case NUMBER_SIGNATURE:
-    case STRING_SIGNATURE:
-    case BOOLEAN_SIGNATURE: return false;
-    }
-    
-    return 'then' in subject && isFunction(subject.then);
-}
 
-function isIterable(subject) {
-    var len;
-    
-    // filter non-iterable scalar natives
-    switch (subject) {
-    case undefined:
-    case null:
-    case true:
-    case false:
-    case NaN: return false;
+/** is promise or thenable **/
+function thenable(subject) {
+        // filter non-thenable scalar natives
+        switch (subject) {
+        case undefined:
+        case null:
+        case true:
+        case false:
+        case NaN: return false;
+        }
+        // filter scalar
+        switch (signature(subject)) {
+        case NUMBER_SIGNATURE:
+        case STRING_SIGNATURE:
+        case BOOLEAN_SIGNATURE: return false;
+        }
+        
+        return 'then' in subject && method(subject.then);
     }
     
-    // try signature
-    switch (objectSignature(subject)) {
-    case NUMBER_SIGNATURE:
-    case BOOLEAN_SIGNATURE:
-        // bogus js engines provides readonly "length" property to functions
-    case METHOD_SIGNATURE: return false;
-
-    case STRING_SIGNATURE:
-    case ARRAY_SIGNATURE: return true;
+/** is array-like iterable **/
+function iterable(subject) {
+        var len;
+        
+        // filter non-iterable scalar natives
+        switch (subject) {
+        case undefined:
+        case null:
+        case true:
+        case false:
+        case NaN: return false;
+        }
+        
+        // try signature
+        switch (signature(subject)) {
+        case NUMBER_SIGNATURE:
+        case BOOLEAN_SIGNATURE:
+            // bogus js engines provides readonly "length" property to functions
+        case METHOD_SIGNATURE: return false;
+    
+        case STRING_SIGNATURE:
+        case ARRAY_SIGNATURE: return true;
+        }
+    
+        return 'length' in subject &&
+                number(len = subject.length) &&
+                len > -1;
     }
-
-    return 'length' in subject &&
-            isNumber(len = subject.length) &&
-            len > -1;
-}
-
-
-var object = validSignature ?
-                        isObject : ieIsObject;
+    
+function type(subject, isType) {
+        var len;
+        switch (isType) {
+        case "scalar":
+            switch (signature(subject)) {
+            case STRING_SIGNATURE:
+            case NUMBER_SIGNATURE:
+            case BOOLEAN_SIGNATURE: return true;
+            }
+            return false;
+        
+        case "regexp":
+        case "regex":
+            isType = "RegExp";
+            break;
+        
+        case "method":
+            isType = "Function";
+            break;
+        
+        case "native":
+        case "nativeObject":
+            return nativeObject(subject);
+        }
+        
+        if (typeof isType === STRING) {
+            len = isType.length;
+            if (len) {
+                return signature(subject) === '[object ' +
+                                            isType.charAt(0).toUpperCase() +
+                                            isType.substring(1, len) +
+                                            ']';
+            }
+        }
+        return false;
+    }
 
 /**
  * @external libcore
  */
-
-//import * as STRING from "./string.js";
 
 var Obj = Object;
 var O = Obj.prototype;
@@ -334,7 +309,7 @@ function empty() {
 }
 
 function isValidObject(target) {
-    var signature$$1 = isSignature(target);
+    var signature$$1 = signature(target);
     
     switch (signature$$1) {
     case REGEX_SIGNATURE:
@@ -535,9 +510,9 @@ function applyFillin(value, name) {
 
 function compareLookback(object1, object2, references) {
     var isObject = object,
-        isArray$$1 = isArray,
-        isRegex = isRegExp,
-        isDate$$1 = isDate,
+        isArray = array,
+        isRegex = regex,
+        isDate = date,
         onCompare = onEachCompareObject,
         each = EACH,
         me = compareLookback,
@@ -582,8 +557,8 @@ function compareLookback(object1, object2, references) {
         return true;
     
     // array comparison
-    case isArray$$1(object1):
-        if (!isArray$$1(object2)) {
+    case isArray(object1):
+        if (!isArray(object2)) {
             return false;
         }
         
@@ -619,8 +594,8 @@ function compareLookback(object1, object2, references) {
         return isRegex(object2) && object1.source === object2.source;
     
     // Date compare
-    case isDate$$1(object1):
-        return isDate$$1(object2) && object1.toString() === object2.toString();
+    case isDate(object1):
+        return isDate(object2) && object1.toString() === object2.toString();
     }
     
     return false;
@@ -695,12 +670,12 @@ function cloneArray(data, parents, cloned) {
 function onEachClonedProperty(value, name) {
     var /* jshint validthis:true */
         context = this,
-        isNative = isNativeObject(value),
+        isNative = nativeObject(value),
         parents = context[1],
         cloned = context[2];
     var index;
     
-    if (isNative || isArray(value)) {
+    if (isNative || array(value)) {
         index = parents.lastIndexOf(value);
         value = index === -1 ?
                     (isNative ?
@@ -781,7 +756,7 @@ function rehash(target, source, access) {
 
 function contains(subject, property) {
     
-        if (!isString(property) && !isNumber(property)) {
+        if (!string(property) && !number(property)) {
             throw new Error("Invalid [property] parameter.");
         }
         
@@ -798,11 +773,11 @@ function instantiate(Class, overrides) {
     }
     
 function clone(data, deep) {
-        var isNative = isNativeObject(data);
+        var isNative = nativeObject(data);
         
         deep = deep === true;
         
-        if (isNative || isArray(data)) {
+        if (isNative || array(data)) {
             return deep ?
                         
                         (isNative ? cloneObject : cloneArray)(data, [], []) :
@@ -810,10 +785,10 @@ function clone(data, deep) {
                         (isNative ? assignAll({}, data) : data.slice(0));
         }
         
-        if (isRegExp(data)) {
+        if (regex(data)) {
             return new RegExp(data.source, data.flags);
         }
-        else if (isDate(data)) {
+        else if (date(data)) {
             return new Date(data.getFullYear(),
                         data.getMonth(),
                         data.getDate(),
@@ -846,7 +821,7 @@ function clear(subject) {
 function maxObjectIndex(subject) {
         var context;
         
-        if (isArray(subject)) {
+        if (array(subject)) {
             return subject.length - 1;
         }
         
@@ -858,19 +833,6 @@ function maxObjectIndex(subject) {
         }
         return false;
     }
-
-//export default {
-//        each: EACH,
-//        assign: assign,
-//        rehash: rehash,
-//        contains: contains,
-//        instantiate: instantiate,
-//        clone: clone,
-//        compare: compare,
-//        fillin: fillin,
-//        clear: clear,
-//        maxObjectIndex: maxObjectIndex
-//    };
 
 var CHAIN = null;
 
@@ -971,7 +933,7 @@ function getPositionAccess(input) {
 }
 
 function parseName(name) {
-    var match = isString(name) && name.match(NAME_RE);
+    var match = string(name) && name.match(NAME_RE);
     var position, namespace;
     
     if (match) {
@@ -986,7 +948,7 @@ function parseName(name) {
 }
 
 function timeoutAsync(handler) {
-    if (!isFunction(handler)) {
+    if (!method(handler)) {
         throw new Error(INVALID_HANDLER);
     }
     return G.setTimeout(handler, 1);
@@ -1001,7 +963,7 @@ function clearTimeoutAsync(id) {
 }
 
 function nativeSetImmediate (handler) {
-    if (!isFunction(handler)) {
+    if (!method(handler)) {
         throw new Error(INVALID_HANDLER);
     }
     return G.setImmediate(handler);
@@ -1031,10 +993,10 @@ BaseMiddleware.prototype = {
         return this;
     },
     
-    purge: function (name, after) {
+    clear: function (name, after) {
         var access = this.access;
         
-        if (!isString(name)) {
+        if (!string(name)) {
             throw new Error(INVALID_NAME);
         }
         
@@ -1052,7 +1014,7 @@ BaseMiddleware.prototype = {
 function run(name, args, scope) {
         var c, l, runners, result;
         
-        if (!isString(name)) {
+        if (!string(name)) {
             throw new Error(INVALID_NAME);
         }
         
@@ -1064,7 +1026,7 @@ function run(name, args, scope) {
                 scope = null;
             }
             
-            args = isIterable(args) ?
+            args = iterable(args) ?
                     Array.prototype.slice.call(args, 0) : [];
             
             for (c = -1, l = runners.length; l--;) {
@@ -1086,13 +1048,13 @@ function register(name, handler) {
         var list = RUNNERS;
         var access, items, parsed;
         
-        if (!isString(name)) {
+        if (!string(name)) {
             throw new Error(INVALID_NAME);
         }
         
         parsed = parseName(name);
         
-        if (!isFunction(handler)) {
+        if (!method(handler)) {
             throw new Error(INVALID_HANDLER);
         }
         
@@ -1119,7 +1081,7 @@ function register(name, handler) {
     
 function clearRunner(name, after) {
         
-        if (!isString(name)) {
+        if (!string(name)) {
             throw new Error(INVALID_NAME);
         }
         
@@ -1141,7 +1103,7 @@ function middleware(name) {
             BaseMiddleware.apply(this, arguments);
         }
         
-        if (!isString(name)) {
+        if (!string(name)) {
             throw new Error(INVALID_NAME);
         }
 
@@ -1202,6 +1164,14 @@ function lastIndexOf(subject) {
     return -1;
 }
 
+// apply polyfill
+if (!indexOfSupport) {
+    assign(A, {
+        indexOf: indexOf,
+        lastIndexOf: lastIndexOf
+    });
+}
+
 /**
  * Creates a union of two arrays
  * @name libcore.unionList
@@ -1214,40 +1184,40 @@ function lastIndexOf(subject) {
  *                          otherwise.
  * @returns {Array} union of first two array parameters
  */
-function union(array1, array2, clone$$1) {
-    var isarray = isArray;
-    var subject, l, len, total;
-    
-    if (!isarray(array1)) {
-        throw new Error(INVALID_ARRAY1);
-    }
-    
-    if (!isarray(array2)) {
-        throw new Error(INVALID_ARRAY2);
-    }
-    
-    array1 = clone$$1 === true ? array1.slice(0) : array1;
-    
-    // apply
-    array1.push.apply(array1, array2);
-    total = array1.length;
-    
-    // apply unique
-    found: for (l = total; l--;) {
-        subject = array1[l];
+function unionList(array1, array2, clone$$1) {
+        var isarray = array;
+        var subject, l, len, total;
         
-        // remove if not unique
-        for (len = total; len--;) {
-            if (l !== len && subject === array1[len]) {
-                total--;
-                array1.splice(l, 1);
-                continue found;
+        if (!isarray(array1)) {
+            throw new Error(INVALID_ARRAY1);
+        }
+        
+        if (!isarray(array2)) {
+            throw new Error(INVALID_ARRAY2);
+        }
+        
+        array1 = clone$$1 === true ? array1.slice(0) : array1;
+        
+        // apply
+        array1.push.apply(array1, array2);
+        total = array1.length;
+        
+        // apply unique
+        found: for (l = total; l--;) {
+            subject = array1[l];
+            
+            // remove if not unique
+            for (len = total; len--;) {
+                if (l !== len && subject === array1[len]) {
+                    total--;
+                    array1.splice(l, 1);
+                    continue found;
+                }
             }
         }
+        
+        return array1;
     }
-    
-    return array1;
-}
 
 /**
  * Creates an intersection of two arrays
@@ -1261,43 +1231,43 @@ function union(array1, array2, clone$$1) {
  *                          array1 and array2 otherwise.
  * @returns {Array} intersection of first two array parameters
  */
-function intersect(array1, array2, clone$$1) {
-    var isarray = isArray;
-    var subject, l1, l2, total1, total2;
-    
-    if (!isarray(array1)) {
-        throw new Error(INVALID_ARRAY1);
-    }
-    
-    if (!isarray(array2)) {
-        throw new Error(INVALID_ARRAY2);
-    }
-    
-    total1 = array1.length;
-    total2 = array2.length;
+function intersectList(array1, array2, clone$$1) {
+        var isarray = array;
+        var subject, l1, l2, total1, total2;
         
-    // create a copy
-    array1 = clone$$1 === true ? array1.slice(0) : array1;
-    
-    found: for (l1 = total1; l1--;) {
-        subject = array1[l1];
-        foundSame: for (l2 = total2; l2--;) {
-            if (subject === array2[l2]) {
-                // intersect must be unique
-                for (l2 = total1; l2--;) {
-                    if (l2 !== l1 && subject === array1[l2]) {
-                        break foundSame;
-                    }
-                }
-                continue found;
-            }
+        if (!isarray(array1)) {
+            throw new Error(INVALID_ARRAY1);
         }
-        array1.splice(l1, 1);
-        total1--;
+        
+        if (!isarray(array2)) {
+            throw new Error(INVALID_ARRAY2);
+        }
+        
+        total1 = array1.length;
+        total2 = array2.length;
+            
+        // create a copy
+        array1 = clone$$1 === true ? array1.slice(0) : array1;
+        
+        found: for (l1 = total1; l1--;) {
+            subject = array1[l1];
+            foundSame: for (l2 = total2; l2--;) {
+                if (subject === array2[l2]) {
+                    // intersect must be unique
+                    for (l2 = total1; l2--;) {
+                        if (l2 !== l1 && subject === array1[l2]) {
+                            break foundSame;
+                        }
+                    }
+                    continue found;
+                }
+            }
+            array1.splice(l1, 1);
+            total1--;
+        }
+        
+        return array1;
     }
-    
-    return array1;
-}
 
 
 /**
@@ -1312,60 +1282,48 @@ function intersect(array1, array2, clone$$1) {
  *                          array1 and array2 otherwise.
  * @returns {Array} difference of first two array parameters
  */
-function difference(array1, array2, clone$$1) {
-    var isarray = isArray;
-    var subject, l1, l2, total1, total2;
-    
-    if (!isarray(array1)) {
-        throw new Error(INVALID_ARRAY1);
-    }
-    
-    if (!isarray(array2)) {
-        throw new Error(INVALID_ARRAY2);
-    }
-    
-    total1 = array1.length;
-    total2 = array2.length;
+function differenceList(array1, array2, clone$$1) {
+        var isarray = array;
+        var subject, l1, l2, total1, total2;
         
-    // create a copy
-    array1 = clone$$1 === true ? array1.slice(0) : array1;
-    
-    found: for (l1 = total1; l1--;) {
-        subject = array1[l1];
+        if (!isarray(array1)) {
+            throw new Error(INVALID_ARRAY1);
+        }
         
-        // remove if found
-        for (l2 = total2; l2--;) {
-            if (subject === array2[l2]) {
-                array1.splice(l1, 1);
-                total1--;
-                continue found;
+        if (!isarray(array2)) {
+            throw new Error(INVALID_ARRAY2);
+        }
+        
+        total1 = array1.length;
+        total2 = array2.length;
+            
+        // create a copy
+        array1 = clone$$1 === true ? array1.slice(0) : array1;
+        
+        found: for (l1 = total1; l1--;) {
+            subject = array1[l1];
+            
+            // remove if found
+            for (l2 = total2; l2--;) {
+                if (subject === array2[l2]) {
+                    array1.splice(l1, 1);
+                    total1--;
+                    continue found;
+                }
+            }
+            
+            // diff must be unique
+            for (l2 = total1; l2--;) {
+                if (l2 !== l1 && subject === array1[l2]) {
+                    array1.splice(l1, 1);
+                    total1--;
+                    continue found;
+                }
             }
         }
         
-        // diff must be unique
-        for (l2 = total1; l2--;) {
-            if (l2 !== l1 && subject === array1[l2]) {
-                array1.splice(l1, 1);
-                total1--;
-                continue found;
-            }
-        }
+        return array1;
     }
-    
-    return array1;
-}
-
-
-
-
-
-// apply polyfill
-if (!indexOfSupport) {
-    assign(A, {
-        indexOf: indexOf,
-        lastIndexOf: lastIndexOf
-    });
-}
 
 var HALF_BYTE = 0x80;
 var SIX_BITS = 0x3f;
@@ -1379,218 +1337,215 @@ var CAMEL_RE = /[^a-z]+[a-z]/ig;
 var UNCAMEL_RE = /\-*[A-Z]/g;
 var INVALID_SUBJECT = 'Invalid [subject] parameter.';
 
-function base64Encode(subject) {
-    var map = BASE64_MAP,
-        buffer = [],
-        bl = 0,
-        c = -1,
-        excess = false,
-        pad = map.charAt(64);
-    var l, total, code, flag, end, chr;
-    
-    if (!isString(subject, true)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    // decode to ascii
-    subject = utf16ToUtf8(subject);
-    l = total = subject.length;
-    
-    for (; l--;) {
-        code = subject.charCodeAt(++c);
-        flag = c % 3;
-        
-        switch (flag) {
-        case 0:
-            chr = map.charAt((code & 0xfc) >> 2);
-            excess = (code & 0x03) << 4;
-            break;
-        case 1:
-            chr = map.charAt(excess | (code & 0xf0) >> 4);
-            excess = (code & 0x0f) << 2;
-            break;
-        case 2:
-            chr = map.charAt(excess | (code & 0xc0) >> 6);
-            excess = code & 0x3f;
-        }
-        buffer[bl++] = chr;
-        
-        end = !l;
-        if ((end || flag === 2)) {
-            buffer[bl++] = map.charAt(excess);
-        }
-        
-        
-        if (!l) {
-            l = bl % 4;
-            for (l = l && 4 - l; l--;) {
-                buffer[bl++] = pad;
-            }
-            break;
-        }
-    }
-    
-    return buffer.join('');
-    
-}
-
-function base64Decode(subject) {
-    var map = BASE64_MAP,
-        oneByte = ONE_BYTE,
-        buffer = [],
-        bl = 0,
-        c = -1,
-        code2str = fromCharCode;
-    var l, code, excess, chr, flag;
-    
-    if (!isString(subject, true) || NOT_BASE64_RE.test(subject)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    subject = subject.replace(BASE64_EXCESS_REMOVE_RE, '');
-    l = subject.length;
-    
-    for (; l--;) {
-        code = map.indexOf(subject.charAt(++c));
-        flag = c % 4;
-        
-        switch (flag) {
-        case 0:
-            chr = 0;
-            break;
-        case 1:
-            chr = ((excess << 2) | (code >> 4)) & oneByte;
-            break;
-        case 2:
-            chr = ((excess << 4) | (code >> 2)) & oneByte;
-            break;
-        case 3:
-            chr = ((excess << 6) | code) & oneByte;
-        }
-        
-        excess = code;
-        
-        if (!l && flag < 3 && chr < 64) {
-            break;
-        }
-
-        if (flag) {
-            buffer[bl++] = code2str(chr);
-        }
-    }
-    
-    //return decodeURIComponent(escape(buffer.join("")));
-    
-    return utf8ToUtf16(buffer.join(""));
-    //return binbuffer.join("");
-    
-}
-
-
-function utf16ToUtf8(subject) {
-    var half = HALF_BYTE,
-        sixBits = SIX_BITS,
-        code2char = fromCharCode,
-        utf8 = [],
-        ul = 0;
-    var code, c, l;
-    
-    if (!isString(subject, true)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    for (c = -1, l = subject.length; l--;) {
-        code = subject.charCodeAt(++c);
-        
-        if (code < half) {
-            utf8[ul++] = code2char(code);
-        }
-        else if (code < 0x800) {
-            utf8[ul++] = code2char(0xc0 | (code >> 6));
-            utf8[ul++] = code2char(half | (code & sixBits));
-        }
-        else if (code < 0xd800 || code > 0xdfff) {
-            utf8[ul++] = code2char(0xe0 | (code >> 12));
-            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
-            utf8[ul++] = code2char(half | (code  & sixBits));
-        }
-        else {
-            l--;
-            code = 0x10000 + (((code & 0x3ff)<<10)
-                      | (subject.charCodeAt(++c) & 0x3ff));
-            
-            utf8[ul++] = code2char(0xf0 | (code >> 18));
-            utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
-            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
-            utf8[ul++] = code2char(half | (code >> sixBits));
-            
-        }
-    }
-    
-    return utf8.join('');
-}
-
-
-// based from https://gist.github.com/weishuaiwang/4221687
-function utf8ToUtf16(subject) {
-    var code2char = fromCharCode;
-    var utf16, ul, c, l, code;
-    
-    if (!isString(subject, true)) {
-        throw new Error(INVALID_SUBJECT);
-    }
-    
-    utf16 = [];
-    ul = 0;
-    for (c = -1, l = subject.length; l--;) {
-        code = subject.charCodeAt(++c);
-        switch (code >> 4) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-            // 0xxxxxxx
-            utf16[ul++] = subject.charAt(c);
-            break;
-        case 12:
-        case 13:
-            // 110x xxxx 10xx xxxx
-            l--;
-            utf16[ul++] = code2char(((code & 0x1F) << 6) |
-                                    (subject.charCodeAt(++c) & 0x3F));
-            break;
-        case 14:
-            // 1110 xxxx10xx xxxx10xx xxxx
-            utf16[ul++] = code2char(((code & 0x0F) << 12) |
-                                    ((subject.charCodeAt(++c) & 0x3F) << 6) |
-                                    ((subject.charCodeAt(++c) & 0x3F) << 0));
-            l -= 2;
-            break;
-        }
-    }
-    
-    return utf16.join("");
-}
-
-function camelize(subject) {
-    return subject.replace(CAMEL_RE, applyCamelize);
-}
-
 function applyCamelize(all) {
     return all.charAt(all.length - 1).toUpperCase();
-}
-
-function uncamelize(subject) {
-    return subject.replace(UNCAMEL_RE, applyUncamelize);
 }
 
 function applyUncamelize(all) {
     return '-' + all.charAt(all.length -1).toLowerCase();
 }
+
+
+function camelize(subject) {
+        return subject.replace(CAMEL_RE, applyCamelize);
+    }
+    
+function uncamelize(subject) {
+        return subject.replace(UNCAMEL_RE, applyUncamelize);
+    }
+    
+
+function utf2bin(subject) {
+        var half = HALF_BYTE,
+            sixBits = SIX_BITS,
+            code2char = fromCharCode,
+            utf8 = [],
+            ul = 0;
+        var code, c, l;
+        
+        if (!string(subject, true)) {
+            throw new Error(INVALID_SUBJECT);
+        }
+        
+        for (c = -1, l = subject.length; l--;) {
+            code = subject.charCodeAt(++c);
+            
+            if (code < half) {
+                utf8[ul++] = code2char(code);
+            }
+            else if (code < 0x800) {
+                utf8[ul++] = code2char(0xc0 | (code >> 6));
+                utf8[ul++] = code2char(half | (code & sixBits));
+            }
+            else if (code < 0xd800 || code > 0xdfff) {
+                utf8[ul++] = code2char(0xe0 | (code >> 12));
+                utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+                utf8[ul++] = code2char(half | (code  & sixBits));
+            }
+            else {
+                l--;
+                code = 0x10000 + (((code & 0x3ff)<<10)
+                          | (subject.charCodeAt(++c) & 0x3ff));
+                
+                utf8[ul++] = code2char(0xf0 | (code >> 18));
+                utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
+                utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+                utf8[ul++] = code2char(half | (code >> sixBits));
+                
+            }
+        }
+        
+        return utf8.join('');
+    }
+
+
+// based from https://gist.github.com/weishuaiwang/4221687
+function bin2utf(subject) {
+        var code2char = fromCharCode;
+        var utf16, ul, c, l, code;
+        
+        if (!string(subject, true)) {
+            throw new Error(INVALID_SUBJECT);
+        }
+        
+        utf16 = [];
+        ul = 0;
+        for (c = -1, l = subject.length; l--;) {
+            code = subject.charCodeAt(++c);
+            switch (code >> 4) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                // 0xxxxxxx
+                utf16[ul++] = subject.charAt(c);
+                break;
+            case 12:
+            case 13:
+                // 110x xxxx 10xx xxxx
+                l--;
+                utf16[ul++] = code2char(((code & 0x1F) << 6) |
+                                        (subject.charCodeAt(++c) & 0x3F));
+                break;
+            case 14:
+                // 1110 xxxx10xx xxxx10xx xxxx
+                utf16[ul++] = code2char(((code & 0x0F) << 12) |
+                                        ((subject.charCodeAt(++c) & 0x3F) << 6) |
+                                        ((subject.charCodeAt(++c) & 0x3F) << 0));
+                l -= 2;
+                break;
+            }
+        }
+        
+        return utf16.join("");
+    }
+
+function encode64(subject) {
+        var map = BASE64_MAP,
+            buffer = [],
+            bl = 0,
+            c = -1,
+            excess = false,
+            pad = map.charAt(64);
+        var l, total, code, flag, end, chr;
+        
+        if (!string(subject, true)) {
+            throw new Error(INVALID_SUBJECT);
+        }
+        
+        // decode to ascii
+        subject = utf2bin(subject);
+        l = total = subject.length;
+        
+        for (; l--;) {
+            code = subject.charCodeAt(++c);
+            flag = c % 3;
+            
+            switch (flag) {
+            case 0:
+                chr = map.charAt((code & 0xfc) >> 2);
+                excess = (code & 0x03) << 4;
+                break;
+            case 1:
+                chr = map.charAt(excess | (code & 0xf0) >> 4);
+                excess = (code & 0x0f) << 2;
+                break;
+            case 2:
+                chr = map.charAt(excess | (code & 0xc0) >> 6);
+                excess = code & 0x3f;
+            }
+            buffer[bl++] = chr;
+            
+            end = !l;
+            if ((end || flag === 2)) {
+                buffer[bl++] = map.charAt(excess);
+            }
+            
+            
+            if (!l) {
+                l = bl % 4;
+                for (l = l && 4 - l; l--;) {
+                    buffer[bl++] = pad;
+                }
+                break;
+            }
+        }
+        
+        return buffer.join('');
+        
+    }
+
+function decode64(subject) {
+        var map = BASE64_MAP,
+            oneByte = ONE_BYTE,
+            buffer = [],
+            bl = 0,
+            c = -1,
+            code2str = fromCharCode;
+        var l, code, excess, chr, flag;
+        
+        if (!string(subject, true) || NOT_BASE64_RE.test(subject)) {
+            throw new Error(INVALID_SUBJECT);
+        }
+        
+        subject = subject.replace(BASE64_EXCESS_REMOVE_RE, '');
+        l = subject.length;
+        
+        for (; l--;) {
+            code = map.indexOf(subject.charAt(++c));
+            flag = c % 4;
+            
+            switch (flag) {
+            case 0:
+                chr = 0;
+                break;
+            case 1:
+                chr = ((excess << 2) | (code >> 4)) & oneByte;
+                break;
+            case 2:
+                chr = ((excess << 4) | (code >> 2)) & oneByte;
+                break;
+            case 3:
+                chr = ((excess << 6) | code) & oneByte;
+            }
+            
+            excess = code;
+            
+            if (!l && flag < 3 && chr < 64) {
+                break;
+            }
+    
+            if (flag) {
+                buffer[bl++] = code2str(chr);
+            }
+        }
+        
+        return bin2utf(buffer.join(""));
+    }
 
 //TYPE = require("./type.js"),
 //    OBJECT = require("./object.js"),
@@ -1806,7 +1761,7 @@ function onParsePath(property, last, context) {
 
 
 function isAccessible(subject, item) {
-    var signature$$1 = isSignature(subject);
+    var signature$$1 = signature(subject);
     
     switch (signature$$1) {
     case NUMBER_SIGNATURE:
@@ -1831,7 +1786,7 @@ function isAccessible(subject, item) {
 }
 
 function isWritable(subject) {
-    var signature$$1 = isSignature(subject);
+    var signature$$1 = signature(subject);
     
     switch (signature$$1) {
     case REGEX_SIGNATURE:
@@ -1845,7 +1800,7 @@ function isWritable(subject) {
 }
 
 function isJSONWritable(subject) {
-    var signature$$1 = isSignature(subject);
+    var signature$$1 = signature(subject);
     
     switch (signature$$1) {
     case ARRAY_SIGNATURE:
@@ -2008,11 +1963,11 @@ function jsonEach(path, callback, arg1, arg2, arg3, arg4, arg5) {
             next, actionObject, buffer, bl, buffered, pending,
             start_queue, restart;
         
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH_INVALID);
         }
         
-        if (!isFunction(callback)) {
+        if (!method(callback)) {
             throw new Error("Invalid [callback] parameter");
         }
         
@@ -2142,7 +2097,7 @@ function jsonSet(path, subject, value, overwrite) {
         var context, name, current, valueSignature, currentSignature,
             arrayOperation, arrayPush, canApply;
         
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH_INVALID);
         }
         
@@ -2154,7 +2109,7 @@ function jsonSet(path, subject, value, overwrite) {
         if (name !== false) {
             subject = context[1];
             valueSignature = writable(value);
-            arrayOperation = isArray(subject) && NUMERIC_RE.test(name);
+            arrayOperation = array(subject) && NUMERIC_RE.test(name);
             
             if (name in subject) {
                 current = subject[name];
@@ -2235,7 +2190,7 @@ function jsonSet(path, subject, value, overwrite) {
 function jsonUnset(path, subject) {
         var context, name, returnValue;
         
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH_INVALID);
         }
         
@@ -2258,7 +2213,7 @@ function jsonUnset(path, subject) {
             else {
             
                 // remove item
-                if (isArray(subject) && NUMERIC_RE.test(name)) {
+                if (array(subject) && NUMERIC_RE.test(name)) {
                     subject.splice(name * 1, 1);
                     
                 }
@@ -2283,14 +2238,14 @@ function jsonFill(path, subject, value) { //, overwrite) {
             has = contains,
             arrayIndexRe = ARRAY_INDEX_RE$1,
             iswritable = isJSONWritable,
-            isSubjectArray = isArray(subject);
+            isSubjectArray = array(subject);
             
         var parent, c, l, item, parentIndex,
             property, arrayIndex, writable;
             
         
         
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH_INVALID);
         }
         
@@ -2388,18 +2343,6 @@ function jsonExists(path, subject) {
         
         return operation[1];
     }
-    
-//export {
-//    parsePath as jsonParsePath,
-//    find as jsonFind,
-//    compare as jsonCompare,
-//    clone as jsonClone,
-//    eachPath as jsonEach,
-//    assign as jsonSet,
-//    remove as jsonUnset,
-//    fill as jsonFill,
-//    exists as jsonExists
-//}
 
 var ERROR_NAME = 'Invalid [name] parameter.';
 var ERROR_PATH = 'Invalid [path] parameter.';
@@ -2409,7 +2352,7 @@ function create() {
 }
 
 function isIndex(name) {
-    switch (isSignature(name)) {
+    switch (signature(name)) {
     case STRING_SIGNATURE:
     case NUMBER_SIGNATURE: return true;
     }
@@ -2446,7 +2389,7 @@ Registry.prototype = {
     },
     
     set: function (name, value) {
-        switch (isSignature(name)) {
+        switch (signature(name)) {
         case OBJECT_SIGNATURE:
         case ARRAY_SIGNATURE:
             this.onApply(name);
@@ -2479,7 +2422,7 @@ Registry.prototype = {
     },
     
     find: function (path) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
@@ -2487,7 +2430,7 @@ Registry.prototype = {
     },
     
     insert: function (path, value) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
@@ -2498,7 +2441,7 @@ Registry.prototype = {
     },
     
     remove: function (path) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
@@ -2516,7 +2459,7 @@ Registry.prototype = {
     },
     
     pathExists: function (path) {
-        if (!isString(path)) {
+        if (!string(path)) {
             throw new Error(ERROR_PATH);
         }
         
@@ -2524,7 +2467,7 @@ Registry.prototype = {
     },
     
     assign: function(value) {
-        switch (isSignature(value)) {
+        switch (signature(value)) {
         case OBJECT_SIGNATURE:
         case ARRAY_SIGNATURE:
             this.onApply(value);
@@ -2580,7 +2523,7 @@ function resolveValue(data, callback) {
         }
     }
     
-    if (isThenable(data)) {
+    if (thenable(data)) {
         data.then(resolve,
                   function (error) {
                         callback(false, error);
@@ -2627,7 +2570,7 @@ function Promise(resolver) {
         }
     }
     
-    if (!isFunction(resolver)) {
+    if (!method(resolver)) {
         throw new Error('Promise resolver is not a function.');
     }
     
@@ -2692,7 +2635,7 @@ function all(iterable$$1) {
         }
     }
     
-    if (!isIterable(iterable$$1)) {
+    if (!iterable(iterable$$1)) {
         throw new TypeError(ERROR_ITERABLE);
     }
     
@@ -2726,7 +2669,7 @@ function race(iterable$$1) {
         }
     }
     
-    if (!isIterable(iterable$$1)) {
+    if (!iterable(iterable$$1)) {
         throw new TypeError(ERROR_ITERABLE);
     }
     
@@ -2748,7 +2691,7 @@ Promise.prototype = {
             var finalize = finalizeValue,
                 handle = success ? onFulfill : onReject;
             
-            if (isFunction(handle)) {
+            if (method(handle)) {
                 try {
                     data = handle(data);
                     resolveValue(data,
@@ -2793,7 +2736,7 @@ assign(Promise, {
 });
 
 // Polyfill if promise is not supported
-if (!isFunction(G$1.Promise)) {
+if (!method(G$1.Promise)) {
     G$1.Promise = Promise;
 }
 
@@ -2833,27 +2776,27 @@ var BUNDLE$1 = Object.freeze({
 	FUNCTION: METHOD_SIGNATURE,
 	DATE: DATE_SIGNATURE,
 	REGEX: REGEX_SIGNATURE,
-	signature: isSignature,
-	nativeObject: isNativeObject,
-	string: isString,
-	number: isNumber,
-	scalar: isScalar,
-	array: isArray,
-	method: isFunction,
-	date: isDate,
-	regex: isRegExp,
-	type: isType,
-	thenable: isThenable,
-	iterable: isIterable,
-	unionList: union,
-	intersectList: intersect,
-	differenceList: difference,
+	signature: signature,
+	nativeObject: nativeObject,
+	string: string,
+	number: number,
+	scalar: scalar,
+	array: array,
+	method: method,
+	date: date,
+	regex: regex,
+	thenable: thenable,
+	iterable: iterable,
+	type: type,
+	unionList: unionList,
+	intersectList: intersectList,
+	differenceList: differenceList,
 	camelize: camelize,
 	uncamelize: uncamelize,
-	encode64: base64Encode,
-	decode64: base64Decode,
-	utf2bin: utf16ToUtf8,
-	bin2utf: utf8ToUtf16,
+	utf2bin: utf2bin,
+	bin2utf: bin2utf,
+	encode64: encode64,
+	decode64: decode64,
 	jsonParsePath: jsonParsePath,
 	jsonFind: jsonFind,
 	jsonCompare: jsonCompare,
@@ -2867,6 +2810,6 @@ var BUNDLE$1 = Object.freeze({
 
 use(BUNDLE$1);
 
-export { detect as env, create as createRegistry, Promise, EACH as each, assign, rehash, contains, instantiate, clone, compare, fillin, clear, maxObjectIndex, setAsync, clearAsync, run, register, clearRunner, middleware, object, OBJECT_SIGNATURE as OBJECT, ARRAY_SIGNATURE as ARRAY, NULL_SIGNATURE as NULL, UNDEFINED_SIGNATURE as UNDEFINED, NUMBER_SIGNATURE as NUMBER, STRING_SIGNATURE as STRING, BOOLEAN_SIGNATURE as BOOLEAN, METHOD_SIGNATURE as METHOD, METHOD_SIGNATURE as FUNCTION, DATE_SIGNATURE as DATE, REGEX_SIGNATURE as REGEX, isSignature as signature, isNativeObject as nativeObject, isString as string, isNumber as number, isScalar as scalar, isArray as array, isFunction as method, isDate as date, isRegExp as regex, isType as type, isThenable as thenable, isIterable as iterable, union as unionList, intersect as intersectList, difference as differenceList, camelize, uncamelize, base64Encode as encode64, base64Decode as decode64, utf16ToUtf8 as utf2bin, utf8ToUtf16 as bin2utf, jsonParsePath, jsonFind, jsonCompare, jsonClone, jsonEach, jsonSet, jsonUnset, jsonFill, jsonExists };
+export { detect as env, create as createRegistry, Promise, EACH as each, assign, rehash, contains, instantiate, clone, compare, fillin, clear, maxObjectIndex, setAsync, clearAsync, run, register, clearRunner, middleware, object, OBJECT_SIGNATURE as OBJECT, ARRAY_SIGNATURE as ARRAY, NULL_SIGNATURE as NULL, UNDEFINED_SIGNATURE as UNDEFINED, NUMBER_SIGNATURE as NUMBER, STRING_SIGNATURE as STRING, BOOLEAN_SIGNATURE as BOOLEAN, METHOD_SIGNATURE as METHOD, METHOD_SIGNATURE as FUNCTION, DATE_SIGNATURE as DATE, REGEX_SIGNATURE as REGEX, signature, nativeObject, string, number, scalar, array, method, date, regex, thenable, iterable, type, unionList, intersectList, differenceList, camelize, uncamelize, utf2bin, bin2utf, encode64, decode64, jsonParsePath, jsonFind, jsonCompare, jsonClone, jsonEach, jsonSet, jsonUnset, jsonFill, jsonExists };
 export default BUNDLE$1;
 //# sourceMappingURL=libcore.es.js.map
