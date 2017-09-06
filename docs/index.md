@@ -9,6 +9,7 @@
 - [Registry](#registry)
 - [JSON](#json)
 - [Promise](#promise)
+- [Processor](#processor)
 
 ## Installation
 
@@ -42,7 +43,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-Subject | `String` | The string to be encoded.
+subject | `String` | The string to be encoded.
 
 **Returns**
 
@@ -58,7 +59,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-Subject | `String` | The string to be decoded.
+subject | `String` | The string to be decoded.
 
 **Returns**
 
@@ -74,7 +75,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-Subject | `String` | The string to be encoded.
+subject | `String` | The string to be encoded.
 
 **Returns**
 
@@ -90,7 +91,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-Subject | `String` | The string to be encoded.
+subject | `String` | The string to be encoded.
 
 **Returns**
 
@@ -106,7 +107,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-Subject | `String` | The string to be converted.
+subject | `String` | The string to be converted.
 
 **Returns**
 
@@ -124,7 +125,7 @@ ___
 
 Param | Type | Details
 --- | --- | ---
-Subject | `String` | The string to be encoded.
+subject | `String` | The string to be encoded.
 
 **Returns**
 
@@ -1374,5 +1375,197 @@ setTimeout(() => {
     // done
 
 }, 1000);
+```
+___
+
+
+## Processor
+
+#### `setAsync(handler);`
+> Runs an asynchronous Function [handler].
+
+Param | Type | Details
+--- | --- | ---
+handler | `Function` | The callback function.
+
+**Returns**
+
+`{*}` Mixed type value.
+
+```js
+import { setAsync } from "libcore";
+
+var value = 1;
+
+setAsync(function() {
+
+    console.log(value); // 2
+    console.log(++value); // 3    
+
+    // done
+});
+
+console.log(++value); // 2
+```
+___
+
+#### `clearAsync(id);`
+> Clears an asynchronous Function call from setAsync(handler:Function) call.
+
+Param | Type | Details
+--- | --- | ---
+id | `Function` | Valid asynchronous Function call [id].
+
+**Returns**
+
+`Object` The module object.
+
+```js
+import { setAsync, clearAsync } from "libcore";
+
+var value = 1,
+    id = null,
+    calling = {
+        fn: () => {
+            value++;
+        }
+    };
+
+id = setAsync(calling.fn);
+
+// calling.fn is removed from asynchronous call queue
+clearAsync(id);
+```
+___
+
+#### `register(name, handler);`
+> Registers a middleware callback.
+
+Param | Type | Details
+--- | --- | ---
+name | `String` | The name of the middeware callback.
+handler | `Function` | The callback function.
+
+**Returns**
+
+`Object` The module object.
+
+```js
+import { register, run } from "libcore";
+
+function before(obj) {
+    obj.count++;
+}
+
+var sampleParam = { count: 1 },
+    beforeRunName = 'before:exampleCall';
+
+register(beforeRunName, before);
+
+run(beforeRunName, [sampleParam]);
+
+console.log(sampleParam.count); // 2
+```
+___
+
+#### `run(name, args, scope);`
+> Runs a registered middleware callback.
+
+Param | Type | Details
+--- | --- | ---
+name | `String` | The name of the middeware callback.
+args | `{*}` | The iterable arguments.
+scope | `{*}` | The specified scope.
+
+**Returns**
+
+`{*}` Mixed type value.
+
+```js
+import { register, run } from "libcore";
+
+function normal(obj) {
+    obj.count += 100;
+}
+
+var sampleParam = { count: 100 },
+    runName = 'exampleCall';
+
+register(runName, normal);
+
+run(runName, [sampleParam]);
+
+console.log(sampleParam.count); // 200
+
+```
+___
+
+#### `clearRunner(name, after);`
+> Removes "before:" or "after:" registered middleware callbacks.
+
+Param | Type | Details
+--- | --- | ---
+name | `String` | The name of the middeware callback.
+args | `{*}` | The iterable arguments.
+
+**Returns**
+
+`Object` The module object.
+
+```js
+import { register, run, clearRunner } from "libcore";
+
+function before(obj) {
+    obj.count += 100;
+}
+
+function after(obj) {
+    obj.count += 200;
+}
+
+var sampleOne = { count: 100 },
+    sampleTwo = { count: 1000 },
+    beforeRunName = 'before:exampleCall',
+    afterRunName = 'after:exampleCall';
+
+register(beforeRunName, before);
+clearRunner(beforeRunName); // cleared
+run(beforeRunName, [sampleOne]); // nothing to run
+
+console.log(sampleOne.count); // 100
+
+register(afterRunName, after);
+run(afterRunName, [sampleTwo]);
+
+console.log(sampleTwo.count); // 1200
+```
+___
+
+#### `middleware(name);`
+> Creates a Namespaced Middleware instance that can register() and run().
+
+Param | Type | Details
+--- | --- | ---
+name | `String` | The name of the middeware instance.
+
+**Returns**
+
+`Object` The middleware object instance.
+
+```js
+import { middleware } from "libcore";
+
+function normal(obj) {
+    obj.count += 100;
+}
+
+var sample = { count: 100 },
+    runName = 'exampleCall',
+    myMiddleWare = middleware('test');
+
+myMiddleWare.register(runName, normal);
+myMiddleWare.run(runName, [sample]);
+
+console.log(sample.count); // 200
 ```
 ___
