@@ -15,6 +15,7 @@ var HALF_BYTE = 0x80,
     BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/,
     CAMEL_RE = /[^a-z]+[a-z]/ig,
     UNCAMEL_RE = /\-*[A-Z]/g,
+    TRIM_RE = /^\s+|\s+$/g,
     INVALID_SUBJECT = 'Invalid [subject] parameter.';
 
 function applyCamelize(all) {
@@ -233,3 +234,11 @@ export
         return bin2utf(buffer.join(""));
     }
 
+export
+    function trim(subject) {
+        if (!string(subject, true)) {
+            throw new Error(INVALID_SUBJECT);
+        }
+
+        return subject.replace(TRIM_RE);
+    }

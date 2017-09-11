@@ -1335,6 +1335,7 @@ var NOT_BASE64_RE = /[^a-zA-Z0-9\+\/\=]/g;
 var BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/;
 var CAMEL_RE = /[^a-z]+[a-z]/ig;
 var UNCAMEL_RE = /\-*[A-Z]/g;
+var TRIM_RE = /^\s+|\s+$/g;
 var INVALID_SUBJECT = 'Invalid [subject] parameter.';
 
 function applyCamelize(all) {
@@ -1545,6 +1546,14 @@ function decode64(subject) {
         }
         
         return bin2utf(buffer.join(""));
+    }
+
+function trim(subject) {
+        if (!string(subject, true)) {
+            throw new Error(INVALID_SUBJECT);
+        }
+
+        return subject.replace(TRIM_RE);
     }
 
 //TYPE = require("./type.js"),
@@ -2797,6 +2806,7 @@ var BUNDLE$1 = Object.freeze({
 	bin2utf: bin2utf,
 	encode64: encode64,
 	decode64: decode64,
+	trim: trim,
 	jsonParsePath: jsonParsePath,
 	jsonFind: jsonFind,
 	jsonCompare: jsonCompare,
@@ -2810,6 +2820,6 @@ var BUNDLE$1 = Object.freeze({
 
 use(BUNDLE$1);
 
-export { detect as env, create as createRegistry, Promise, EACH as each, assign, rehash, contains, instantiate, clone, compare, fillin, clear, maxObjectIndex, setAsync, clearAsync, run, register, clearRunner, middleware, object, OBJECT_SIGNATURE as OBJECT, ARRAY_SIGNATURE as ARRAY, NULL_SIGNATURE as NULL, UNDEFINED_SIGNATURE as UNDEFINED, NUMBER_SIGNATURE as NUMBER, STRING_SIGNATURE as STRING, BOOLEAN_SIGNATURE as BOOLEAN, METHOD_SIGNATURE as METHOD, METHOD_SIGNATURE as FUNCTION, DATE_SIGNATURE as DATE, REGEX_SIGNATURE as REGEX, signature, nativeObject, string, number, scalar, array, method, date, regex, thenable, iterable, type, unionList, intersectList, differenceList, camelize, uncamelize, utf2bin, bin2utf, encode64, decode64, jsonParsePath, jsonFind, jsonCompare, jsonClone, jsonEach, jsonSet, jsonUnset, jsonFill, jsonExists };
+export { detect as env, create as createRegistry, Promise, EACH as each, assign, rehash, contains, instantiate, clone, compare, fillin, clear, maxObjectIndex, setAsync, clearAsync, run, register, clearRunner, middleware, object, OBJECT_SIGNATURE as OBJECT, ARRAY_SIGNATURE as ARRAY, NULL_SIGNATURE as NULL, UNDEFINED_SIGNATURE as UNDEFINED, NUMBER_SIGNATURE as NUMBER, STRING_SIGNATURE as STRING, BOOLEAN_SIGNATURE as BOOLEAN, METHOD_SIGNATURE as METHOD, METHOD_SIGNATURE as FUNCTION, DATE_SIGNATURE as DATE, REGEX_SIGNATURE as REGEX, signature, nativeObject, string, number, scalar, array, method, date, regex, thenable, iterable, type, unionList, intersectList, differenceList, camelize, uncamelize, utf2bin, bin2utf, encode64, decode64, trim, jsonParsePath, jsonFind, jsonCompare, jsonClone, jsonEach, jsonSet, jsonUnset, jsonFill, jsonExists };
 export default BUNDLE$1;
 //# sourceMappingURL=libcore.es.js.map

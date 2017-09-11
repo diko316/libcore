@@ -1341,6 +1341,7 @@ var NOT_BASE64_RE = /[^a-zA-Z0-9\+\/\=]/g;
 var BASE64_EXCESS_REMOVE_RE = /[^a-zA-Z0-9\+\/]/;
 var CAMEL_RE = /[^a-z]+[a-z]/ig;
 var UNCAMEL_RE = /\-*[A-Z]/g;
+var TRIM_RE = /^\s+|\s+$/g;
 var INVALID_SUBJECT = 'Invalid [subject] parameter.';
 
 function applyCamelize(all) {
@@ -1551,6 +1552,14 @@ function decode64(subject) {
         }
         
         return bin2utf(buffer.join(""));
+    }
+
+function trim(subject) {
+        if (!string(subject, true)) {
+            throw new Error(INVALID_SUBJECT);
+        }
+
+        return subject.replace(TRIM_RE);
     }
 
 //TYPE = require("./type.js"),
@@ -2803,6 +2812,7 @@ var BUNDLE$1 = Object.freeze({
 	bin2utf: bin2utf,
 	encode64: encode64,
 	decode64: decode64,
+	trim: trim,
 	jsonParsePath: jsonParsePath,
 	jsonFind: jsonFind,
 	jsonCompare: jsonCompare,
@@ -2869,6 +2879,7 @@ exports.utf2bin = utf2bin;
 exports.bin2utf = bin2utf;
 exports.encode64 = encode64;
 exports.decode64 = decode64;
+exports.trim = trim;
 exports.jsonParsePath = jsonParsePath;
 exports.jsonFind = jsonFind;
 exports.jsonCompare = jsonCompare;
