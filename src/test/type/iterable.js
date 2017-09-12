@@ -1,14 +1,14 @@
 'use strict';
 
 
-describe('Inspects if Mixed [subject] is iterable object using ' +
-         'iterable(subject:Mixed)',
+describe(`Inspects if Mixed [subject] is iterable object using 
+         iterable(subject:Mixed)`,
     () => {
         var lib = global.libcore;
         
-        it('1. Should accept any type of [subject] parameter and ' +
-           'returns true if [subject] is not scalar or has "length" ' +
-           'number property.',
+        it(`1. Should accept any type of [subject] parameter and 
+           returns true if [subject] is not scalar or has "length" 
+           number property.`,
            () => {
             
                 var phony;
@@ -26,9 +26,9 @@ describe('Inspects if Mixed [subject] is iterable object using ' +
             
            });
         
-        it('2. Should accept any type of [subject] parameter and ' +
-           'returns false if [subject] is scalar or has no "length" ' +
-           'number property.',
+        it(`2. Should accept any type of [subject] parameter and
+           returns false if [subject] is scalar or has no "length" 
+           number property.`,
            () => {
                 var phony;
                 

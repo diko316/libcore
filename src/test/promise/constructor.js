@@ -1,11 +1,11 @@
 'use strict';
 
 
-describe('Creates Promise by instantiating Promise constructor ' +
-         'with [resolver] Function that passes [resolve] and [reject] ' +
-         'parameters using ' +
-         'new Promise(resolver(resolve:Function, reject:Function)) ' +
-         'constructor.',
+describe(`Creates Promise by instantiating Promise constructor 
+         with [resolver] Function that passes [resolve] and [reject] 
+         parameters using 
+         new Promise(resolver(resolve:Function, reject:Function)) 
+         constructor.`,
     () => {
         
         var lib = global.libcore;
@@ -34,8 +34,8 @@ describe('Creates Promise by instantiating Promise constructor ' +
             spyOn(resolver, 'badResult');
         });
         
-        it('1. Should accept [resolver] Function that resolves a promise ' +
-           'when using "new" keyword to instantiate a promise object',
+        it(`1. Should accept [resolver] Function that resolves a promise 
+           when using "new" keyword to instantiate a promise object`,
            (done) => {
                 var P = lib.Promise;
                 
@@ -55,8 +55,8 @@ describe('Creates Promise by instantiating Promise constructor ' +
             
            });
         
-        it('2. Should accept [resolver] Function that rejects a promise ' +
-           'when using "new" keyword to instantiate a promise object',
+        it(`2. Should accept [resolver] Function that rejects a promise 
+           when using "new" keyword to instantiate a promise object`,
            (done) => {
                 var P = lib.Promise;
                 
@@ -76,8 +76,8 @@ describe('Creates Promise by instantiating Promise constructor ' +
             
            });
         
-        it('3. Should instantiate a promise object that contains ' +
-           'then() method.',
+        it(`3. Should instantiate a promise object that contains 
+           then() method.`,
            () => {
                 var P = lib.Promise;
                 var promise;
@@ -97,8 +97,8 @@ describe('Creates Promise by instantiating Promise constructor ' +
             
            });
         
-        it('4. Should not accept non-Function [resolver] or empty constructor ' +
-           'parameter when instantiating a Promise object using "new" keyword.',
+        it(`4. Should not accept non-Function [resolver] or empty constructor
+           parameter when instantiating a Promise object using "new" keyword.`,
            () => {
                 var P = lib.Promise;
                 

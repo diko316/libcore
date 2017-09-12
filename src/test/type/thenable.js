@@ -1,14 +1,14 @@
 'use strict';
 
 
-describe('Inspects if Mixed [subject] is thenable (Promise) object or ' +
-         'object with then() method using thenable(subject:Mixed)',
+describe(`Inspects if Mixed [subject] is thenable (Promise) object or 
+         object with then() method using thenable(subject:Mixed)`,
     () => {
         var lib = global.libcore;
         
-        it('1. Should accept any type of [subject] parameter and ' +
-           'returns true if [subject] is a Promise object or object with ' +
-           'then() method.',
+        it(`1. Should accept any type of [subject] parameter and 
+           returns true if [subject] is a Promise object or object with 
+           then() method.`,
            () => {
             
                 var resolver = (resolve) => resolve(true);
@@ -27,9 +27,9 @@ describe('Inspects if Mixed [subject] is thenable (Promise) object or ' +
             
            });
         
-        it('1. Should accept any type of [subject] parameter and ' +
-           'returns false if [subject] is not a Promise object or ' +
-           'object without then() method.',
+        it(`1. Should accept any type of [subject] parameter and 
+           returns false if [subject] is not a Promise object or 
+           object without then() method.`,
            () => {
                 var phony;
                 

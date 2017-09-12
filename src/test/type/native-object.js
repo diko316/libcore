@@ -1,12 +1,12 @@
 'use strict';
 
-describe('Inspects if Mixed [subject] is raw Native Javascript Object using ' +
-         'nativeObject(subject:Mixed)',
+describe(`Inspects if Mixed [subject] is raw Native Javascript Object using 
+         nativeObject(subject:Mixed)`,
         () => {
             var lib = global.libcore;
             
-            it('1. Should accept Mixed [subject] and returns true if ' +
-               '[subject] is a raw Native Javascript Object.',
+            it(`1. Should accept Mixed [subject] and returns true if 
+               [subject] is a raw Native Javascript Object.`,
                () => {
                     
                 
@@ -14,9 +14,9 @@ describe('Inspects if Mixed [subject] is raw Native Javascript Object using ' +
                     
                });
             
-            it('2. Should accept Mixed [subject] and returns false if ' +
-               '[subject] is not a raw Native Javascript Object or ' +
-               'a sub class of Native Javascript Object.',
+            it(`2. Should accept Mixed [subject] and returns false if 
+               [subject] is not a raw Native Javascript Object or 
+               a sub class of Native Javascript Object.`,
                () => {
                     var sample;
                     function Empty() {

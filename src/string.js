@@ -2,7 +2,8 @@
 
 
 import {
-        string
+        string,
+        number
     } from "./type.js";
 
 var HALF_BYTE = 0x80,
@@ -142,7 +143,7 @@ export
         if (!string(subject, true)) {
             throw new Error(INVALID_SUBJECT);
         }
-        
+
         // decode to ascii
         subject = utf2bin(subject);
         l = total = subject.length;
@@ -170,7 +171,6 @@ export
             if ((end || flag === 2)) {
                 buffer[bl++] = map.charAt(excess);
             }
-            
             
             if (!l) {
                 l = bl % 4;
@@ -240,5 +240,5 @@ export
             throw new Error(INVALID_SUBJECT);
         }
 
-        return subject.replace(TRIM_RE);
+        return subject ? subject.replace(TRIM_RE, "") : subject;
     }

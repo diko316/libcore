@@ -1,8 +1,8 @@
 'use strict';
 
-describe('Compares value with [object2] where value is ' +
-         'extracted from [object1] using [path] parameter using ' +
-         'jsonCompare(path:String, object1:Mixed, object2:Mixed) method',
+describe(`Compares value with [object2] where value is 
+         extracted from [object1] using [path] parameter using
+         jsonCompare(path:String, object1:Mixed, object2:Mixed) method`,
         () => {
             
             var lib = global.libcore,
@@ -30,8 +30,8 @@ describe('Compares value with [object2] where value is ' +
                     }
                 };
             
-            it('1. Should throw error if [path] parameter is not String or ' +
-               'empty String.',
+            it(`1. Should throw error if [path] parameter is not String or 
+               empty String.`,
                () => {
                     expect(() => lib.jsonCompare(null,
                                                  subject,
@@ -47,8 +47,8 @@ describe('Compares value with [object2] where value is ' +
                                                  20)).toThrow();
                });
             
-            it('2. Should return true if value in [object1] from [path] ' +
-               'matches [object2].',
+            it(`2. Should return true if value in [object1] from [path]
+               matches [object2].`,
                () => {
                     var paging = lib.clone(subject.grid.paging, true);
                     
@@ -69,8 +69,8 @@ describe('Compares value with [object2] where value is ' +
                                            paging)).toBe(true);
                });
         
-            it('3. Should return false if value in [object1] from [path] ' +
-               'do not match [object2].',
+            it(`3. Should return false if value in [object1] from [path] 
+               do not match [object2].`,
                () => {
                     var paging = lib.clone(subject.grid.paging, true);
                     

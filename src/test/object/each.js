@@ -1,10 +1,10 @@
 'use strict';
 
 
-describe('Iterate an object using each(subject:Object|Function, ' +
-                                        'handler:Function, ' +
-                                        'scope:Mixed, ' +
-                                        '[hasown:Boolean]) method',
+describe(`Iterate an object using each(subject:Object|Function, 
+                                        handler:Function, 
+                                        scope:Mixed,
+                                        [hasown:Boolean]) method`,
     () => {
         
         var lib = global.libcore,
@@ -38,8 +38,8 @@ describe('Iterate an object using each(subject:Object|Function, ' +
         
         
         
-        it('1. Should only accept Native Javascript Object or Function ' +
-            ' "subject" parameter.',
+        it(`1. Should only accept Native Javascript Object or Function 
+             "subject" parameter.`,
             () => {
                 
                 expect(() => lib.each(null, empty, null)).toThrow();
@@ -52,8 +52,8 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                 
             });
         
-        it('2. Should call "handler" function parameter ' +
-            'on each iteration of "subject" Object property.',
+        it(`2. Should call "handler" function parameter
+            on each iteration of "subject" Object property.`,
             () => {
                 
                 function eachHandler(value, name, subject) {
@@ -72,8 +72,8 @@ describe('Iterate an object using each(subject:Object|Function, ' +
             });
         
         
-        it('3. Should accept 4th optional Boolean "hasown" parameter where ' +
-           ' only modified or created properties is iterated.',
+        it(`3. Should accept 4th optional Boolean "hasown" parameter where 
+            only modified or created properties is iterated.`,
         
             () => {
                 
@@ -92,8 +92,8 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                 
             });
         
-        it('4. Should treat "hasown" parameter to true if no 4th optional ' +
-           '"hasown" parameter is given.',
+        it(`4. Should treat "hasown" parameter to true if no 4th optional 
+           "hasown" parameter is given.`,
         
             () => {
                 
@@ -110,8 +110,8 @@ describe('Iterate an object using each(subject:Object|Function, ' +
                 
             });
         
-        it('5. Should accept 4th optional Boolean "hasown" parameter where ' +
-           ' all properties is iterated regardless if property is default.',
+        it(`5. Should accept 4th optional Boolean "hasown" parameter where 
+            all properties is iterated regardless if property is default.`,
             () => {
 
                 function eachHandler(value, name, subject) {
@@ -127,7 +127,7 @@ describe('Iterate an object using each(subject:Object|Function, ' +
 
             });
         
-        it('6. Should not accept non-Boolean 4th optional "hasown" parameter.',
+        it(`6. Should not accept non-Boolean 4th optional "hasown" parameter.`,
            () => {
                 
                 expect(() => lib.each(obj, empty, null, true)).not.toThrow();

@@ -1,7 +1,7 @@
 'use strict';
 
-describe('Removes property of non-Scalar Native Object using ' +
-         'jsonUnset(path:String, subject:Mixed) method',
+describe(`Removes property of non-Scalar Native Object using
+         jsonUnset(path:String, subject:Mixed) method`,
     () => {
         var lib = global.libcore;
         var subject;
@@ -37,8 +37,8 @@ describe('Removes property of non-Scalar Native Object using ' +
             subject.sampleMethod.type = "test";
         });
         
-        it('1. Should remove property in [subject] extracted from ' +
-           'json [path] and returns "true" if property is found and removed.',
+        it(`1. Should remove property in [subject] extracted from
+           json [path] and returns "true" if property is found and removed.`,
            () => {
                 
                 expect(() => lib.jsonUnset('grid.paging.limit', subject)).
@@ -53,9 +53,9 @@ describe('Removes property of non-Scalar Native Object using ' +
             
            });
         
-        it('2. Should try to remove property in [subject] extracted from ' +
-           'json [path] and returns "false" if property is not found or ' +
-           ' not removed.',
+        it(`2. Should try to remove property in [subject] extracted from 
+           json [path] and returns "false" if property is not found or 
+            not removed.`,
            () => {
                 
                 expect(() => {
@@ -80,8 +80,8 @@ describe('Removes property of non-Scalar Native Object using ' +
             
            });
         
-        it('3. Should try to remove array item in [subject] extracted from ' +
-           'json [path] and returns "true" if array item is found and removed.',
+        it(`3. Should try to remove array item in [subject] extracted from 
+           json [path] and returns "true" if array item is found and removed.`,
            () => {
                 var removedRow = subject.grid.rows[1],
                     length = subject.grid.rows.length;
@@ -95,9 +95,9 @@ describe('Removes property of non-Scalar Native Object using ' +
             
            });
         
-        it('4. Should try to remove array item in [subject] extracted from ' +
-           'json [path] and returns "false" if it failed in removing ' +
-           'the array item or if not found.',
+        it(`4. Should try to remove array item in [subject] extracted from 
+           json [path] and returns "false" if it failed in removing 
+           the array item or if not found.`,
            () => {
                 
                 expect(() => lib.jsonUnset('grid.rows[3]', subject)).

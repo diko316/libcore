@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Registers a middleware callback using ' +
-         'register(name:String, handler:Function) method.',
+describe(`Registers a middleware callback using 
+         register(name:String, handler:Function) method.`,
     () => {
         
         var lib = global.libcore,
@@ -32,9 +32,9 @@ describe('Registers a middleware callback using ' +
             
         });
         
-        it('1. Should accept [name] parameter without "before:" or "after:" ' +
-           'prefix and Function [handler] parameter then succesfully ' +
-           'register middleware callback.',
+        it(`1. Should accept [name] parameter without "before:" or "after:" 
+           prefix and Function [handler] parameter then succesfully 
+           register middleware callback.`,
            () => {
                 expect(() => lib.register(runName, registered.normal)).
                     not.toThrow();
@@ -45,9 +45,9 @@ describe('Registers a middleware callback using ' +
                     toHaveBeenCalledWith(sampleParam);
            });
            
-        it('2. Should accept [name] parameter with "before:" prefix and ' +
-           'Function [handler] parameter then succesfully ' +
-           'register middleware callback.',
+        it(`2. Should accept [name] parameter with "before:" prefix and 
+           Function [handler] parameter then succesfully 
+           register middleware callback.`,
            () => {
                 
                 expect(() => lib.register(beforeRunName, registered.before)).
@@ -60,9 +60,9 @@ describe('Registers a middleware callback using ' +
                     toHaveBeenCalledWith(sampleParam);
            });
         
-        it('3. Should accept [name] parameter with "after:" prefix and ' +
-           'Function [handler] parameter then succesfully ' +
-           'register middleware callback.',
+        it(`3. Should accept [name] parameter with "after:" prefix and 
+           Function [handler] parameter then succesfully 
+           register middleware callback.`,
            () => {
                 
                 expect(() => lib.register(afterRunName, registered.after)).
@@ -75,8 +75,8 @@ describe('Registers a middleware callback using ' +
                     toHaveBeenCalledWith(sampleParam);
            });
         
-        it('4. Should not accept non-String or emtpy String [name] ' +
-           'parameter and throw exception.',
+        it(`4. Should not accept non-String or emtpy String [name]
+           parameter and throw exception.`,
            () => {
                 expect(() => lib.register(1, registered.before)).
                     toThrow();
@@ -92,8 +92,8 @@ describe('Registers a middleware callback using ' +
                     toThrow();
            });
         
-        it('5. Should not accept non-Function [handler] parameter ' +
-           'parameter and throw exception.',
+        it(`5. Should not accept non-Function [handler] parameter 
+           parameter and throw exception.`,
            () => {
                 expect(() => lib.register(runName, null)).
                     toThrow();

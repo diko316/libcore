@@ -1,15 +1,15 @@
 'use strict';
 
 
-describe('Creates a promise from [iterable] values or promises ' +
-         'then resolves or rejects if one of the item in ' +
-         '[iterable] is settled using Promise.race(iterable:Mixed)',
+describe(`Creates a promise from [iterable] values or promises 
+         then resolves or rejects if one of the item in 
+         [iterable] is settled using Promise.race(iterable:Mixed)`,
     () => {
         var lib = global.libcore,
             P = lib.Promise;
             
-        it('1. Should accept [iterable] object or Objects with "length" ' +
-           'Number of items.',
+        it(`1. Should accept [iterable] object or Objects with "length" 
+           Number of items.`,
            (done) => {
                 var callback = {
                         isRejected: false,
@@ -45,8 +45,8 @@ describe('Creates a promise from [iterable] values or promises ' +
                 
            });
         
-        it('2. Should not accept [iterable] that is not iterable object or ' +
-           ' Objects without "length" Number of items.',
+        it(`2. Should not accept [iterable] that is not iterable object or 
+            Objects without "length" Number of items.`,
            () => {
                 expect(() => P.race(null)).toThrow();
                 expect(() => P.race(1)).toThrow();

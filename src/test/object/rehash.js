@@ -1,10 +1,10 @@
 'use strict';
 
 
-describe('Remaps properties of an object into new property of another object' +
-                                    ' using rehash(target:Object|Function, ' +
-                                        'source:Object|Function, ' +
-                                        'access:Object) method',
+describe(`Remaps properties of an object into new property of another object
+                                     using rehash(target:Object|Function, 
+                                        source:Object|Function, 
+                                        access:Object) method`,
     () => {
         var lib = global.libcore;
         var target, source;
@@ -18,7 +18,7 @@ describe('Remaps properties of an object into new property of another object' +
             };
         });
         
-        it('1. Should only accept Native Javascript Object "target" parameter.',
+        it(`1. Should only accept Native Javascript Object "target" parameter.`,
             () => {
                 expect(() => lib.rehash(null, source, {})).toThrow();
                 
@@ -34,7 +34,7 @@ describe('Remaps properties of an object into new property of another object' +
                     not.toThrow();
             });
         
-        it('2. Should only accept Native Javascript Object "source" parameter.',
+        it(`2. Should only accept Native Javascript Object "source" parameter.`,
             () => {
                 expect(() => lib.rehash(target, null, {})).toThrow();
                 
@@ -51,7 +51,7 @@ describe('Remaps properties of an object into new property of another object' +
             });
         
         
-        it('3. Should only accept Native Javascript Object "access" parameter.',
+        it(`3. Should only accept Native Javascript Object "access" parameter.`,
             () => {
                 expect(() => lib.rehash(target, source, null)).toThrow();
                 
@@ -67,9 +67,9 @@ describe('Remaps properties of an object into new property of another object' +
                 expect(() => lib.rehash(target, source, {})).not.toThrow();
             });
         
-        it('4. Should be able to relocate properties from [source] to ' +
-           '[target] object by mapping properties using schema from [access] ' +
-           'defined in this manner { "newName": "sourcePropertyName" } .',
+        it(`4. Should be able to relocate properties from [source] to 
+           [target] object by mapping properties using schema from [access] 
+           defined in this manner { "newName": "sourcePropertyName" } .`,
             () => {
                 
                 expect(lib.rehash(target, source, {

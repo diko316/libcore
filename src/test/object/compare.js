@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Deep compares two Native or non-Native Javascript objects using ' +
-        ' compare(object1:Mixed, object2:Mixed) method',
+describe(`Deep compares two Native or non-Native Javascript objects using 
+         compare(object1:Mixed, object2:Mixed) method`,
     () => {
         var lib = global.libcore;
         var objectSubject, arraySubject, regexSubject, dateSubject;
@@ -30,9 +30,9 @@ describe('Deep compares two Native or non-Native Javascript objects using ' +
         });
         
         
-        it('1. Should accept any [object1] and [object2] parameters ' +
-           'returning true if [object1] is the same as [object2]. ' +
-           'returns false otherwise.',
+        it(`1. Should accept any [object1] and [object2] parameters 
+           returning true if [object1] is the same as [object2]. 
+           returns false otherwise.`,
            () => {
             
                 expect(lib.compare(objectSubject, arraySubject)).toBe(false);

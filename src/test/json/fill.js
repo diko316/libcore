@@ -1,11 +1,11 @@
 'use strict';
 
 
-describe('Fill [subject] Object with property or array item with [value] ' +
-         'accessed from [path] using jsonFill(path:String,' +
-                                            'subject:Mixed, ' +
-                                            'value:Mixed, ' +
-                                            '[overwrite:Boolean])',
+describe(`Fill [subject] Object with property or array item with [value] 
+         accessed from [path] using jsonFill(path:String,
+                                            subject:Mixed, 
+                                            value:Mixed, 
+                                            [overwrite:Boolean])`,
     () => {
         var lib = global.libcore;
         var subject;
@@ -17,9 +17,9 @@ describe('Fill [subject] Object with property or array item with [value] ' +
         });
         
         
-        it('1. Should accept [subject] and populate objects ' +
-           'from the given [path] then returning "true" if it succeeds in ' +
-           'adding property to object or appending item in array',
+        it(`1. Should accept [subject] and populate objects 
+           from the given [path] then returning "true" if it succeeds in 
+           adding property to object or appending item in array`,
            () => {
                 
                 expect(() => lib.jsonFill('grid.paging.offset',
@@ -35,10 +35,10 @@ describe('Fill [subject] Object with property or array item with [value] ' +
             
            });
         
-        it('2. Should accept [subject] and populate array ' +
-           'from the given [path] on every numeric propery name encountered ' +
-           'then returning "true" if it succeeds in ' +
-           'adding property to object or appending item in array',
+        it(`2. Should accept [subject] and populate array 
+           from the given [path] on every numeric propery name encountered 
+           then returning "true" if it succeeds in 
+           adding property to object or appending item in array`,
            () => {
             
                 var value = { name: "subitem" };
@@ -61,11 +61,11 @@ describe('Fill [subject] Object with property or array item with [value] ' +
            });
         
         
-        it('3. Should accept [subject] and populate array ' +
-           'from the given [path] on every numeric propery name encountered ' +
-           'and appending items if already an array ' +
-           'then returning "true" if it succeeds in ' +
-           'adding property to object or appending item in array',
+        it(`3. Should accept [subject] and populate array 
+           from the given [path] on every numeric propery name encountered 
+           and appending items if already an array 
+           then returning "true" if it succeeds in 
+           adding property to object or appending item in array`,
            () => {
             
                 var value = { name: "subitem" },
@@ -96,10 +96,10 @@ describe('Fill [subject] Object with property or array item with [value] ' +
             
            });
         
-        it('4. Should accept [subject] and populate array ' +
-           'from the given [path] appending array items when blank index is ' +
-           'encountered then returning "true" if it succeeds in ' +
-           'adding property to object or appending item in array',
+        it(`4. Should accept [subject] and populate array 
+           from the given [path] appending array items when blank index is 
+           encountered then returning "true" if it succeeds in 
+           adding property to object or appending item in array`,
            () => {
             
                 var value = { name: "subitem" },

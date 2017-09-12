@@ -23,6 +23,7 @@ import "./string/utf2bin.js";
 import "./string/bin2utf.js";
 import "./string/camelize.js";
 import "./string/uncamelize.js";
+import "./string/trim.js";
 
 import "./array/union-list.js";
 import "./array/intersect-list.js";

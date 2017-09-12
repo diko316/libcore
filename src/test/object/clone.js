@@ -2,8 +2,8 @@
 
 
 
-describe('Clones Native Javascript objects using clone(data:Mixed,' +
-                                                    '[deep:Boolean]) method',
+describe(`Clones Native Javascript objects using clone(data:Mixed,
+                                                    [deep:Boolean]) method`,
     () => {
         var lib = global.libcore;
         var objectSubject, arraySubject, regexSubject;
@@ -29,8 +29,8 @@ describe('Clones Native Javascript objects using clone(data:Mixed,' +
             regexSubject = /new/;
         });
         
-        it('1. Should accept Native Javascript Object and returns another ' +
-           'instance of that object with the same properties.',
+        it(`1. Should accept Native Javascript Object and returns another 
+           instance of that object with the same properties.`,
            () => {
             
                 expect(() => lib.clone(objectSubject)).not.toThrow();
@@ -54,8 +54,8 @@ describe('Clones Native Javascript objects using clone(data:Mixed,' +
                 
            });
         
-        it('2. Should accept non Native Javascript Object and ' +
-           'returns another instance of that object with the same properties.',
+        it(`2. Should accept non Native Javascript Object and 
+           returns another instance of that object with the same properties.`,
            () => {
             
                 expect(() => lib.clone(null)).not.toThrow();
@@ -66,8 +66,8 @@ describe('Clones Native Javascript objects using clone(data:Mixed,' +
                 
            });
         
-        it('3. Should accept optional Boolean true [deep] parameter ' +
-           'to enable deep cloning of array and object properties.',
+        it(`3. Should accept optional Boolean true [deep] parameter 
+           to enable deep cloning of array and object properties.`,
            () => {
                 expect(() => lib.clone(objectSubject, true)).not.toThrow();
                 expect(lib.clone(objectSubject, true)).toEqual(objectSubject);
@@ -77,8 +77,8 @@ describe('Clones Native Javascript objects using clone(data:Mixed,' +
                     not.toBe(objectSubject.inside);
            });
         
-        it('4. Should accept optional Boolean false [deep] parameter ' +
-           'to enable shallow cloning of array and object properties.',
+        it(`4. Should accept optional Boolean false [deep] parameter 
+           to enable shallow cloning of array and object properties.`,
            () => {
                 expect(() => lib.clone(objectSubject, false)).not.toThrow();
                 expect(lib.clone(objectSubject, false)).toEqual(objectSubject);

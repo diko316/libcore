@@ -1463,7 +1463,7 @@ function encode64(subject) {
         if (!string(subject, true)) {
             throw new Error(INVALID_SUBJECT);
         }
-        
+
         // decode to ascii
         subject = utf2bin(subject);
         l = total = subject.length;
@@ -1491,7 +1491,6 @@ function encode64(subject) {
             if ((end || flag === 2)) {
                 buffer[bl++] = map.charAt(excess);
             }
-            
             
             if (!l) {
                 l = bl % 4;
@@ -1559,7 +1558,7 @@ function trim(subject) {
             throw new Error(INVALID_SUBJECT);
         }
 
-        return subject.replace(TRIM_RE);
+        return subject ? subject.replace(TRIM_RE, "") : subject;
     }
 
 //TYPE = require("./type.js"),

@@ -1,8 +1,8 @@
 'use strict';
 
-describe('Removes registry value with the given String json path [path] ' +
-         'relative to registry storage using ' +
-         'registryInstance.remove(path:String)',
+describe(`Removes registry value with the given String json path [path] 
+         relative to registry storage using
+         registryInstance.remove(path:String)`,
     () => {
         var lib = global.libcore;
         var registry;
@@ -29,7 +29,7 @@ describe('Removes registry value with the given String json path [path] ' +
             });
         });
         
-        it('1. Should throw error if given [path] parameter is not String.',
+        it(`1. Should throw error if given [path] parameter is not String.`,
            () => {
                 expect(() => registry.remove(null)).toThrow();
                 expect(() => registry.remove(new Date())).toThrow();
@@ -37,8 +37,8 @@ describe('Removes registry value with the given String json path [path] ' +
                 expect(() => registry.remove({})).toThrow();
            });
         
-        it('2. Should remove [value] found in String [path] parameter and ' +
-           'return true when found and removed.',
+        it(`2. Should remove [value] found in String [path] parameter and 
+           return true when found and removed.`,
            () => {
                 
                 expect(registry.pathExists("name")).toBe(true);

@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Runs a registered middleware callback using ' +
-         'run(name:String[, args:Iterable[, scope:Mixed]]).',
+describe(`Runs a registered middleware callback using 
+         run(name:String[, args:Iterable[, scope:Mixed]]).`,
     () => {
         
         var lib = global.libcore,
@@ -37,8 +37,8 @@ describe('Runs a registered middleware callback using ' +
         });
         
         
-        it('1. Should accept registered "before:[name]" middleware and run ' +
-           'all handlers that matches "before:[name]".',
+        it(`1. Should accept registered "before:[name]" middleware and run 
+           all handlers that matches "before:[name]".`,
            () => {
                 expect(() => lib.run(beforeRunName, [sampleParam])).
                     not.toThrow();
@@ -53,8 +53,8 @@ describe('Runs a registered middleware callback using ' +
                     not.toHaveBeenCalled();
            });
         
-        it('2. Should accept registered "after:[name]" middleware and run ' +
-           'all handlers that matches "after:[name]" and "[name]".',
+        it(`2. Should accept registered "after:[name]" middleware and run 
+           all handlers that matches "after:[name]" and "[name]".`,
            () => {
                 expect(() => lib.run(afterRunName, [sampleParam])).
                     not.toThrow();
@@ -69,8 +69,8 @@ describe('Runs a registered middleware callback using ' +
                     toHaveBeenCalledWith(sampleParam);
            });
         
-        it('3. Should accept registered "[name]" middleware and run ' +
-           'all handlers that matches "after:[name]" and "[name]".',
+        it(`3. Should accept registered "[name]" middleware and run 
+           all handlers that matches "after:[name]" and "[name]".`,
            () => {
                 expect(() => lib.run(runName, [sampleParam])).
                     not.toThrow();

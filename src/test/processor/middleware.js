@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Creates a Namespaced Middleware instance that can register() and ' +
-         ' run() using middleware(name:String) method.',
+describe(`Creates a Namespaced Middleware instance that can register() and 
+          run() using middleware(name:String) method.`,
     () => {
         
         var lib = global.libcore,
@@ -32,8 +32,8 @@ describe('Creates a Namespaced Middleware instance that can register() and ' +
             
         });
         
-        it('1. Should accept String [name] parameter and returns an instance ' +
-           'of Middleware for further registration of callbacks.',
+        it(`1. Should accept String [name] parameter and returns an instance 
+           of Middleware for further registration of callbacks.`,
            () => {
                 var myMiddleware;
                 
@@ -73,8 +73,8 @@ describe('Creates a Namespaced Middleware instance that can register() and ' +
             
            });
         
-        it('2. Should not accept non-String or empty String [name] ' +
-               'parameter and throws an exception.',
+        it(`2. Should not accept non-String or empty String [name]
+               parameter and throws an exception.`,
            () => {
                 expect(() => lib.middleware(1)).toThrow();
                 expect(() => lib.middleware(/test/)).toThrow();

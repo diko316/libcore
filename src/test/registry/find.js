@@ -1,7 +1,7 @@
 'use strict';
 
-describe('Retrieves registry value based from String json path [path] using ' +
-         'registryInstance.find(path:String)',
+describe(`Retrieves registry value based from String json path [path] using 
+         registryInstance.find(path:String)`,
     () => {
         var lib = global.libcore;
         var registry;
@@ -28,7 +28,7 @@ describe('Retrieves registry value based from String json path [path] using ' +
             });
         });
         
-        it('1. Should throw error if given [path] parameter is not String.',
+        it(`1. Should throw error if given [path] parameter is not String.`,
            () => {
                 expect(() => registry.find(null)).toThrow();
                 expect(() => registry.find(new Date())).toThrow();
@@ -36,7 +36,7 @@ describe('Retrieves registry value based from String json path [path] using ' +
                 expect(() => registry.find({})).toThrow();
            });
         
-        it('2. Should return value with the given String [path] parameter.',
+        it(`2. Should return value with the given String [path] parameter.`,
            () => {
                 expect(() => registry.find("name")).not.toThrow();
                 expect(() => registry.find("[0].id")).not.toThrow();

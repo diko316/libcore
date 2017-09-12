@@ -1,7 +1,7 @@
 'use strict';
 
-describe('Inspects if String json [path] exists in registry using ' +
-         'registryInstance.pathExists(path:String)',
+describe(`Inspects if String json [path] exists in registry using 
+         registryInstance.pathExists(path:String)`,
     () => {
         var lib = global.libcore;
         var registry;
@@ -28,7 +28,7 @@ describe('Inspects if String json [path] exists in registry using ' +
             });
         });
         
-        it('1. Should throw error if given [path] parameter is not String.',
+        it(`1. Should throw error if given [path] parameter is not String.`,
            () => {
                 expect(() => registry.pathExists(null)).toThrow();
                 expect(() => registry.pathExists(new Date())).toThrow();
@@ -36,8 +36,8 @@ describe('Inspects if String json [path] exists in registry using ' +
                 expect(() => registry.pathExists({})).toThrow();
            });
         
-        it('2. Should return true if given json String [path] parameter ' +
-           'exists in registry.',
+        it(`2. Should return true if given json String [path] parameter 
+           exists in registry.`,
            () => {
                 expect(() => registry.pathExists("name")).not.toThrow();
                 
@@ -49,8 +49,8 @@ describe('Inspects if String json [path] exists in registry using ' +
                 expect(registry.pathExists("next")).toBe(true);
            });
         
-        it('3. Should return false if given json String [path] parameter ' +
-           'exists in registry.',
+        it(`3. Should return false if given json String [path] parameter 
+           exists in registry.`,
            () => {
                 expect(() => registry.pathExists("10.name")).not.toThrow();
                 

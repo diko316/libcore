@@ -1,7 +1,7 @@
 'use strict';
 
-describe('Inspects the registry storage if String or Number [name] exists ' +
-         'using registryInstance(name:String)',
+describe(`Inspects the registry storage if String or Number [name] exists 
+         using registryInstance(name:String)`,
     () => {
         var lib = global.libcore;
         var registry;
@@ -28,8 +28,8 @@ describe('Inspects the registry storage if String or Number [name] exists ' +
             });
         });
         
-        it('1. Should throw error if given [name] parameter is ' +
-           'not String or Number.',
+        it(`1. Should throw error if given [name] parameter is 
+           not String or Number.`,
            () => {
                 expect(() => registry.exists(null)).toThrow();
                 expect(() => registry.exists(new Date())).toThrow();
@@ -37,8 +37,8 @@ describe('Inspects the registry storage if String or Number [name] exists ' +
                 expect(() => registry.exists({})).toThrow();
            });
         
-        it('2. Should return true if indexed String or Number [name] exists ' +
-           'in registry.',
+        it(`2. Should return true if indexed String or Number [name] exists 
+           in registry.`,
            () => {
                 expect(() => registry.exists("name")).not.toThrow();
                 expect(() => registry.exists(0)).not.toThrow();
@@ -51,8 +51,8 @@ describe('Inspects the registry storage if String or Number [name] exists ' +
                 
            });
         
-        it('3. Should return false if indexed String or Number [name] ' +
-           'do not exist in registry.',
+        it(`3. Should return false if indexed String or Number [name] 
+           do not exist in registry.`,
            () => {
                 expect(registry.exists("label")).toBe(false);
                 expect(registry.exists("another")).toBe(false);

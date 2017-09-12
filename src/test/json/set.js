@@ -1,11 +1,11 @@
 'use strict';
 
 
-describe('Set or Apply [value] into object extracted from [path] using ' +
-         'jsonSet(path:String, ' +
-                    'subject:Mixed, ' +
-                    'value:Mixed, ' +
-                    '[overwrite:Boolean|"insert"|"push"]) method.',
+describe(`Set or Apply [value] into object extracted from [path] using 
+         jsonSet(path:String, 
+                    subject:Mixed, 
+                    value:Mixed, 
+                    [overwrite:Boolean|"insert"|"push"]) method.`,
         () => {
 
             var lib = global.libcore;
@@ -43,10 +43,10 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                 testFunction.type = subject;
             });
             
-            it('1. Should accept json String [path], ' +
-                       'Native non-scalar Javascript Object [subject], and ' +
-                       'Mixed [value] returning "true" ' +
-                       'if value was set or applied',
+            it(`1. Should accept json String [path], 
+                       Native non-scalar Javascript Object [subject], and 
+                       Mixed [value] returning "true" 
+                       if value was set or applied`,
                 () => {
                     var path = 'grid.paging.limit',
                         value = 10;
@@ -62,10 +62,10 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     expect(subject.grid.rows[1].name).toBe(value);
                 });
             
-            it('2. Should accept json String [path], ' +
-                       'Native non-scalar Javascript Object [subject], and ' +
-                       'Mixed [value] returning "false" ' +
-                       'if value was not set or applied',
+            it(`2. Should accept json String [path], 
+                       Native non-scalar Javascript Object [subject], and 
+                       Mixed [value] returning "false" 
+                       if value was not set or applied`,
                 () => {
                     var path = 'grid.paging.limit.test',
                         value = 10;
@@ -80,10 +80,10 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     
                 });
             
-            it('3. Should accept json String [path], and populate them with ' +
-                    'Object if some properties in [path] doesn\'t exist. ' +
-                    'And, returns "true" if [value] is set or applied in the ' +
-                    '[subject].',
+            it(`3. Should accept json String [path], and populate them with 
+                    Object if some properties in [path] doesn't exist. 
+                    And, returns "true" if [value] is set or applied in the 
+                    [subject].`,
                 () => {
                     var path = 'test1[row].test',
                         value = 10;
@@ -98,10 +98,10 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     
                 });
             
-            it('4. Should accept json String [path], and update or apply ' +
-                    'non-scalar Object [value] properties to path resolved ' +
-                    'non-scalar Object [subject] if [overwrite] parameter is ' +
-                    'false.',
+            it(`4. Should accept json String [path], and update or apply 
+                    non-scalar Object [value] properties to path resolved 
+                    non-scalar Object [subject] if [overwrite] parameter is 
+                    false.`,
                 () => {
                     var path = 'grid.paging',
                         value = {
@@ -131,10 +131,10 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     
                 });
             
-            it('5. Should accept json String [path], and apply ' +
-                    'non-scalar Object [value] properties to path resolved ' +
-                    'non-scalar Object [subject] if [overwrite] parameter is ' +
-                    '"apply".',
+            it(`5. Should accept json String [path], and apply 
+                    non-scalar Object [value] properties to path resolved 
+                    non-scalar Object [subject] if [overwrite] parameter is 
+                    "apply".`,
                 () => {
                     var path = 'grid.rows',
                         value = {
@@ -153,9 +153,9 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     expect(subject.grid.rows).toEqual(result);
                 });
             
-            it('6. Should accept json String [path], and insert ' +
-                    'Mixed [value] to path resolved Array ' +
-                    '[subject] if [overwrite] parameter is "insert".',
+            it(`6. Should accept json String [path], and insert 
+                    Mixed [value] to path resolved Array 
+                    [subject] if [overwrite] parameter is "insert".`,
                 () => {
                     var path = 'grid.rows.1',
                         value = {
@@ -172,9 +172,9 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     expect(subject.grid.rows).toEqual(result);
                 });
             
-            it('7. Should accept json String [path], and push ' +
-                    'Array [value] items to path resolved Array ' +
-                    '[subject] if [overwrite] parameter is "push".',
+            it(`7. Should accept json String [path], and push 
+                    Array [value] items to path resolved Array 
+                    [subject] if [overwrite] parameter is "push".`,
                 () => {
                     var path = 'grid.rows',
                         value = [{
@@ -191,9 +191,9 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     expect(subject.grid.rows).toEqual(result);
                 });
             
-            it('8. Should accept json String [path], and unshift Array ' +
-                    '[value] items to start index of path resolved Array ' +
-                    '[subject] if [overwrite] parameter is "unshift".',
+            it(`8. Should accept json String [path], and unshift Array 
+                    [value] items to start index of path resolved Array 
+                    [subject] if [overwrite] parameter is "unshift".`,
                 () => {
                     var path = 'grid.rows',
                         value = [{
@@ -210,8 +210,8 @@ describe('Set or Apply [value] into object extracted from [path] using ' +
                     expect(subject.grid.rows).toEqual(result);
                 });
             
-            it('9. Should throw an Error if non-String or empty String [path] ' +
-                    ' parameter is passed.',
+            it(`9. Should throw an Error if non-String or empty String [path] 
+                    parameter is passed.`,
                 () => {
                     expect(() => lib.jsonSet(null, subject, 10)).
                             toThrow();

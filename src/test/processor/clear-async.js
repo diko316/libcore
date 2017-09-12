@@ -1,14 +1,14 @@
 'use strict';
 
-describe('Clears an asynchronous Function call from ' +
-         'setAsync(handler:Function) call using its returned call [id] in ' +
-         'clearAsync(id:Mixed).',
+describe(`Clears an asynchronous Function call from 
+         setAsync(handler:Function) call using its returned call [id] in 
+         clearAsync(id:Mixed).`,
     () => {
         
         var lib = global.libcore;
         
-        it('1. Should accept any valid asynchrounous Function call [id] ' +
-           'parameter and removes from pending execution list.',
+        it(`1. Should accept any valid asynchrounous Function call [id] 
+           parameter and removes from pending execution list.`,
            (done) => {
             
                 var value = 1,
@@ -35,8 +35,8 @@ describe('Clears an asynchronous Function call from ' +
                 }, 100);
            });
         
-        it('2. Should accept any [id] value and do nothing if it is not ' +
-           'a valid asynchronous Function call [id].',
+        it(`2. Should accept any [id] value and do nothing if it is not 
+           a valid asynchronous Function call [id].`,
            () => {
                 expect(() => lib.clearAsync(null)).not.toThrow();
                 expect(() => lib.clearAsync(1)).not.toThrow();

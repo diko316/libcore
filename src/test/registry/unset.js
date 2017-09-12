@@ -1,7 +1,7 @@
 'use strict';
 
-describe('Removes registry [value] indexed with [name] using ' +
-         'registryInstance.unset(name:String|Number)',
+describe(`Removes registry [value] indexed with [name] using 
+         registryInstance.unset(name:String|Number)`,
     () => {
         var lib = global.libcore;
         var registry;
@@ -28,8 +28,8 @@ describe('Removes registry [value] indexed with [name] using ' +
             });
         });
         
-        it('1. Should throw error if given [name] parameter is not String, ' +
-           'Number, Object or Array.',
+        it(`1. Should throw error if given [name] parameter is not String, 
+           Number, Object or Array.`,
            () => {
                 expect(() => registry.unset(null)).toThrow();
                 expect(() => registry.unset(new Date())).toThrow();
@@ -37,8 +37,8 @@ describe('Removes registry [value] indexed with [name] using ' +
                 expect(() => registry.unset(true)).toThrow();
            });
         
-        it('2. Should remove [value] indexed with String [name] parameter ' +
-           'returning registry object.',
+        it(`2. Should remove [value] indexed with String [name] parameter 
+           returning registry object.`,
            () => {
                 expect(registry.exists("name")).toBe(true);
                 expect(registry.exists("next")).toBe(true);
@@ -50,8 +50,8 @@ describe('Removes registry [value] indexed with [name] using ' +
                 expect(registry.exists("next")).toBe(false);
            });
         
-        it('3. Should remove [value] indexed with Number [name] parameter ' +
-           'returning registry object.',
+        it(`3. Should remove [value] indexed with Number [name] parameter 
+           returning registry object.`,
            () => {
                 expect(registry.exists(0)).toBe(true);
                 expect(registry.exists(2)).toBe(true);

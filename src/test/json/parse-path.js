@@ -1,13 +1,13 @@
 'use strict';
 
 
-describe('Extract property names from a JSON path using ' +
-         'jsonParsePath(path:String)',
+describe(`Extract property names from a JSON path using 
+         jsonParsePath(path:String)`,
         () => {
             var lib = global.libcore;
             
-            it('1. Should be able to extract dot notation JSON path ' +
-               ' (e.g. "grid.paging.offset")',
+            it(`1. Should be able to extract dot notation JSON path 
+                (e.g. "grid.paging.offset")`,
                () => {
                     var subject = 'grid.paging.offset';
                     
@@ -32,8 +32,8 @@ describe('Extract property names from a JSON path using ' +
                                   '0']);
                });
             
-            it('2. Should be able to extract quoted string properties ' +
-               'JSON path (e.g. "grid["paging"].offset")',
+            it(`2. Should be able to extract quoted string properties 
+               JSON path (e.g. "grid["paging"].offset")`,
                () => {
                     var subject = 'grid["paging"].offset';
                     
@@ -93,8 +93,8 @@ describe('Extract property names from a JSON path using ' +
                                   'length']);
                });
             
-            it('3. Should be able to extract escaped string properties ' +
-               'JSON path (e.g. "grid.\\n\\.o\\].offset")',
+            it(`3. Should be able to extract escaped string properties 
+               JSON path (e.g. "grid.\\n\\.o\\].offset")`,
                () => {
                 
                     var subject = "grid.\\n\\.o\\].offset";
@@ -141,8 +141,8 @@ describe('Extract property names from a JSON path using ' +
                         ]);
                });
             
-            it('4. Should be able to extract empty bracket property ' +
-               'JSON path (e.g. "[].offset")',
+            it(`4. Should be able to extract empty bracket property 
+               JSON path (e.g. "[].offset")`,
                () => {
                 
                     var subject = "[].offset";
@@ -181,8 +181,8 @@ describe('Extract property names from a JSON path using ' +
                         ]);
                });
             
-            it('5. Should be able to extract empty string in ' +
-               'bracket property JSON path (e.g. [""].offset)',
+            it(`5. Should be able to extract empty string in 
+               bracket property JSON path (e.g. [""].offset)`,
                () => {
                 
                     var subject = "[''].offset";
@@ -209,8 +209,8 @@ describe('Extract property names from a JSON path using ' +
                         
                });
             
-            it('6. Should be able to extract empty string in ' +
-               'quoted property JSON path (e.g. "".offset)',
+            it(`6. Should be able to extract empty string in 
+               quoted property JSON path (e.g. "".offset)`,
                () => {
                 
                     var subject = "''.offset";

@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Inspects a given Mixed [subject] if JSON [path] exists ' +
-         'using jsonExists(path:String, subject:Mixed)',
+describe(`Inspects a given Mixed [subject] if JSON [path] exists
+         using jsonExists(path:String, subject:Mixed)`,
         () => {
             var lib = global.libcore,
                 subject = {
@@ -39,8 +39,8 @@ describe('Inspects a given Mixed [subject] if JSON [path] exists ' +
             testFunction.id = "fn1";
             testFunction.type = subject;
             
-            it('1. Should throw error if [path] parameter is ' +
-               'not String or empty.',
+            it(`1. Should throw error if [path] parameter is
+               not String or empty.`,
                () => {
                     expect(() => lib.jsonExists(null, subject)).toThrow();
                     expect(() => lib.jsonExists(undefined, subject)).toThrow();
@@ -50,8 +50,8 @@ describe('Inspects a given Mixed [subject] if JSON [path] exists ' +
                     
                });
             
-            it('2. Should accept String [path] and return false if ' +
-               'JSON path do not exist in [subject].',
+            it(`2. Should accept String [path] and return false if 
+               JSON path do not exist in [subject].`,
                () => {
                     expect(lib.jsonExists("table", subject)).toBe(false);
                     expect(lib.jsonExists("0[1].name", subject)).toBe(false);
@@ -59,8 +59,8 @@ describe('Inspects a given Mixed [subject] if JSON [path] exists ' +
                     expect(lib.jsonExists("table", 1)).toBe(false);
                });
             
-            it('3. Should accept String [path] and return true if ' +
-               'JSON path exists in [subject].',
+            it(`3. Should accept String [path] and return true if
+               JSON path exists in [subject].`,
                () => {
                     expect(lib.jsonExists("grid", subject)).toBe(true);
                     

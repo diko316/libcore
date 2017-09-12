@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Inspects property exists in an object using contains(subject:Mixed,' +
-                                            'property:String|Number) method',
+describe(`Inspects property exists in an object using contains(subject:Mixed,
+                                            property:String|Number) method`,
     () =>  {
         var lib = global.libcore;
         var subject;
@@ -17,13 +17,13 @@ describe('Inspects property exists in an object using contains(subject:Mixed,' +
             };
         });
         
-        it('1. Should not accept non-Native Javascript Object [subject]',
+        it(`1. Should not accept non-Native Javascript Object [subject]`,
             () => {
                 expect(() => lib.contains(null, 'toString')).toThrow();
                 expect(() => lib.contains(undefined, 'valueOf')).toThrow();
             });
         
-        it('2. Should accept any Native Javascript Object [subject]',
+        it(`2. Should accept any Native Javascript Object [subject]`,
             () => {
                 expect(() => lib.contains(['item1'], '0')).
                                 not.toThrow();
@@ -37,8 +37,8 @@ describe('Inspects property exists in an object using contains(subject:Mixed,' +
                                 not.toThrow();
             });
         
-        it('3. Should not accept non-String or ' +
-           'non-Number [property] parameter.',
+        it(`3. Should not accept non-String or 
+           non-Number [property] parameter.`,
             () => {
                 expect(() => lib.contains(subject, null)).
                                 toThrow();
@@ -51,7 +51,7 @@ describe('Inspects property exists in an object using contains(subject:Mixed,' +
                 
             });
         
-        it('4. Should accept String or Number [property] parameter.',
+        it(`4. Should accept String or Number [property] parameter.`,
             () => {
                 expect(() => lib.contains(subject, 0)).
                                 not.toThrow();
@@ -63,8 +63,8 @@ describe('Inspects property exists in an object using contains(subject:Mixed,' +
                                 not.toThrow();
             });
         
-        it('5. Should return true if [property] in [subject] exists ' +
-           'and is an updated property.',
+        it(`5. Should return true if [property] in [subject] exists 
+           and is an updated property.`,
            () => {
                 expect(lib.contains(subject, 'id')).toBe(true);
                 expect(lib.contains(subject, 'name')).toBe(true);
@@ -73,8 +73,8 @@ describe('Inspects property exists in an object using contains(subject:Mixed,' +
                 expect(lib.contains(subject, 'length')).toBe(true);
            });
         
-        it('6. Should return false if [property] in [subject] do not exists ' +
-           'or not an updated property.',
+        it(`6. Should return false if [property] in [subject] do not exists
+           or not an updated property.`,
            () => {
                 expect(lib.contains(subject, 'valueOf')).toBe(false);
                 expect(lib.contains(subject, 'toString')).toBe(false);

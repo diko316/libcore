@@ -1,8 +1,8 @@
 'use strict';
 
-describe('Inserts registry [value] into String json path [path] ' +
-         'relative to registry storage using ' +
-         'registryInstance.insert(path:String, value:Mixed)',
+describe(`Inserts registry [value] into String json path [path] 
+         relative to registry storage using 
+         registryInstance.insert(path:String, value:Mixed)`,
     () => {
         var lib = global.libcore;
         var registry;
@@ -29,7 +29,7 @@ describe('Inserts registry [value] into String json path [path] ' +
             });
         });
         
-        it('1. Should throw error if given [path] parameter is not String.',
+        it(`1. Should throw error if given [path] parameter is not String.`,
            () => {
                 var value = "buang";
                 expect(() => registry.insert(null, value)).toThrow();
@@ -38,8 +38,8 @@ describe('Inserts registry [value] into String json path [path] ' +
                 expect(() => registry.insert({}, value)).toThrow();
            });
         
-        it('2. Should insert [value] into registry storage with the given ' +
-           'String [path] parameter.',
+        it(`2. Should insert [value] into registry storage with the given 
+           String [path] parameter.`,
            () => {
                 var value = "buang";
                 

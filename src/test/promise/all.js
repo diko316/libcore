@@ -1,15 +1,15 @@
 'use strict';
 
 
-describe('Creates a promise from [iterable] values or promises that resolves ' +
-         'if all items in [iterable] fulfills or rejects if all items in ' +
-         '[iterable] rejects using Promise.all(iterable:Mixed)',
+describe(`Creates a promise from [iterable] values or promises that resolves 
+         if all items in [iterable] fulfills or rejects if all items in 
+         [iterable] rejects using Promise.all(iterable:Mixed)`,
     () => {
         var lib = global.libcore,
             P = lib.Promise;
             
-        it('1. Should accept [iterable] object or Objects with "length" ' +
-           'Number of items.',
+        it(`1. Should accept [iterable] object or Objects with "length" 
+           Number of items.`,
            (done) => {
                 var callback = {
                         isRejected: false,
@@ -45,8 +45,8 @@ describe('Creates a promise from [iterable] values or promises that resolves ' +
                 
            });
         
-        it('2. Should not accept [iterable] that is not iterable object or ' +
-           ' Objects without "length" Number of items.',
+        it(`2. Should not accept [iterable] that is not iterable object or 
+            Objects without "length" Number of items.`,
            () => {
                 expect(() => P.all(null)).toThrow();
                 expect(() => P.all(1)).toThrow();

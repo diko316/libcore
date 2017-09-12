@@ -2,8 +2,8 @@
 
 
 
-describe('Removes ":before" or ":after" registered middleware callbacks ' +
-         'using clearRunner(name:String[, after:Boolean]]).',
+describe(`Removes ":before" or ":after" registered middleware callbacks 
+         using clearRunner(name:String[, after:Boolean]]).`,
     () => {
         
         var lib = global.libcore,
@@ -38,10 +38,10 @@ describe('Removes ":before" or ":after" registered middleware callbacks ' +
         });
         
         
-        it('1. Should accept registered "before:[name]" or "after:[name]" ' +
-           '[name] parameter without the optional Booolean [after] parameter ' +
-           'and autodetect purging of "before" or "after" callbacks ' +
-           'based on [name] parameter',
+        it(`1. Should accept registered "before:[name]" or "after:[name]" 
+           [name] parameter without the optional Booolean [after] parameter 
+           and autodetect purging of "before" or "after" callbacks 
+           based on [name] parameter`,
            () => {
                 expect(() => lib.clearRunner(beforeRunName)).
                     not.toThrow();
@@ -64,8 +64,8 @@ describe('Removes ":before" or ":after" registered middleware callbacks ' +
                     not.toHaveBeenCalled();
            });
         
-        it('2. Should accept Boolean true [after] parameter and removes all ' +
-           '"after:[name]" runners overriding [name] parameter selection.',
+        it(`2. Should accept Boolean true [after] parameter and removes all 
+           "after:[name]" runners overriding [name] parameter selection.`,
            () => {
                 expect(() => lib.clearRunner(beforeRunName, true)).
                     not.toThrow();
@@ -86,8 +86,8 @@ describe('Removes ":before" or ":after" registered middleware callbacks ' +
                     not.toHaveBeenCalled();
            });
         
-        it('3. Should accept Boolean false [after] parameter and removes all ' +
-           '"before:[name]" runners overriding [name] parameter selection.',
+        it(`3. Should accept Boolean false [after] parameter and removes all 
+           "before:[name]" runners overriding [name] parameter selection.`,
            () => {
                 expect(() => lib.clearRunner(afterRunName, false)).
                     not.toThrow();
@@ -108,8 +108,8 @@ describe('Removes ":before" or ":after" registered middleware callbacks ' +
                     toHaveBeenCalled();
            });
         
-        it('4. Should accept null [after] parameter and removes all ' +
-           '"before:[name]" and "after:[name]" runners.',
+        it(`4. Should accept null [after] parameter and removes all 
+           "before:[name]" and "after:[name]" runners.`,
            () => {
                 expect(() => lib.clearRunner(afterRunName, null)).
                     not.toThrow();
@@ -130,8 +130,8 @@ describe('Removes ":before" or ":after" registered middleware callbacks ' +
                     not.toHaveBeenCalled();
            });
         
-        it('5. Should not accept non-String or empty String [name] parameter ' +
-           'and throws an exception.',
+        it(`5. Should not accept non-String or empty String [name] parameter
+           and throws an exception.`,
            () => {
                 expect(() => lib.clearRunner(null)).
                     toThrow();

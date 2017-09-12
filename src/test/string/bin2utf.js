@@ -1,13 +1,13 @@
 'use strict';
 
-describe('Encodes ASCII in UTF-8 String [subject] to UTF-16 characters using ' +
-         'bin2utf(subject:String) method',
+describe(`Encodes ASCII in UTF-8 String [subject] to UTF-16 characters using 
+         bin2utf(subject:String) method`,
     () => {
         var lib = global.libcore,
             subject = "MZ  Ã¿Ã¿ @ â¬";
         
-        it('1. Should accept String [subject] and returns ' +
-           'ASCII safe characters',
+        it(`1. Should accept String [subject] and returns 
+           ASCII safe characters`,
            () => {
             
                 expect(() => lib.bin2utf(subject)).
@@ -21,8 +21,8 @@ describe('Encodes ASCII in UTF-8 String [subject] to UTF-16 characters using ' +
                     
            });
         
-        it('2. Should not accept non-String [subject] parameter ' +
-           'and throws error instead.',
+        it(`2. Should not accept non-String [subject] parameter 
+           and throws error instead.`,
            () => {
             
                 expect(() => lib.bin2utf(null)).

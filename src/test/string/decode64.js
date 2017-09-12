@@ -1,14 +1,14 @@
 'use strict';
 
 
-describe('decodes a base 64 encoded String [subject] into ' +
-         'ASCII 256 bit string using encode64(subject:String) method',
+describe(`decodes a base 64 encoded String [subject] into
+         ASCII 256 bit string using encode64(subject:String) method`,
     () => {
         
         var lib = global.libcore;
         
-        it('1. Should accept base 64 encoded String [subject] and ' +
-           'return ASCII 256 bit string',
+        it(`1. Should accept base 64 encoded String [subject] and 
+           return ASCII 256 bit string`,
            () => {
                 var subject = 'TVogAyAEw7/DvyBAIOKCrA==';
                 
@@ -19,16 +19,16 @@ describe('decodes a base 64 encoded String [subject] into ' +
                     toBe('MZ  ÿÿ @ €');
            });
         
-        it('2. Should not accept String [subject] parameter with '+
-           'non-base 64 encode character throws error.',
+        it(`2. Should not accept String [subject] parameter with
+           non-base 64 encode character throws error.`,
            () => {
                 expect(() => lib.decode64('MZ  ÿÿ @ €')).
                     toThrow();
                 
            });
         
-        it('3. Should not accept non String [subject] parameter and ' +
-           'throws error instead',
+        it(`3. Should not accept non String [subject] parameter and 
+           throws error instead`,
            () => {
                 expect(() => lib.encode64(true)).toThrow();
                 expect(() => lib.encode64(null)).toThrow();

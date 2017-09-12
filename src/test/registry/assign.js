@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Assign [value] Object properties or Array items into the registry ' +
-         'using registryInstance.assign(value:Object|Array)',
+describe(`Assign [value] Object properties or Array items into the registry 
+         using registryInstance.assign(value:Object|Array)`,
     () => {
         var lib = global.libcore;
         var registry;
@@ -12,8 +12,8 @@ describe('Assign [value] Object properties or Array items into the registry ' +
         });
         
         
-        it('1. Should throw error if [value] parameter is ' +
-           'not Object or Array.',
+        it(`1. Should throw error if [value] parameter is 
+           not Object or Array.`,
            () => {
                 expect(() => registry.assign(null)).toThrow();
                 expect(() => registry.assign(new Date())).toThrow();
@@ -23,9 +23,9 @@ describe('Assign [value] Object properties or Array items into the registry ' +
                 expect(() => registry.assign("label")).toThrow();
            });
         
-        it('2. Should assign Native Object properties of [value] parameter ' +
-           'indexed by property name to registry and ' +
-           'return registry instance when suscessfull.',
+        it(`2. Should assign Native Object properties of [value] parameter 
+           indexed by property name to registry and 
+           return registry instance when suscessfull.`,
            () => {
                 expect(() => registry.assign({})).not.toThrow();
                 expect(registry.assign({
@@ -39,9 +39,9 @@ describe('Assign [value] Object properties or Array items into the registry ' +
                 
            });
         
-        it('3. Should assign Array items of [value] parameter indexed by ' +
-           'numeric array index to registry and ' +
-           'return registry instance when suscessfull.',
+        it(`3. Should assign Array items of [value] parameter indexed by 
+           numeric array index to registry and 
+           return registry instance when suscessfull.`,
            () => {
                 var array = [{
                         "id": 101,

@@ -1,12 +1,12 @@
 'use strict';
 
 
-describe('Apply properties of [source] object to [target] object only if ' +
-         ' property in [target] do not exist or ' +
-         ' not an updated property using ' +
-        ' fillin(target:Object|Function, ' +
-                'source:Object|Function, ' +
-                '[hasown:Boolean]) method',
+describe(`Apply properties of [source] object to [target] object only if 
+        property in [target] do not exist or 
+        not an updated property using 
+        fillin(target:Object|Function,
+                source:Object|Function, 
+                [hasown:Boolean]) method`,
     () => {
         
         var lib = global.libcore;
@@ -30,7 +30,7 @@ describe('Apply properties of [source] object to [target] object only if ' +
         });
         
         
-        it('1. Should only accept [target] Native Javascript Object parameter.',
+        it(`1. Should only accept [target] Native Javascript Object parameter.`,
            () => {
                 expect(() => lib.fillin(null, filler)).toThrow();
                 expect(() => lib.fillin(new Date(), filler)).not.toThrow();
@@ -38,7 +38,7 @@ describe('Apply properties of [source] object to [target] object only if ' +
                 expect(() => lib.fillin(1, filler)).toThrow();
            });
         
-        it('2. Should only accept [source] Native Javascript Object parameter.',
+        it(`2. Should only accept [source] Native Javascript Object parameter.`,
            () => {
                 expect(() => lib.fillin(subject, null)).toThrow();
                 expect(() => lib.fillin(subject, new Date())).not.toThrow();
@@ -48,9 +48,9 @@ describe('Apply properties of [source] object to [target] object only if ' +
            });
         
         
-        it('3. Should optionally accept [hasown] Boolean true ' +
-           ' to only use updated properties from [source] or false ' +
-           ' to use all enumerable properties from [source].',
+        it(`3. Should optionally accept [hasown] Boolean true 
+            to only use updated properties from [source] or false 
+            to use all enumerable properties from [source].`,
            () => {
                 var fillin = lib.clone(subject),
                     compare = lib.clone(fillin);

@@ -1,11 +1,11 @@
 'use strict';
 
 
-describe('Apply properties of source object to target object using ' +
-        ' assign(target:Object|Function, ' +
-                'source:Object|Function, ' +
-                '[defaults:Object, ' +
-                'ownedOnly:Boolean]) method',
+describe(`Apply properties of source object to target object using 
+         assign(target:Object|Function, 
+                source:Object|Function, 
+                [defaults:Object, 
+                ownedOnly:Boolean]) method`,
     () => {
         
         var lib = global.libcore,
@@ -18,7 +18,7 @@ describe('Apply properties of source object to target object using ' +
                         }
             };
         
-        it('1. Should accept Object as first "target" parameter.',
+        it(`1. Should accept Object as first "target" parameter.`,
             () => {
                 var target = {},
                     source = subject;
@@ -28,7 +28,7 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('2. Should accept Native Object as first "target" parameter.',
+        it(`2. Should accept Native Object as first "target" parameter.`,
             () => {
                 var target = function () {},
                     source = subject;
@@ -40,8 +40,8 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('3. Should not accept non-Native Object as ' +
-            'first "target" parameter.',
+        it(`3. Should not accept non-Native Object as 
+            first "target" parameter.`,
             () => {
                 
                 var source = subject;
@@ -53,7 +53,7 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('4. Should accept Object as 2nd "source" parameter.',
+        it(`4. Should accept Object as 2nd "source" parameter.`,
             () => {
                 var target = {},
                     source = subject;
@@ -63,7 +63,7 @@ describe('Apply properties of source object to target object using ' +
                     
             });
         
-        it('5. Should accept Native Object as 2nd "source" parameter.',
+        it(`5. Should accept Native Object as 2nd "source" parameter.`,
             () => {
                 var target = {},
                     source = fnSubject;
@@ -75,8 +75,8 @@ describe('Apply properties of source object to target object using ' +
                     
             });
         
-        it('6. Should not accept non-Native Object as ' +
-            '2nd "source" parameter.',
+        it(`6. Should not accept non-Native Object as 
+            2nd "source" parameter.`,
             () => {
                 
                 var target = {};
@@ -88,7 +88,7 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('7. Should accept 3rd optional "defaults" Native Object parameter.',
+        it(`7. Should accept 3rd optional "defaults" Native Object parameter.`,
             () => {
                 var target = {},
                     source = subject,
@@ -110,8 +110,8 @@ describe('Apply properties of source object to target object using ' +
                 
             });
         
-        it('8. Should not accept non-Native Object 3rd optional ' +
-           '"defaults" parameter.',
+        it(`8. Should not accept non-Native Object 3rd optional 
+           "defaults" parameter.`,
             () => {
                 var target = {},
                     source = subject;

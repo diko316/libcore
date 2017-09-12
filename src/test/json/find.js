@@ -1,8 +1,8 @@
 'use strict';
 
 
-describe('Retrieves Mixed value from a given JSON path using ' +
-         'jsonFind(path:String, object:Mixed)',
+describe(`Retrieves Mixed value from a given JSON path using
+         jsonFind(path:String, object:Mixed)`,
         () => {
             var lib = global.libcore,
                 subject = {
@@ -39,8 +39,8 @@ describe('Retrieves Mixed value from a given JSON path using ' +
             testFunction.id = "fn1";
             testFunction.type = subject;
             
-            it('1. Should throw error if [path] parameter is ' +
-               'not String or empty.',
+            it(`1. Should throw error if [path] parameter is 
+               not String or empty.`,
                () => {
                     expect(() => lib.jsonFind(null, subject)).toThrow();
                     expect(() => lib.jsonFind(undefined, subject)).toThrow();
@@ -50,16 +50,16 @@ describe('Retrieves Mixed value from a given JSON path using ' +
                     
                });
             
-            it('2. Should accept String [path] and return undefined if ' +
-               'unable to extract property value of [object].',
+            it(`2. Should accept String [path] and return undefined if 
+               unable to extract property value of [object].`,
                () => {
                     expect(lib.jsonFind("table", subject)).toBe(undefined);
                     expect(lib.jsonFind("table", /test/)).toBe(undefined);
                     expect(lib.jsonFind("table", 1)).toBe(undefined);
                });
             
-            it('3. Should accept String [path] and return property value ' +
-               'extracted from [object] parameter.',
+            it(`3. Should accept String [path] and return property value 
+               extracted from [object] parameter.`,
                () => {
                     expect(lib.jsonFind("grid", subject)).toBe(subject.grid);
                     

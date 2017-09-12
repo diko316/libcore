@@ -1,14 +1,14 @@
 'use strict';
 
 
-describe('Converts String [subject] to Snaked cased "-" delimited String ' +
-         'using uncamelize(subject:String) method',
+describe(`Converts String [subject] to Snaked cased "-" delimited String 
+         using uncamelize(subject:String) method`,
     () => {
         var lib = global.libcore;
         
-        it('1. Should accept String [subject] and returns snake cased ' +
-           ' "-" delimited String and next upper-cased alphabet character ' +
-           'is onverted to lower-case.',
+        it(`1. Should accept String [subject] and returns snake cased 
+            "-" delimited String and next upper-cased alphabet character 
+           is onverted to lower-case.`,
            () => {
             
                 expect(() => lib.uncamelize('adsBDs')).not.toThrow();
@@ -19,8 +19,8 @@ describe('Converts String [subject] to Snaked cased "-" delimited String ' +
                 
            });
         
-        it('2. Should not accept non-String [subject] and ' +
-           'throw error instead.',
+        it(`2. Should not accept non-String [subject] and 
+           throw error instead.`,
            () => {
             
                 expect(() => lib.uncamelize(1)).toThrow();

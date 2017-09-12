@@ -2,10 +2,10 @@
 
 // motivation:
 // https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
-describe('Populates [array1] or Creates an intersection of Array [array1] ' +
-         'and [array2] using intersectList(array1:Array, ' +
-                                        'array2:Array, ' +
-                                        '[clone:Boolean]) method',
+describe(`Populates [array1] or Creates an intersection of Array [array1] 
+         and [array2] using intersectList(array1:Array, 
+                                        array2:Array, 
+                                        [clone:Boolean]) method`,
     () => {
         var lib = global.libcore;
         var array1, array2, correct;
@@ -16,7 +16,7 @@ describe('Populates [array1] or Creates an intersection of Array [array1] ' +
             correct = ['abc', 'g', 89];
         });
         
-        it('1. Should not accept non-Array [array1] parameter',
+        it(`1. Should not accept non-Array [array1] parameter`,
            () => {
                 expect(() => lib.intersectList(null, array2)).toThrow();
                 expect(() => lib.intersectList(1, array2)).toThrow();
@@ -24,7 +24,7 @@ describe('Populates [array1] or Creates an intersection of Array [array1] ' +
                 expect(() => lib.intersectList('x', array2)).toThrow();
            });
         
-        it('2. Should not accept non-Array [array2] parameter',
+        it(`2. Should not accept non-Array [array2] parameter`,
            () => {
                 expect(() => lib.intersectList(array1, null)).toThrow();
                 expect(() => lib.intersectList(array1, 1)).toThrow();
@@ -32,8 +32,8 @@ describe('Populates [array1] or Creates an intersection of Array [array1] ' +
                 expect(() => lib.intersectList(array1, 'x')).toThrow();
            });
         
-        it('3. Should populate [array1] with intersection of [array1] and ' +
-           '[array2] parameters',
+        it(`3. Should populate [array1] with intersection of [array1] and 
+           [array2] parameters`,
            () => {
                 var result;
 
@@ -44,8 +44,8 @@ describe('Populates [array1] or Creates an intersection of Array [array1] ' +
                 expect(result).toBe(array1);
            });
         
-        it('4. Should create another Array with intersection of [array1] and ' +
-           '[array2] parameters if [clone] parameter is set to "true".',
+        it(`4. Should create another Array with intersection of [array1] and 
+           [array2] parameters if [clone] parameter is set to "true".`,
            () => {
                 var result;
 

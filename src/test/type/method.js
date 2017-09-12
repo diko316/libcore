@@ -1,21 +1,21 @@
 'use strict';
 
 
-describe('Inspects if Mixed [subject] is Function using ' +
-         'method(subject:Mixed) method.',
+describe(`Inspects if Mixed [subject] is Function using 
+         method(subject:Mixed) method.`,
         () => {
             var lib = global.libcore;
             
-            it('1. Should accept Mixed [subject] and returns true if ' +
-               '[subject] is Function.',
+            it(`1. Should accept Mixed [subject] and returns true if 
+               [subject] is Function.`,
                () => {
                     
                     expect(lib.method(function() {})).toBe(true);
                     
                });
             
-            it('2. Should accept Mixed [subject] and returns false if ' +
-               '[subject] is not a Function.',
+            it(`2. Should accept Mixed [subject] and returns false if 
+               [subject] is not a Function.`,
                () => {
                     
                     expect(lib.method(1)).toBe(false);
