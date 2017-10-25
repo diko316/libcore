@@ -213,14 +213,16 @@ function thenable(subject) {
         case undefined:
         case null:
         case true:
-        case false:
-        case NaN: return false;
+        case false: return false;
         }
+
         // filter scalar
         switch (signature(subject)) {
         case NUMBER_SIGNATURE:
         case STRING_SIGNATURE:
-        case BOOLEAN_SIGNATURE: return false;
+        case BOOLEAN_SIGNATURE:
+        case NULL_SIGNATURE:
+        case UNDEFINED_SIGNATURE: return false;
         }
         
         return 'then' in subject && method(subject.then);

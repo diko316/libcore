@@ -32,6 +32,9 @@ describe(`Inspects if Mixed [subject] is thenable (Promise) object or
            object without then() method.`,
            () => {
                 var phony;
+
+                // NaN
+                expect(lib.thenable(2 * 'p')).toBe(false);
                 
                 expect(lib.thenable(1)).toBe(false);
                 expect(lib.thenable(null)).toBe(false);
