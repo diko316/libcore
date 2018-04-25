@@ -7,3 +7,4 @@ COPY . $PROJECT_ROOT
 RUN npm install -d -y
 
 
+ENTRYPOINT [ "xvfb-run" ]

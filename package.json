@@ -6,10 +6,11 @@
   "module": "dist/libcore.es.js",
   "jsnext:main": "dist/libcore.es.js",
   "scripts": {
-    "test": "bin/build-bundle.sh test || exit 1",
-    "start": "bin/build-bundle.sh start || exit 1",
-    "build": "bin/build-bundle.sh build || exit 1",
-    "build-optimized": "bin/build-bundle.sh build-optimized || exit 1"
+    "test": "export BUILD_MODE=unit-test && karma start karma.config.js --single-run",
+    "devel-test": "export BUILD_MODE=unit-test && karma start karma.config.js --auto-watch",
+    "start": "export BUILD_MODE=demo && rollup --config rollup.config.demo.js",
+    "build": "export BUILD_MODE=production && rollup --config",
+    "build-optimized": "export BUILD_MODE=compressed && rollup --config"
   },
   "repository": {
     "type": "git",

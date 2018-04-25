@@ -5,9 +5,21 @@ services:
   server:
     build: .
     image: libcore
-    container_name: "libcore-test"
+    container_name: "libcore-server"
     hostname: libdom
     command: bin/run-devserver.sh
+
+    volumes:
+     - .:/opt/app-source:ro
+
+    ports:
+      - "3000:3000"
+
+  test:
+    image: libcore
+    container_name: "libcore-test"
+    hostname: libdom
+    command: ['bin/build-bundle.sh', 'devel-test']
 
     volumes:
      - .:/opt/app-source:ro

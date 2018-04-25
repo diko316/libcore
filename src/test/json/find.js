@@ -86,5 +86,19 @@ describe(`Retrieves Mixed value from a given JSON path using
                                     toBe("fn1");
                     expect(lib.jsonFind("method[\"type\"].grid", subject)).
                                     toBe(subject.grid);
+
+                    expect(
+                        lib.jsonFind(
+                            "rows[1]",
+                            {
+                                rows: [
+                                    'one',
+                                    'two',
+                                    'three'
+                                ]
+                            }
+                        )
+                    )
+                    .toBe('two');
                });
         });
