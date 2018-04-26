@@ -10,10 +10,11 @@ services:
     command: bin/run-devserver.sh
 
     volumes:
+     - ./bin:/opt/app/bin:ro
      - .:/opt/app-source:ro
 
     ports:
-      - "3000:3000"
+     - "3000:3000"
 
   test:
     image: libcore
@@ -22,10 +23,8 @@ services:
     command: ['bin/build-bundle.sh', 'devel-test']
 
     volumes:
+     - ./bin:/opt/app/bin:ro
      - .:/opt/app-source:ro
-
-    ports:
-      - "3000:3000"
       
   builder:
     image: libcore
@@ -36,9 +35,10 @@ services:
      - SOURCE_MOD_PATH=/opt/app-source-modification
   
     volumes:
-      - ./docs:/opt/app/docs
-      - ./dist:/opt/app/dist
-      - .:/opt/app-source:ro
-      - .:/opt/app-source-modification:rw
+     - ./bin:/opt/app/bin:ro
+     - ./docs:/opt/app/docs
+     - ./dist:/opt/app/dist
+     - .:/opt/app-source:ro
+     - .:/opt/app-source-modification:rw
 
 

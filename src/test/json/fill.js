@@ -1,5 +1,7 @@
 'use strict';
 
+import { jsonFill } from '../../json';
+import { array } from '../../type';
 
 describe(`Fill [subject] Object with property or array item with [value] 
          accessed from [path] using jsonFill(path:String,
@@ -7,7 +9,6 @@ describe(`Fill [subject] Object with property or array item with [value]
                                             value:Mixed, 
                                             [overwrite:Boolean])`,
     () => {
-        var lib = global.libcore;
         var subject;
         
         beforeEach(() => {
@@ -22,12 +23,12 @@ describe(`Fill [subject] Object with property or array item with [value]
            adding property to object or appending item in array`,
            () => {
                 
-                expect(() => lib.jsonFill('grid.paging.offset',
+                expect(() => jsonFill('grid.paging.offset',
                                           {},
                                           0)).
                        not.toThrow();
                        
-                expect(lib.jsonFill('grid.paging.offset',
+                expect(jsonFill('grid.paging.offset',
                                           subject,
                                           0)).toBe(true);
                 
@@ -43,18 +44,18 @@ describe(`Fill [subject] Object with property or array item with [value]
             
                 var value = { name: "subitem" };
                 
-                expect(() => lib.jsonFill('grid[0].subitems[1]',
+                expect(() => jsonFill('grid[0].subitems[1]',
                                           {},
                                           { name: "subitem" })).
                        not.toThrow();
                        
-                expect(lib.jsonFill('grid.rows[0].subitems[1]',
+                expect(jsonFill('grid.rows[0].subitems[1]',
                                     subject,
                                     value)).toBe(true);
                 
-                expect(lib.array(subject.grid.rows)).toBe(true);
+                expect(array(subject.grid.rows)).toBe(true);
                 
-                expect(lib.array(subject.grid.rows[0].subitems)).toBe(true);
+                expect(array(subject.grid.rows[0].subitems)).toBe(true);
                 
                 expect(subject.grid.rows[0].subitems[1]).toBe(value);
             
@@ -72,20 +73,20 @@ describe(`Fill [subject] Object with property or array item with [value]
                     firstValue = { name: "first value" },
                     anotherRow = { id: "row2" };
                 
-                expect(() => lib.jsonFill('grid.rows[0].subitems[1]',
+                expect(() => jsonFill('grid.rows[0].subitems[1]',
                                           subject,
                                           firstValue)).
                        not.toThrow();
                        
-                expect(lib.jsonFill('grid.rows[0].subitems[2]',
+                expect(jsonFill('grid.rows[0].subitems[2]',
                                     subject,
                                     value)).
                         toBe(true);
                 
-                expect(lib.array(subject.grid.rows)).toBe(true);
+                expect(array(subject.grid.rows)).toBe(true);
                 
-                expect(lib.array(subject.grid.rows[0].subitems)).toBe(true);
-                expect(lib.jsonFill('grid.rows[1]',
+                expect(array(subject.grid.rows[0].subitems)).toBe(true);
+                expect(jsonFill('grid.rows[1]',
                                     subject,
                                     anotherRow)).
                         toBe(true);
@@ -107,27 +108,27 @@ describe(`Fill [subject] Object with property or array item with [value]
                     anotherRow = { id: "row2" },
                     anotherRow2 = { id: "row3" };
                 
-                expect(() => lib.jsonFill('grid.rows[].subitems[]',
+                expect(() => jsonFill('grid.rows[].subitems[]',
                                           subject,
                                           firstValue)).
                        not.toThrow();
                        
-                expect(lib.jsonFill('grid.rows[].subitems[]',
+                expect(jsonFill('grid.rows[].subitems[]',
                                     subject,
                                     value)).
                         toBe(true);
                 
-                expect(lib.array(subject.grid.rows)).toBe(true);
+                expect(array(subject.grid.rows)).toBe(true);
                 
-                expect(lib.array(subject.grid.rows[0].subitems)).toBe(true);
+                expect(array(subject.grid.rows[0].subitems)).toBe(true);
                 
                 
-                expect(lib.jsonFill('grid.rows[]',
+                expect(jsonFill('grid.rows[]',
                                     subject,
                                     anotherRow)).
                         toBe(true);
                         
-                expect(lib.jsonFill('grid.rows[]',
+                expect(jsonFill('grid.rows[]',
                                     subject,
                                     anotherRow2)).
                         toBe(true);

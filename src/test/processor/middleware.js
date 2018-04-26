@@ -1,12 +1,12 @@
 'use strict';
 
+import { middleware } from '../../processor';
 
 describe(`Creates a Namespaced Middleware instance that can register() and 
           run() using middleware(name:String) method.`,
     () => {
         
-        var lib = global.libcore,
-            beforeRunName = 'before:exampleCall',
+        var beforeRunName = 'before:exampleCall',
             runName = 'exampleCall',
             afterRunName = 'after:exampleCall';
         var registered;
@@ -37,7 +37,7 @@ describe(`Creates a Namespaced Middleware instance that can register() and
            () => {
                 var myMiddleware;
                 
-                expect(() => myMiddleware = lib.middleware('test')).
+                expect(() => myMiddleware = middleware('test')).
                     not.toThrow();
                     
                 expect(() => myMiddleware.register(runName,
@@ -76,11 +76,11 @@ describe(`Creates a Namespaced Middleware instance that can register() and
         it(`2. Should not accept non-String or empty String [name]
                parameter and throws an exception.`,
            () => {
-                expect(() => lib.middleware(1)).toThrow();
-                expect(() => lib.middleware(/test/)).toThrow();
-                expect(() => lib.middleware([])).toThrow();
-                expect(() => lib.middleware({})).toThrow();
-                expect(() => lib.middleware(new Date())).toThrow();
+                expect(() => middleware(1)).toThrow();
+                expect(() => middleware(/test/)).toThrow();
+                expect(() => middleware([])).toThrow();
+                expect(() => middleware({})).toThrow();
+                expect(() => middleware(new Date())).toThrow();
            });
             
     });

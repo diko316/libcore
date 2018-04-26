@@ -1,5 +1,10 @@
 'use strict';
 
+import {
+    fillin,
+    clone,
+    assign
+} from '../../object';
 
 describe(`Apply properties of [source] object to [target] object only if 
         property in [target] do not exist or 
@@ -8,8 +13,6 @@ describe(`Apply properties of [source] object to [target] object only if
                 source:Object|Function, 
                 [hasown:Boolean]) method`,
     () => {
-        
-        var lib = global.libcore;
         var subject, filler;
             
         beforeEach(() => {
@@ -32,19 +35,19 @@ describe(`Apply properties of [source] object to [target] object only if
         
         it(`1. Should only accept [target] Native Javascript Object parameter.`,
            () => {
-                expect(() => lib.fillin(null, filler)).toThrow();
-                expect(() => lib.fillin(new Date(), filler)).not.toThrow();
-                expect(() => lib.fillin(undefined, filler)).toThrow();
-                expect(() => lib.fillin(1, filler)).toThrow();
+                expect(() => fillin(null, filler)).toThrow();
+                expect(() => fillin(new Date(), filler)).not.toThrow();
+                expect(() => fillin(undefined, filler)).toThrow();
+                expect(() => fillin(1, filler)).toThrow();
            });
         
         it(`2. Should only accept [source] Native Javascript Object parameter.`,
            () => {
-                expect(() => lib.fillin(subject, null)).toThrow();
-                expect(() => lib.fillin(subject, new Date())).not.toThrow();
-                expect(() => lib.fillin(subject, undefined)).toThrow();
-                expect(() => lib.fillin(subject, 1)).toThrow();
-                expect(() => lib.fillin(subject, filler)).not.toThrow();
+                expect(() => fillin(subject, null)).toThrow();
+                expect(() => fillin(subject, new Date())).not.toThrow();
+                expect(() => fillin(subject, undefined)).toThrow();
+                expect(() => fillin(subject, 1)).toThrow();
+                expect(() => fillin(subject, filler)).not.toThrow();
            });
         
         
@@ -52,27 +55,27 @@ describe(`Apply properties of [source] object to [target] object only if
             to only use updated properties from [source] or false 
             to use all enumerable properties from [source].`,
            () => {
-                var fillin = lib.clone(subject),
-                    compare = lib.clone(fillin);
+                var fillinValue = clone(subject),
+                    compare = clone(fillinValue);
                 var newFiller, result;
                 
                 function Empty() {
                 }
                 Empty.prototype = filler;
                 newFiller = new Empty();
-                result = lib.fillin(fillin,
+                result = fillin(fillinValue,
                                     newFiller,
                                     false);
                 
-                lib.assign(compare, newFiller);
+                assign(compare, newFiller);
                 
                 expect(result).toEqual(compare);
                 expect(result.id).toBe(subject.id);
                 
                 
-                fillin = lib.clone(subject);
-                compare = lib.clone(fillin);
-                result = lib.fillin(fillin,
+                fillinValue = clone(subject);
+                compare = clone(fillinValue);
+                result = fillin(fillinValue,
                                     newFiller,
                                     true);
                 

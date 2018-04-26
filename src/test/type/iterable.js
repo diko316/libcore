@@ -1,11 +1,10 @@
 'use strict';
 
+import { iterable } from '../../type';
 
 describe(`Inspects if Mixed [subject] is iterable object using 
          iterable(subject:Mixed)`,
     () => {
-        var lib = global.libcore;
-        
         it(`1. Should accept any type of [subject] parameter and 
            returns true if [subject] is not scalar or has "length" 
            number property.`,
@@ -14,15 +13,15 @@ describe(`Inspects if Mixed [subject] is iterable object using
                 var phony;
                 
                 
-                expect(lib.iterable('my string')).toBe(true);
-                expect(lib.iterable([])).toBe(true);
+                expect(iterable('my string')).toBe(true);
+                expect(iterable([])).toBe(true);
                 
                 phony = { length: 0 };
-                expect(lib.iterable(phony)).toBe(true);
+                expect(iterable(phony)).toBe(true);
                 
                 phony = new Date();
                 phony.length = 1;
-                expect(lib.iterable(phony)).toBe(true);
+                expect(iterable(phony)).toBe(true);
             
            });
         
@@ -32,14 +31,14 @@ describe(`Inspects if Mixed [subject] is iterable object using
            () => {
                 var phony;
                 
-                expect(lib.iterable(1)).toBe(false);
-                expect(lib.iterable(null)).toBe(false);
-                expect(lib.iterable(false)).toBe(false);
+                expect(iterable(1)).toBe(false);
+                expect(iterable(null)).toBe(false);
+                expect(iterable(false)).toBe(false);
                 
-                expect(lib.iterable({})).toBe(false);
+                expect(iterable({})).toBe(false);
                 
                 phony = new Date();
-                expect(lib.iterable(phony)).toBe(false);
+                expect(iterable(phony)).toBe(false);
                 
             
            });

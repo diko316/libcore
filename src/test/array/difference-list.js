@@ -1,5 +1,7 @@
 'use strict';
 
+import { differenceList } from '../../array';
+
 // motivation:
 // https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
 describe(`Populates [array1] or Creates a difference of 
@@ -7,7 +9,6 @@ describe(`Populates [array1] or Creates a difference of
                                                     array2:Array, 
                                                     [clone:Boolean]) method`,
     () => {
-        var lib = global.libcore;
         var array1, array2, correct;
         
         beforeEach(() => {
@@ -18,18 +19,18 @@ describe(`Populates [array1] or Creates a difference of
         
         it(`1. Should not accept non-Array [array1] parameter`,
            () => {
-                expect(() => lib.differenceList(null, array2)).toThrow();
-                expect(() => lib.differenceList(1, array2)).toThrow();
-                expect(() => lib.differenceList(new Date(), array2)).toThrow();
-                expect(() => lib.differenceList('x', array2)).toThrow();
+                expect(() => differenceList(null, array2)).toThrow();
+                expect(() => differenceList(1, array2)).toThrow();
+                expect(() => differenceList(new Date(), array2)).toThrow();
+                expect(() => differenceList('x', array2)).toThrow();
            });
         
         it(`2. Should not accept non-Array [array2] parameter`,
            () => {
-                expect(() => lib.differenceList(array1, null)).toThrow();
-                expect(() => lib.differenceList(array1, 1)).toThrow();
-                expect(() => lib.differenceList(array1, new Date())).toThrow();
-                expect(() => lib.differenceList(array1, 'x')).toThrow();
+                expect(() => differenceList(array1, null)).toThrow();
+                expect(() => differenceList(array1, 1)).toThrow();
+                expect(() => differenceList(array1, new Date())).toThrow();
+                expect(() => differenceList(array1, 'x')).toThrow();
            });
         
         it(`3. Should populate [array1] with difference of 
@@ -37,7 +38,7 @@ describe(`Populates [array1] or Creates a difference of
            () => {
                 var result;
 
-                expect(() => result = lib.differenceList(array1, array2)).
+                expect(() => result = differenceList(array1, array2)).
                         not.toThrow();
                         
                 expect(result).toEqual(correct);
@@ -50,7 +51,7 @@ describe(`Populates [array1] or Creates a difference of
            () => {
                 var result;
 
-                expect(() => result = lib.differenceList(array1, array2, true)).
+                expect(() => result = differenceList(array1, array2, true)).
                         not.toThrow();
                         
                 expect(result).toEqual(correct);

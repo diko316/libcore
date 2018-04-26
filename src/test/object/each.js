@@ -1,5 +1,6 @@
 'use strict';
 
+import { each } from '../../object';
 
 describe(`Iterate an object using each(subject:Object|Function, 
                                         handler:Function, 
@@ -7,8 +8,7 @@ describe(`Iterate an object using each(subject:Object|Function,
                                         [hasown:Boolean]) method`,
     () => {
         
-        var lib = global.libcore,
-            fn = function () {},
+        var fn = function () {},
             obj = {
                     id: fn.id = "diko",
                     value: fn.value = 100,
@@ -42,13 +42,13 @@ describe(`Iterate an object using each(subject:Object|Function,
              "subject" parameter.`,
             () => {
                 
-                expect(() => lib.each(null, empty, null)).toThrow();
+                expect(() => each(null, empty, null)).toThrow();
                 
-                expect(() => lib.each(obj, empty, null)).not.toThrow();
-                expect(lib.each(obj, empty, null)).toBe(obj);
+                expect(() => each(obj, empty, null)).not.toThrow();
+                expect(each(obj, empty, null)).toBe(obj);
                 
-                expect(() => lib.each(fn, empty, null)).not.toThrow();
-                expect(lib.each(fn, empty, null)).toBe(fn);
+                expect(() => each(fn, empty, null)).not.toThrow();
+                expect(each(fn, empty, null)).toBe(fn);
                 
             });
         
@@ -63,11 +63,11 @@ describe(`Iterate an object using each(subject:Object|Function,
                     expect(subject[name]).toBe(value);
                 }
                 
-                expect(() => lib.each(obj, eachHandler, null)).not.toThrow();
-                expect(lib.each(obj, eachHandler, null)).toBe(obj);
+                expect(() => each(obj, eachHandler, null)).not.toThrow();
+                expect(each(obj, eachHandler, null)).toBe(obj);
                 
-                expect(() => lib.each(obj, 100, null)).toThrow();
-                expect(() => lib.each(obj, 'str', null)).toThrow();
+                expect(() => each(obj, 100, null)).toThrow();
+                expect(() => each(obj, 'str', null)).toThrow();
                 
             });
         
@@ -84,9 +84,9 @@ describe(`Iterate an object using each(subject:Object|Function,
                     expect(subject[name]).toBe(value);
                 }
                 
-                expect(() => lib.each(augmented, eachHandler, null, true)).
+                expect(() => each(augmented, eachHandler, null, true)).
                         not.toThrow();
-                expect(lib.each(augmented, eachHandler, null, true)).
+                expect(each(augmented, eachHandler, null, true)).
                         toBe(augmented);
                 
                 
@@ -104,9 +104,9 @@ describe(`Iterate an object using each(subject:Object|Function,
                     expect(subject[name]).toBe(value);
                 }
                 
-                expect(() => lib.each(augmented, eachHandler, null)).
+                expect(() => each(augmented, eachHandler, null)).
                         not.toThrow();
-                expect(lib.each(augmented, eachHandler, null)).toBe(augmented);
+                expect(each(augmented, eachHandler, null)).toBe(augmented);
                 
             });
         
@@ -120,9 +120,9 @@ describe(`Iterate an object using each(subject:Object|Function,
                     expect(subject[name]).toBe(value);
                 }
                 
-                expect(() => lib.each(augmented, eachHandler, null, false)).
+                expect(() => each(augmented, eachHandler, null, false)).
                         not.toThrow();
-                expect(lib.each(augmented, eachHandler, null, false)).
+                expect(each(augmented, eachHandler, null, false)).
                         toBe(augmented);
 
             });
@@ -130,9 +130,9 @@ describe(`Iterate an object using each(subject:Object|Function,
         it(`6. Should not accept non-Boolean 4th optional "hasown" parameter.`,
            () => {
                 
-                expect(() => lib.each(obj, empty, null, true)).not.toThrow();
-                expect(() => lib.each(obj, empty, null, 101)).toThrow();
-                expect(() => lib.each(obj, empty, null, "Javascript")).
+                expect(() => each(obj, empty, null, true)).not.toThrow();
+                expect(() => each(obj, empty, null, 101)).toThrow();
+                expect(() => each(obj, empty, null, "Javascript")).
                             toThrow();
            });
         

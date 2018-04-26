@@ -1,6 +1,8 @@
 'use strict';
 
 
+import { assign } from '../../object';
+
 describe(`Apply properties of source object to target object using 
          assign(target:Object|Function, 
                 source:Object|Function, 
@@ -8,8 +10,7 @@ describe(`Apply properties of source object to target object using
                 ownedOnly:Boolean]) method`,
     () => {
         
-        var lib = global.libcore,
-            fnSubject = function () {},
+        var fnSubject = function () {},
             subject = {
                 id: fnSubject.id = "diko",
                 value: fnSubject.value = 143,
@@ -23,7 +24,7 @@ describe(`Apply properties of source object to target object using
                 var target = {},
                     source = subject;
                 
-                expect(() => lib.assign(target, source)).not.toThrow();
+                expect(() => assign(target, source)).not.toThrow();
                 expect(source).toEqual(target);
                 
             });
@@ -33,7 +34,7 @@ describe(`Apply properties of source object to target object using
                 var target = function () {},
                     source = subject;
                 
-                expect(() => lib.assign(target, source)).not.toThrow();
+                expect(() => assign(target, source)).not.toThrow();
                 expect(source.id).toBe(target.id);
                 expect(source.value).toBe(target.value);
                 expect(source.method).toBe(target.method);
@@ -46,10 +47,10 @@ describe(`Apply properties of source object to target object using
                 
                 var source = subject;
                 
-                expect(() => lib.assign(null, source)).toThrow();
-                expect(() => lib.assign("null", source)).toThrow();
-                expect(() => lib.assign(1056, source)).toThrow();
-                expect(() => lib.assign(new Date(), source)).not.toThrow();
+                expect(() => assign(null, source)).toThrow();
+                expect(() => assign("null", source)).toThrow();
+                expect(() => assign(1056, source)).toThrow();
+                expect(() => assign(new Date(), source)).not.toThrow();
                 
             });
         
@@ -58,7 +59,7 @@ describe(`Apply properties of source object to target object using
                 var target = {},
                     source = subject;
                 
-                expect(() => lib.assign(target, source)).not.toThrow();
+                expect(() => assign(target, source)).not.toThrow();
                 expect(source).toEqual(target);
                     
             });
@@ -68,7 +69,7 @@ describe(`Apply properties of source object to target object using
                 var target = {},
                     source = fnSubject;
                 
-                expect(() => lib.assign(target, source)).not.toThrow();
+                expect(() => assign(target, source)).not.toThrow();
                 expect(source.id).toBe(target.id);
                 expect(source.value).toBe(target.value);
                 expect(source.method).toBe(target.method);
@@ -81,10 +82,10 @@ describe(`Apply properties of source object to target object using
                 
                 var target = {};
                 
-                expect(() => lib.assign(target, null)).toThrow();
-                expect(() => lib.assign(target, "null")).toThrow();
-                expect(() => lib.assign(target, 1056)).toThrow();
-                expect(() => lib.assign(target, new Date())).not.toThrow();
+                expect(() => assign(target, null)).toThrow();
+                expect(() => assign(target, "null")).toThrow();
+                expect(() => assign(target, 1056)).toThrow();
+                expect(() => assign(target, new Date())).not.toThrow();
                 
             });
         
@@ -97,7 +98,7 @@ describe(`Apply properties of source object to target object using
                         "another-extra": "another"
                     };
                 
-                expect(() => lib.assign(target, source, defaults)).
+                expect(() => assign(target, source, defaults)).
                     not.toThrow();
                     
                 expect(target).toEqual({
@@ -115,9 +116,9 @@ describe(`Apply properties of source object to target object using
             () => {
                 var target = {},
                     source = subject;
-                expect(() => lib.assign(target, source, null)).toThrow();
-                expect(() => lib.assign(target, source, "null")).toThrow();
-                expect(() => lib.assign(target, source, 100)).toThrow();
+                expect(() => assign(target, source, null)).toThrow();
+                expect(() => assign(target, source, "null")).toThrow();
+                expect(() => assign(target, source, 100)).toThrow();
             });
         
     });

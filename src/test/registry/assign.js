@@ -1,14 +1,14 @@
 'use strict';
 
+import createRegistry from '../../registry';
 
 describe(`Assign [value] Object properties or Array items into the registry 
          using registryInstance.assign(value:Object|Array)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
         });
         
         

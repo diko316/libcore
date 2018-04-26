@@ -1,16 +1,15 @@
 'use strict';
 
+import { method } from '../../type';
 
 describe(`Inspects if Mixed [subject] is Function using 
          method(subject:Mixed) method.`,
         () => {
-            var lib = global.libcore;
-            
             it(`1. Should accept Mixed [subject] and returns true if 
                [subject] is Function.`,
                () => {
                     
-                    expect(lib.method(function() {})).toBe(true);
+                    expect(method(function() {})).toBe(true);
                     
                });
             
@@ -18,10 +17,10 @@ describe(`Inspects if Mixed [subject] is Function using
                [subject] is not a Function.`,
                () => {
                     
-                    expect(lib.method(1)).toBe(false);
-                    expect(lib.method(/test/)).toBe(false);
-                    expect(lib.method({})).toBe(false);
-                    expect(lib.method(new Date())).toBe(false);
+                    expect(method(1)).toBe(false);
+                    expect(method(/test/)).toBe(false);
+                    expect(method({})).toBe(false);
+                    expect(method(new Date())).toBe(false);
                     
                });
             

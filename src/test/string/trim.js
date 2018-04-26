@@ -1,11 +1,10 @@
 'use strict';
 
+import { trim } from '../../string';
+
 describe(`Removes extra leading and trailing white spaces using
         trim(subject:String) method`,
     () => {
-        var trim = global.libcore.trim;
-
-
         it(`1. Should accept string and removes line-feed(\\r\\n),
             tab, and space leading and trailing characters.`,
             () => {

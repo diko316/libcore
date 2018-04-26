@@ -1,9 +1,10 @@
 'use strict';
 
+import { jsonUnset } from '../../json';
+
 describe(`Removes property of non-Scalar Native Object using
          jsonUnset(path:String, subject:Mixed) method`,
     () => {
-        var lib = global.libcore;
         var subject;
         
         beforeEach(() => {
@@ -41,13 +42,13 @@ describe(`Removes property of non-Scalar Native Object using
            json [path] and returns "true" if property is found and removed.`,
            () => {
                 
-                expect(() => lib.jsonUnset('grid.paging.limit', subject)).
+                expect(() => jsonUnset('grid.paging.limit', subject)).
                     not.toThrow();
                     
-                expect(lib.jsonUnset('grid.paging', subject)).
+                expect(jsonUnset('grid.paging', subject)).
                     toBe(true);
                     
-                expect(lib.jsonUnset('sampleMethod.type', subject)).
+                expect(jsonUnset('sampleMethod.type', subject)).
                     toBe(true);
 
             
@@ -59,23 +60,23 @@ describe(`Removes property of non-Scalar Native Object using
            () => {
                 
                 expect(() => {
-                    lib.jsonUnset('grid.paging.limit', subject);
-                    lib.jsonUnset('grid.paging', subject);
-                    lib.jsonUnset('sampleMethod.type', subject);
+                    jsonUnset('grid.paging.limit', subject);
+                    jsonUnset('grid.paging', subject);
+                    jsonUnset('sampleMethod.type', subject);
                 }).
                     not.toThrow();
                     
                 // expecting that this should be removed and do not exist
-                expect(lib.jsonUnset('grid.paging.limit', subject)).
+                expect(jsonUnset('grid.paging.limit', subject)).
                     toBe(false);
                     
-                expect(lib.jsonUnset('grid.paging.offset', subject)).
+                expect(jsonUnset('grid.paging.offset', subject)).
                     toBe(false);
                     
-                expect(lib.jsonUnset('sampleMethod.type', subject)).
+                expect(jsonUnset('sampleMethod.type', subject)).
                     toBe(false);
                 
-                expect(lib.jsonUnset('sampleMethod.hasOwnProperty', subject)).
+                expect(jsonUnset('sampleMethod.hasOwnProperty', subject)).
                     toBe(false);
             
            });
@@ -86,7 +87,7 @@ describe(`Removes property of non-Scalar Native Object using
                 var removedRow = subject.grid.rows[1],
                     length = subject.grid.rows.length;
                 
-                expect(() => lib.jsonUnset('grid.rows[1]', subject)).
+                expect(() => jsonUnset('grid.rows[1]', subject)).
                     not.toThrow();
                     
                 expect(subject.grid.rows[1]).not.toBe(removedRow);
@@ -100,10 +101,10 @@ describe(`Removes property of non-Scalar Native Object using
            the array item or if not found.`,
            () => {
                 
-                expect(() => lib.jsonUnset('grid.rows[3]', subject)).
+                expect(() => jsonUnset('grid.rows[3]', subject)).
                     not.toThrow();
                     
-                expect(lib.jsonUnset('grid.rows[3]', subject)).toBe(false);
+                expect(jsonUnset('grid.rows[3]', subject)).toBe(false);
             
            });
     });

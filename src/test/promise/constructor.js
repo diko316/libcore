@@ -1,5 +1,11 @@
 'use strict';
 
+import Promise from '../../promise';
+
+import {
+    object,
+    method
+} from '../../type';
 
 describe(`Creates Promise by instantiating Promise constructor 
          with [resolver] Function that passes [resolve] and [reject] 
@@ -7,8 +13,6 @@ describe(`Creates Promise by instantiating Promise constructor
          new Promise(resolver(resolve:Function, reject:Function)) 
          constructor.`,
     () => {
-        
-        var lib = global.libcore;
         var resolver, good, bad;
         
         beforeEach(() => {
@@ -37,7 +41,7 @@ describe(`Creates Promise by instantiating Promise constructor
         it(`1. Should accept [resolver] Function that resolves a promise 
            when using "new" keyword to instantiate a promise object`,
            (done) => {
-                var P = lib.Promise;
+                var P = Promise;
                 
                 (new P(good)).
                     then(resolver.goodResult,
@@ -58,7 +62,7 @@ describe(`Creates Promise by instantiating Promise constructor
         it(`2. Should accept [resolver] Function that rejects a promise 
            when using "new" keyword to instantiate a promise object`,
            (done) => {
-                var P = lib.Promise;
+                var P = Promise;
                 
                 (new P(bad)).
                     then(resolver.goodResult,
@@ -79,20 +83,20 @@ describe(`Creates Promise by instantiating Promise constructor
         it(`3. Should instantiate a promise object that contains 
            then() method.`,
            () => {
-                var P = lib.Promise;
+                var P = Promise;
                 var promise;
                 
                 // resolved promise
                 expect(() => promise = new P(good)).not.toThrow();
-                expect(lib.object(promise)).toBe(true);
+                expect(object(promise)).toBe(true);
                 expect('then' in promise).toBe(true);
-                expect(lib.method(promise.then)).toBe(true);
+                expect(method(promise.then)).toBe(true);
                 
                 // rejected promise
                 expect(() => promise = new P(bad)).not.toThrow();
-                expect(lib.object(promise)).toBe(true);
+                expect(object(promise)).toBe(true);
                 expect('then' in promise).toBe(true);
-                expect(lib.method(promise.then)).toBe(true);
+                expect(method(promise.then)).toBe(true);
                 
             
            });
@@ -100,7 +104,7 @@ describe(`Creates Promise by instantiating Promise constructor
         it(`4. Should not accept non-Function [resolver] or empty constructor
            parameter when instantiating a Promise object using "new" keyword.`,
            () => {
-                var P = lib.Promise;
+                var P = Promise;
                 
                 expect(() => new P()).toThrow();
                 

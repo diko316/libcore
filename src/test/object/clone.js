@@ -1,11 +1,10 @@
 'use strict';
 
-
+import { clone } from '../../object';
 
 describe(`Clones Native Javascript objects using clone(data:Mixed,
                                                     [deep:Boolean]) method`,
     () => {
-        var lib = global.libcore;
         var objectSubject, arraySubject, regexSubject;
                 
         beforeEach(() => {
@@ -33,24 +32,24 @@ describe(`Clones Native Javascript objects using clone(data:Mixed,
            instance of that object with the same properties.`,
            () => {
             
-                expect(() => lib.clone(objectSubject)).not.toThrow();
-                expect(lib.clone(objectSubject)).toEqual(objectSubject);
-                expect(lib.clone(objectSubject)).not.toBe(objectSubject);
+                expect(() => clone(objectSubject)).not.toThrow();
+                expect(clone(objectSubject)).toEqual(objectSubject);
+                expect(clone(objectSubject)).not.toBe(objectSubject);
                 
-                expect(() => lib.clone(arraySubject)).not.toThrow();
-                expect(lib.clone(arraySubject)).toEqual(arraySubject);
-                expect(lib.clone(arraySubject)).not.toBe(arraySubject);
+                expect(() => clone(arraySubject)).not.toThrow();
+                expect(clone(arraySubject)).toEqual(arraySubject);
+                expect(clone(arraySubject)).not.toBe(arraySubject);
                 
-                expect(() => lib.clone(regexSubject)).not.toThrow();
-                expect(lib.clone(regexSubject).source).
+                expect(() => clone(regexSubject)).not.toThrow();
+                expect(clone(regexSubject).source).
                             toEqual(regexSubject.source);
-                expect(lib.clone(regexSubject)).not.toBe(regexSubject);
+                expect(clone(regexSubject)).not.toBe(regexSubject);
                             
-                expect(() => lib.clone(123)).not.toThrow();
-                expect(lib.clone(123)).toBe(123);
+                expect(() => clone(123)).not.toThrow();
+                expect(clone(123)).toBe(123);
                 
-                expect(() => lib.clone('test')).not.toThrow();
-                expect(lib.clone('test')).toBe('test');
+                expect(() => clone('test')).not.toThrow();
+                expect(clone('test')).toBe('test');
                 
            });
         
@@ -58,33 +57,33 @@ describe(`Clones Native Javascript objects using clone(data:Mixed,
            returns another instance of that object with the same properties.`,
            () => {
             
-                expect(() => lib.clone(null)).not.toThrow();
-                expect(lib.clone(null)).toBe(null);
+                expect(() => clone(null)).not.toThrow();
+                expect(clone(null)).toBe(null);
                 
-                expect(() => lib.clone(undefined)).not.toThrow();
-                expect(lib.clone(undefined)).toBe(undefined);
+                expect(() => clone(undefined)).not.toThrow();
+                expect(clone(undefined)).toBe(undefined);
                 
            });
         
         it(`3. Should accept optional Boolean true [deep] parameter 
            to enable deep cloning of array and object properties.`,
            () => {
-                expect(() => lib.clone(objectSubject, true)).not.toThrow();
-                expect(lib.clone(objectSubject, true)).toEqual(objectSubject);
-                expect(lib.clone(objectSubject, true).inside).
+                expect(() => clone(objectSubject, true)).not.toThrow();
+                expect(clone(objectSubject, true)).toEqual(objectSubject);
+                expect(clone(objectSubject, true).inside).
                     toEqual(objectSubject.inside);
-                expect(lib.clone(objectSubject, true).inside).
+                expect(clone(objectSubject, true).inside).
                     not.toBe(objectSubject.inside);
            });
         
         it(`4. Should accept optional Boolean false [deep] parameter 
            to enable shallow cloning of array and object properties.`,
            () => {
-                expect(() => lib.clone(objectSubject, false)).not.toThrow();
-                expect(lib.clone(objectSubject, false)).toEqual(objectSubject);
-                expect(lib.clone(objectSubject, false).inside).
+                expect(() => clone(objectSubject, false)).not.toThrow();
+                expect(clone(objectSubject, false)).toEqual(objectSubject);
+                expect(clone(objectSubject, false).inside).
                     toEqual(objectSubject.inside);
-                expect(lib.clone(objectSubject, false).inside).
+                expect(clone(objectSubject, false).inside).
                     toBe(objectSubject.inside);
            });
     });

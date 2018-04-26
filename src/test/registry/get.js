@@ -1,13 +1,14 @@
 'use strict';
 
+import createRegistry from '../../registry';
+
 describe(`Retrieves registry value based from [name] index using 
          registryInstance.get(name:String|Number)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
             registry.assign({
                 "name": "diko",
                 "0": [{

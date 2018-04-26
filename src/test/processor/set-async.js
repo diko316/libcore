@@ -1,10 +1,10 @@
 'use strict';
 
+import { setAsync } from '../../processor';
+
 describe(`Runs an asynchronous Function [handler] using 
          setAsync(handler:Function).`,
     () => {
-        
-        var lib = global.libcore;
         
         it(`1. Should accept Function [handler] parameter and
            run it later returning identifier for clearing it later.`,
@@ -12,7 +12,7 @@ describe(`Runs an asynchronous Function [handler] using
             
                 var value = 1;
                 
-                expect(() => lib.setAsync(() => {
+                expect(() => setAsync(() => {
                         expect(++value).toBe(3);
                         done();
                     })).
@@ -24,10 +24,10 @@ describe(`Runs an asynchronous Function [handler] using
         it(`2. Should not accept non-Function [handler] parameter 
            and throws an exception.`,
            () => {
-                expect(() => lib.setAsync(null)).toThrow();
-                expect(() => lib.setAsync(1)).toThrow();
-                expect(() => lib.setAsync({})).toThrow();
-                expect(() => lib.setAsync([])).toThrow();
-                expect(() => lib.setAsync(/test/)).toThrow();
+                expect(() => setAsync(null)).toThrow();
+                expect(() => setAsync(1)).toThrow();
+                expect(() => setAsync({})).toThrow();
+                expect(() => setAsync([])).toThrow();
+                expect(() => setAsync(/test/)).toThrow();
            });
     });

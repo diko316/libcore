@@ -1,5 +1,7 @@
 'use strict';
 
+import { intersectList } from '../../array';
+
 // motivation:
 // https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
 describe(`Populates [array1] or Creates an intersection of Array [array1] 
@@ -7,7 +9,6 @@ describe(`Populates [array1] or Creates an intersection of Array [array1]
                                         array2:Array, 
                                         [clone:Boolean]) method`,
     () => {
-        var lib = global.libcore;
         var array1, array2, correct;
         
         beforeEach(() => {
@@ -18,18 +19,18 @@ describe(`Populates [array1] or Creates an intersection of Array [array1]
         
         it(`1. Should not accept non-Array [array1] parameter`,
            () => {
-                expect(() => lib.intersectList(null, array2)).toThrow();
-                expect(() => lib.intersectList(1, array2)).toThrow();
-                expect(() => lib.intersectList(new Date(), array2)).toThrow();
-                expect(() => lib.intersectList('x', array2)).toThrow();
+                expect(() => intersectList(null, array2)).toThrow();
+                expect(() => intersectList(1, array2)).toThrow();
+                expect(() => intersectList(new Date(), array2)).toThrow();
+                expect(() => intersectList('x', array2)).toThrow();
            });
         
         it(`2. Should not accept non-Array [array2] parameter`,
            () => {
-                expect(() => lib.intersectList(array1, null)).toThrow();
-                expect(() => lib.intersectList(array1, 1)).toThrow();
-                expect(() => lib.intersectList(array1, new Date())).toThrow();
-                expect(() => lib.intersectList(array1, 'x')).toThrow();
+                expect(() => intersectList(array1, null)).toThrow();
+                expect(() => intersectList(array1, 1)).toThrow();
+                expect(() => intersectList(array1, new Date())).toThrow();
+                expect(() => intersectList(array1, 'x')).toThrow();
            });
         
         it(`3. Should populate [array1] with intersection of [array1] and 
@@ -37,7 +38,7 @@ describe(`Populates [array1] or Creates an intersection of Array [array1]
            () => {
                 var result;
 
-                expect(() => result = lib.intersectList(array1, array2)).
+                expect(() => result = intersectList(array1, array2)).
                         not.toThrow();
                         
                 expect(result).toEqual(correct);
@@ -49,7 +50,7 @@ describe(`Populates [array1] or Creates an intersection of Array [array1]
            () => {
                 var result;
 
-                expect(() => result = lib.intersectList(array1, array2, true)).
+                expect(() => result = intersectList(array1, array2, true)).
                         not.toThrow();
                         
                 expect(result).toEqual(correct);

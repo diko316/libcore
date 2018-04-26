@@ -1,11 +1,11 @@
 'use strict';
 
+import { jsonClone } from '../../json';
 
 describe(`'Clone value extracted from [object] with given [path] using 
         jsonClone(path:String, object:Mixed, [deep:Boolean])`,
     () => {
-        var lib = global.libcore,
-            subject = {
+        var subject = {
                     "grid": {
                         "paging": {
                             "limit": 20,
@@ -32,10 +32,10 @@ describe(`'Clone value extracted from [object] with given [path] using
         it(`1. Should return a clone value extracted from [object] with the 
            given [path]`,
            () => {
-                expect(() => lib.jsonClone('grid.paging', subject)).
+                expect(() => jsonClone('grid.paging', subject)).
                     not.toThrow();
                     
-                expect(lib.jsonClone('grid.paging', subject)).
+                expect(jsonClone('grid.paging', subject)).
                     toEqual(subject.grid.paging);
                     
            });
@@ -43,13 +43,13 @@ describe(`'Clone value extracted from [object] with given [path] using
         it(`2. Should return a deep clone value extracted from [object]
            with the given [path] if optional Boolean [deep] is true.`,
            () => {
-                expect(() => lib.jsonClone('grid.rows', subject, true)).
+                expect(() => jsonClone('grid.rows', subject, true)).
                     not.toThrow();
                     
-                expect(lib.jsonClone('grid.rows', subject, true)[0]).
+                expect(jsonClone('grid.rows', subject, true)[0]).
                     not.toBe(subject.grid.rows[0]);
                     
-                expect(lib.jsonClone('grid.rows[0]', subject, true)).
+                expect(jsonClone('grid.rows[0]', subject, true)).
                     toEqual(subject.grid.rows[0]);
                     
            });
@@ -57,13 +57,13 @@ describe(`'Clone value extracted from [object] with given [path] using
         it(`3. Should return a shallow clone value extracted from [object] 
            with the given [path] if optional Boolean [deep] is false.`,
            () => {
-                expect(() => lib.jsonClone('grid.rows', subject, false)).
+                expect(() => jsonClone('grid.rows', subject, false)).
                     not.toThrow();
                     
-                expect(lib.jsonClone('grid.rows', subject, false)[0]).
+                expect(jsonClone('grid.rows', subject, false)[0]).
                     toBe(subject.grid.rows[0]);
                     
-                expect(lib.jsonClone('grid.rows[0]', subject, false)).
+                expect(jsonClone('grid.rows[0]', subject, false)).
                     toEqual(subject.grid.rows[0]);
                     
            });

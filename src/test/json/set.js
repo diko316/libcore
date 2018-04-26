@@ -1,14 +1,15 @@
 'use strict';
 
 
+import { jsonSet } from '../../json';
+import { assign } from '../../object';
+
 describe(`Set or Apply [value] into object extracted from [path] using 
          jsonSet(path:String, 
                     subject:Mixed, 
                     value:Mixed, 
                     [overwrite:Boolean|"insert"|"push"]) method.`,
         () => {
-
-            var lib = global.libcore;
             var subject;
                 
             function testFunction() {
@@ -50,15 +51,15 @@ describe(`Set or Apply [value] into object extracted from [path] using
                 () => {
                     var path = 'grid.paging.limit',
                         value = 10;
-                    expect(() => lib.jsonSet(path, subject, value)).not.toThrow();
-                    expect(lib.jsonSet(path, subject, value)).toBe(true);
+                    expect(() => jsonSet(path, subject, value)).not.toThrow();
+                    expect(jsonSet(path, subject, value)).toBe(true);
                     expect(subject.grid.paging.limit).toBe(value);
                     
                     
                     path = 'grid.rows[1].name';
                     value = "someone";
-                    expect(() => lib.jsonSet(path, subject, value)).not.toThrow();
-                    expect(lib.jsonSet(path, subject, value)).toBe(true);
+                    expect(() => jsonSet(path, subject, value)).not.toThrow();
+                    expect(jsonSet(path, subject, value)).toBe(true);
                     expect(subject.grid.rows[1].name).toBe(value);
                 });
             
@@ -69,14 +70,14 @@ describe(`Set or Apply [value] into object extracted from [path] using
                 () => {
                     var path = 'grid.paging.limit.test',
                         value = 10;
-                    expect(() => lib.jsonSet(path, subject, value)).not.toThrow();
-                    expect(lib.jsonSet(path, subject, value)).toBe(false);
+                    expect(() => jsonSet(path, subject, value)).not.toThrow();
+                    expect(jsonSet(path, subject, value)).toBe(false);
                     
                     
                     path = 'grid.rows[1].name.id';
                     value = "someone";
-                    expect(() => lib.jsonSet(path, subject, value)).not.toThrow();
-                    expect(lib.jsonSet(path, subject, value)).toBe(false);
+                    expect(() => jsonSet(path, subject, value)).not.toThrow();
+                    expect(jsonSet(path, subject, value)).toBe(false);
                     
                 });
             
@@ -87,13 +88,13 @@ describe(`Set or Apply [value] into object extracted from [path] using
                 () => {
                     var path = 'test1[row].test',
                         value = 10;
-                    expect(() => lib.jsonSet(path, subject, value)).not.toThrow();
+                    expect(() => jsonSet(path, subject, value)).not.toThrow();
                     expect(subject.test1.row.test).toBe(value);
                     
                     
                     path = 'test1.row[item]';
                     value = "someone";
-                    expect(() => lib.jsonSet(path, subject, value)).not.toThrow();
+                    expect(() => jsonSet(path, subject, value)).not.toThrow();
                     expect(subject.test1.row.item).toBe(value);
                     
                 });
@@ -110,11 +111,11 @@ describe(`Set or Apply [value] into object extracted from [path] using
                             "what": null,
                             "0": "item1"
                         },
-                        result = lib.assign({}, value, subject.grid.paging);
+                        result = assign({}, value, subject.grid.paging);
 
-                    lib.assign(result, value);
+                    assign(result, value);
                         
-                    expect(() => lib.jsonSet(path, subject, value, false)).
+                    expect(() => jsonSet(path, subject, value, false)).
                         not.toThrow();
                     expect(subject.grid.paging).toEqual(result);
                     
@@ -122,9 +123,9 @@ describe(`Set or Apply [value] into object extracted from [path] using
                     path = 'test.array';
                     value = { "0": "item1" };
                     subject.test = { array: [] };
-                    result = lib.assign([], value, subject.test.array);
+                    result = assign([], value, subject.test.array);
                     
-                    expect(() => lib.jsonSet(path, subject, value, false)).
+                    expect(() => jsonSet(path, subject, value, false)).
                         not.toThrow();
                     expect(subject.test.array).toEqual(result);
                     
@@ -148,7 +149,7 @@ describe(`Set or Apply [value] into object extracted from [path] using
                         
                     result[3] = value["3"];
                     
-                    expect(() => lib.jsonSet(path, subject, value, "apply")).
+                    expect(() => jsonSet(path, subject, value, "apply")).
                         not.toThrow();
                     expect(subject.grid.rows).toEqual(result);
                 });
@@ -167,7 +168,7 @@ describe(`Set or Apply [value] into object extracted from [path] using
                         
                     result.splice(1, 0, value);
                     
-                    expect(() => lib.jsonSet(path, subject, value, "insert")).
+                    expect(() => jsonSet(path, subject, value, "insert")).
                         not.toThrow();
                     expect(subject.grid.rows).toEqual(result);
                 });
@@ -186,7 +187,7 @@ describe(`Set or Apply [value] into object extracted from [path] using
                         
                     result.push.apply(result, value);
                     
-                    expect(() => lib.jsonSet(path, subject, value, "push")).
+                    expect(() => jsonSet(path, subject, value, "push")).
                         not.toThrow();
                     expect(subject.grid.rows).toEqual(result);
                 });
@@ -205,7 +206,7 @@ describe(`Set or Apply [value] into object extracted from [path] using
                         
                     result.unshift.apply(result, value);
                     
-                    expect(() => lib.jsonSet(path, subject, value, "unshift")).
+                    expect(() => jsonSet(path, subject, value, "unshift")).
                         not.toThrow();
                     expect(subject.grid.rows).toEqual(result);
                 });
@@ -213,17 +214,17 @@ describe(`Set or Apply [value] into object extracted from [path] using
             it(`9. Should throw an Error if non-String or empty String [path] 
                     parameter is passed.`,
                 () => {
-                    expect(() => lib.jsonSet(null, subject, 10)).
+                    expect(() => jsonSet(null, subject, 10)).
                             toThrow();
-                    expect(() => lib.jsonSet(new Date(), subject, 10)).
+                    expect(() => jsonSet(new Date(), subject, 10)).
                             toThrow();
                     
-                    expect(() => lib.jsonSet(/test/, subject, 10)).
+                    expect(() => jsonSet(/test/, subject, 10)).
                             toThrow();
-                    expect(() => lib.jsonSet(1, subject, 10)).
+                    expect(() => jsonSet(1, subject, 10)).
                             toThrow();
                             
-                    expect(() => lib.jsonSet("", subject, 10)).
+                    expect(() => jsonSet("", subject, 10)).
                             toThrow();
                 });
             

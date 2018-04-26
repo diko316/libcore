@@ -1,11 +1,11 @@
 'use strict';
 
+import { jsonExists } from '../../json';
 
 describe(`Inspects a given Mixed [subject] if JSON [path] exists
          using jsonExists(path:String, subject:Mixed)`,
         () => {
-            var lib = global.libcore,
-                subject = {
+            var subject = {
                     "grid": {
                         "paging": {
                             "limit": 20,
@@ -42,50 +42,50 @@ describe(`Inspects a given Mixed [subject] if JSON [path] exists
             it(`1. Should throw error if [path] parameter is
                not String or empty.`,
                () => {
-                    expect(() => lib.jsonExists(null, subject)).toThrow();
-                    expect(() => lib.jsonExists(undefined, subject)).toThrow();
-                    expect(() => lib.jsonExists(1, subject)).toThrow();
-                    expect(() => lib.jsonExists(/test/, subject)).toThrow();
-                    expect(() => lib.jsonExists("", subject)).toThrow();
+                    expect(() => jsonExists(null, subject)).toThrow();
+                    expect(() => jsonExists(undefined, subject)).toThrow();
+                    expect(() => jsonExists(1, subject)).toThrow();
+                    expect(() => jsonExists(/test/, subject)).toThrow();
+                    expect(() => jsonExists("", subject)).toThrow();
                     
                });
             
             it(`2. Should accept String [path] and return false if 
                JSON path do not exist in [subject].`,
                () => {
-                    expect(lib.jsonExists("table", subject)).toBe(false);
-                    expect(lib.jsonExists("0[1].name", subject)).toBe(false);
-                    expect(lib.jsonExists("table", /test/)).toBe(false);
-                    expect(lib.jsonExists("table", 1)).toBe(false);
+                    expect(jsonExists("table", subject)).toBe(false);
+                    expect(jsonExists("0[1].name", subject)).toBe(false);
+                    expect(jsonExists("table", /test/)).toBe(false);
+                    expect(jsonExists("table", 1)).toBe(false);
                });
             
             it(`3. Should accept String [path] and return true if
                JSON path exists in [subject].`,
                () => {
-                    expect(lib.jsonExists("grid", subject)).toBe(true);
+                    expect(jsonExists("grid", subject)).toBe(true);
                     
-                    expect(lib.jsonExists("0.index", subject)).toBe(true);
+                    expect(jsonExists("0.index", subject)).toBe(true);
                     
-                    expect(lib.jsonExists("grid['paging']", subject)).
+                    expect(jsonExists("grid['paging']", subject)).
                                     toBe(true);
-                    expect(lib.jsonExists("grid['paging'].offset", subject)).
+                    expect(jsonExists("grid['paging'].offset", subject)).
                                     toBe(true);
-                    expect(lib.jsonExists("grid['paging'].limit", subject)).
+                    expect(jsonExists("grid['paging'].limit", subject)).
                                     toBe(true);
                                     
-                    expect(lib.jsonExists("grid.rows[1].id", subject)).
+                    expect(jsonExists("grid.rows[1].id", subject)).
                                     toBe(true);
-                    expect(lib.jsonExists("grid.rows[2].id", subject)).
+                    expect(jsonExists("grid.rows[2].id", subject)).
                                     toBe(true);
                                     
-                    expect(lib.jsonExists("grid.rows[0]", subject)).
+                    expect(jsonExists("grid.rows[0]", subject)).
                                     toBe(true);
-                    expect(lib.jsonExists("grid.rows[1]", subject)).
+                    expect(jsonExists("grid.rows[1]", subject)).
                                     toBe(true);
                     
-                    expect(lib.jsonExists("method.id", subject)).
+                    expect(jsonExists("method.id", subject)).
                                     toBe(true);
-                    expect(lib.jsonExists("method[\"type\"].grid", subject)).
+                    expect(jsonExists("method[\"type\"].grid", subject)).
                                     toBe(true);
                });
         });

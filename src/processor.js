@@ -1,10 +1,10 @@
 'use strict';
 
 import {
-            string,
-            method,
-            iterable
-        } from "./type.js";
+    string,
+    method,
+    iterable
+} from "./type.js";
 
 import { getModule } from "./chain.js";
 
@@ -177,127 +177,122 @@ BaseMiddleware.prototype = {
     }
 };
 
-export
-    {
-        setAsync,
-        clearAsync
-    };
+export {
+    setAsync,
+    clearAsync
+};
 
-export
-    function run(name, args, scope) {
-        var c, l, runners, result;
-        
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
-        }
-        
-        runners = get(name);
-        
-        if (runners) {
-            
-            if (typeof scope === 'undefined') {
-                scope = null;
-            }
-            
-            args = iterable(args) ?
-                    Array.prototype.slice.call(args, 0) : [];
-            
-            for (c = -1, l = runners.length; l--;) {
-                result = runners[++c].apply(scope, args);
-                if (result !== undefined) {
-                    args = [result];
-                }
-            }
-            
-            args.splice(0, args.length);
-            
-            return result;
-        }
-        
-        return undefined;
-    }
-
-export
-    function register(name, handler) {
-        var list = RUNNERS;
-        var access, items, parsed;
-        
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
-        }
-        
-        parsed = parseName(name);
-        
-        if (!method(handler)) {
-            throw new Error(INVALID_HANDLER);
-        }
-        
-        if (parsed) {
-            
-            name = parsed[1];
-            access = ':' + name;
-            if (!(access in list)) {
-                
-                list[access] = {
-                    name: name,
-                    before: [],
-                    after: []
-                };
-            }
-            
-            items = list[access][getPositionAccess(parsed[0])];
-            
-            items[items.length] = handler;
-        }
-        
-        return getModule();
+export function run(name, args, scope) {
+    var c, l, runners, result;
+    
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
     }
     
-export
-    function clearRunner(name, after) {
+    runners = get(name);
+    
+    if (runners) {
         
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
+        if (typeof scope === 'undefined') {
+            scope = null;
         }
         
-        if (arguments.length > 1) {
-            purgeRunners(name, after);
-        }
-        else {
-            purgeRunners(name);
+        args = iterable(args) ?
+                Array.prototype.slice.call(args, 0) : [];
+        
+        for (c = -1, l = runners.length; l--;) {
+            result = runners[++c].apply(scope, args);
+            if (result !== undefined) {
+                args = [result];
+            }
         }
         
-        return getModule();
+        args.splice(0, args.length);
+        
+        return result;
     }
+    
+    return undefined;
+}
 
-export
-    function middleware(name) {
-        var list = NAMESPACES;
-        var access, registered, proto;
+export function register(name, handler) {
+    var list = RUNNERS;
+    var access, items, parsed;
+    
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
+    }
+    
+    parsed = parseName(name);
+    
+    if (!method(handler)) {
+        throw new Error(INVALID_HANDLER);
+    }
+    
+    if (parsed) {
         
-        function Middleware() {
-            BaseMiddleware.apply(this, arguments);
-        }
-        
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
-        }
-
-        access = name + '.';
+        name = parsed[1];
+        access = ':' + name;
         if (!(access in list)) {
-            empty.prototype = BaseMiddleware.prototype;
-            proto = new empty(access);
-            proto.constructor = Middleware;
-            proto.access = access;
-            Middleware.prototype = proto;
             
-            list[access] = registered = new Middleware();
-            
-            return registered;
+            list[access] = {
+                name: name,
+                before: [],
+                after: []
+            };
         }
         
-        return list[access];
+        items = list[access][getPositionAccess(parsed[0])];
+        
+        items[items.length] = handler;
     }
+    
+    return getModule();
+}
+    
+export function clearRunner(name, after) {
+        
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
+    }
+    
+    if (arguments.length > 1) {
+        purgeRunners(name, after);
+    }
+    else {
+        purgeRunners(name);
+    }
+    
+    return getModule();
+}
+
+export function middleware(name) {
+    var list = NAMESPACES;
+    var access, registered, proto;
+    
+    function Middleware() {
+        BaseMiddleware.apply(this, arguments);
+    }
+    
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
+    }
+
+    access = name + '.';
+    if (!(access in list)) {
+        empty.prototype = BaseMiddleware.prototype;
+        proto = new empty(access);
+        proto.constructor = Middleware;
+        proto.access = access;
+        Middleware.prototype = proto;
+        
+        list[access] = registered = new Middleware();
+        
+        return registered;
+    }
+    
+    return list[access];
+}
 
 
 

@@ -1,13 +1,14 @@
 'use strict';
 
+import createRegistry from '../../registry';
+
 describe(`Sets registry [value] indexed with [name] using 
          registryInstance.set(name:String|Number|Object|Array, value:Mixed)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
             registry.assign({
                 "name": "diko",
                 "0": [{

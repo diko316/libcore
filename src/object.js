@@ -203,28 +203,6 @@ function applyClear() {
     delete arguments[2][arguments[1]];
 }
 
-/**
- * Assign properties of source Object to target Object only if property do not
- *      exist or not overridden from the target Object.
- * @name libcore.fillin
- * @function
- * @param {Object} target - the target object
- * @param {Object} source - the source object containing properties
- *                          to be assigned to target object
- * @param {boolean} [hasown] - performs checking to only include
- *                          source object property that is overridden
- *                          (Object.protototype.hasOwnProperty() returns true)
- *                          when this parameter is set to true.
- * @returns {Object} subject parameter.
- */
-function fillin(target, source, hasown) {
-    if (!isValidObject(target)) {
-        throw new Error("Invalid [target] parameter");
-    }
-    EACH(source, applyFillin, target, hasown !== false);
-    return target;
-}
-
 function applyFillin(value, name) {
     /* jshint validthis:true */
     var target = this;
@@ -449,146 +427,150 @@ function onMaxNumericIndex(value, name, context) {
 
 export { EACH as each };
 
-export
-    function assign(target, source, defaults, ownedOnly) {
-        var onAssign = apply,
-            is = isValidObject,
-            eachProperty = EACH,
-            len = arguments.length;
-        
-        if (!is(target)) {
-            throw new Error("Invalid [target] parameter.");
-        }
-        
-        if (!is(source)) {
-            throw new Error("Invalid [source] parameter.");
-        }
-        
-        if (typeof defaults === 'boolean') {
-            ownedOnly = defaults;
-            len = 2;
-        }
-        else {
-            ownedOnly = ownedOnly !== false;
-        }
-        
-        if (is(defaults)) {
-            eachProperty(defaults, onAssign, target, ownedOnly);
-        }
-        else if (len > 2) {
-            throw new Error("Invalid [defaults] parameter.");
-        }
-        
-        eachProperty(source, onAssign, target, ownedOnly);
-        
-        return target;
+export function assign(target, source, defaults, ownedOnly) {
+    var onAssign = apply,
+        is = isValidObject,
+        eachProperty = EACH,
+        len = arguments.length;
+    
+    if (!is(target)) {
+        throw new Error("Invalid [target] parameter.");
     }
+    
+    if (!is(source)) {
+        throw new Error("Invalid [source] parameter.");
+    }
+    
+    if (typeof defaults === 'boolean') {
+        ownedOnly = defaults;
+        len = 2;
+    }
+    else {
+        ownedOnly = ownedOnly !== false;
+    }
+    
+    if (is(defaults)) {
+        eachProperty(defaults, onAssign, target, ownedOnly);
+    }
+    else if (len > 2) {
+        throw new Error("Invalid [defaults] parameter.");
+    }
+    
+    eachProperty(source, onAssign, target, ownedOnly);
+    
+    return target;
+}
 
-export 
-    function rehash(target, source, access) {
-        var is = isValidObject,
-            context = [target, source];
-            
-        if (!is(target)) {
-            throw new Error("Invalid [target] parameter.");
-        }
+export function rehash(target, source, access) {
+    var is = isValidObject,
+        context = [target, source];
         
-        if (!is(source)) {
-            throw new Error("Invalid [source] parameter.");
-        }
-        
-        if (!object(access)) {
-            throw new Error("Invalid [access] parameter.");
-        }
-        
-        EACH(access, applyProperties, context);
-        context = context[0] = context[1] =  null;
-        return target;
+    if (!is(target)) {
+        throw new Error("Invalid [target] parameter.");
     }
+    
+    if (!is(source)) {
+        throw new Error("Invalid [source] parameter.");
+    }
+    
+    if (!object(access)) {
+        throw new Error("Invalid [access] parameter.");
+    }
+    
+    EACH(access, applyProperties, context);
+    context = context[0] = context[1] =  null;
+    return target;
+}
 
-export
-    function contains(subject, property) {
-    
-        if (!string(property) && !number(property)) {
-            throw new Error("Invalid [property] parameter.");
-        }
-        
-        return OHasOwn.call(subject, property);
+export function contains(subject, property) {
+    if (!string(property) && !number(property)) {
+        throw new Error("Invalid [property] parameter.");
     }
+    
+    return OHasOwn.call(subject, property);
+}
 
-export
-    function instantiate(Class, overrides) {
-        empty.prototype = Class.prototype;
-        
-        if (object(overrides)) {
-            return assign(new empty(), overrides);
-        }
-        return new empty();
+export function instantiate(Class, overrides) {
+    empty.prototype = Class.prototype;
+    
+    if (object(overrides)) {
+        return assign(new empty(), overrides);
+    }
+    return new empty();
+}
+    
+export function clone(data, deep) {
+    var isNative = nativeObject(data);
+    
+    deep = deep === true;
+    
+    if (isNative || array(data)) {
+        return deep ?
+                    
+                    (isNative ? cloneObject : cloneArray)(data, [], []) :
+                    
+                    (isNative ? assignAll({}, data) : data.slice(0));
     }
     
-export
-    function clone(data, deep) {
-        var isNative = nativeObject(data);
-        
-        deep = deep === true;
-        
-        if (isNative || array(data)) {
-            return deep ?
-                        
-                        (isNative ? cloneObject : cloneArray)(data, [], []) :
-                        
-                        (isNative ? assignAll({}, data) : data.slice(0));
-        }
-        
-        if (regex(data)) {
-            return new RegExp(data.source, data.flags);
-        }
-        else if (date(data)) {
-            return new Date(data.getFullYear(),
-                        data.getMonth(),
-                        data.getDate(),
-                        data.getHours(),
-                        data.getMinutes(),
-                        data.getSeconds(),
-                        data.getMilliseconds());
-        }
-        
-        return data;
+    if (regex(data)) {
+        return new RegExp(data.source, data.flags);
+    }
+    else if (date(data)) {
+        return new Date(data.getFullYear(),
+                    data.getMonth(),
+                    data.getDate(),
+                    data.getHours(),
+                    data.getMinutes(),
+                    data.getSeconds(),
+                    data.getMilliseconds());
     }
     
-export
-    function compare(object1, object2) {
-        return compareLookback(object1, object2, []);
-    }
+    return data;
+}
     
-export
-    function fillin(target, source, hasown) {
-        if (!isValidObject(target)) {
-            throw new Error("Invalid [target] parameter");
-        }
-        EACH(source, applyFillin, target, hasown !== false);
-        return target;
-    }
+export function compare(object1, object2) {
+    return compareLookback(object1, object2, []);
+}
 
-export
-    function clear(subject) {
-        EACH(subject, applyClear, null, true);
-        return subject;
+/**
+ * Assign properties of source Object to target Object only if property do not
+ *      exist or not overridden from the target Object.
+ * @name libcore.fillin
+ * @function
+ * @param {Object} target - the target object
+ * @param {Object} source - the source object containing properties
+ *                          to be assigned to target object
+ * @param {boolean} [hasown] - performs checking to only include
+ *                          source object property that is overridden
+ *                          (Object.protototype.hasOwnProperty() returns true)
+ *                          when this parameter is set to true.
+ * @returns {Object} subject parameter.
+ */
+export function fillin(target, source, hasown) {
+    if (!isValidObject(target)) {
+        throw new Error("Invalid [target] parameter");
+    }
+    EACH(source, applyFillin, target, hasown !== false);
+    return target;
+}
+
+export function clear(subject) {
+    EACH(subject, applyClear, null, true);
+    return subject;
+}
+    
+export function maxObjectIndex(subject) {
+    var context;
+    
+    if (array(subject)) {
+        return subject.length - 1;
     }
     
-export
-    function maxObjectIndex(subject) {
-        var context;
+    if (isValidObject(subject)) {
         
-        if (array(subject)) {
-            return subject.length - 1;
-        }
-        
-        if (isValidObject(subject)) {
-            
-            context = [-1];
-            EACH(subject, onMaxNumericIndex, context);
-            return context[0];
-        }
-        return false;
+        context = [-1];
+        EACH(subject, onMaxNumericIndex, context);
+        return context[0];
     }
+    return false;
+}

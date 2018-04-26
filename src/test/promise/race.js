@@ -1,12 +1,12 @@
 'use strict';
 
+import Promise from '../../promise';
 
 describe(`Creates a promise from [iterable] values or promises 
          then resolves or rejects if one of the item in 
          [iterable] is settled using Promise.race(iterable:Mixed)`,
     () => {
-        var lib = global.libcore,
-            P = lib.Promise;
+        var P = Promise;
             
         it(`1. Should accept [iterable] object or Objects with "length" 
            Number of items.`,

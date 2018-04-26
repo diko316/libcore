@@ -1,5 +1,9 @@
 'use strict';
 
+import {
+    decode64,
+    encode64
+} from '../../string';
 
 describe(`Encodes String [subject] into base 64 encoded string using 
          encode64(subject:String) method`,
@@ -13,8 +17,8 @@ describe(`Encodes String [subject] into base 64 encoded string using
                 var subject = 'MZ  ÿÿ @ €',
                     result = 'TVogAyAEw7/DvyBAIOKCrA==';
                 
-                expect(() => lib.encode64(subject)).not.toThrow();
-                expect(lib.encode64(subject)).
+                expect(() => encode64(subject)).not.toThrow();
+                expect(encode64(subject)).
                     toBe(result);
                 expect(btoa(unescape(encodeURIComponent(subject)))).
                     toBe(result);
@@ -23,9 +27,9 @@ describe(`Encodes String [subject] into base 64 encoded string using
         it(`2. Should not accept non String [subject] parameter and 
            throws error instead`,
            () => {
-                expect(() => lib.encode64(true)).toThrow();
-                expect(() => lib.encode64(null)).toThrow();
-                expect(() => lib.encode64(new Date())).toThrow();
+                expect(() => encode64(true)).toThrow();
+                expect(() => encode64(null)).toThrow();
+                expect(() => encode64(new Date())).toThrow();
                 
            });
     });

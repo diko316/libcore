@@ -1,19 +1,15 @@
 'use strict';
 
 import {
-
-            method,
-            thenable,
-            iterable as isIterable
-
-        } from "./type.js";
+    method,
+    thenable,
+    iterable as isIterable
+} from "./type.js";
     
 import {
-
-            assign,
-            instantiate
-
-        } from "./object.js";
+    assign,
+    instantiate
+} from "./object.js";
 
 import { setAsync } from "./processor.js";
 

@@ -1,24 +1,24 @@
 'use strict';
 
+import { jsonParsePath } from '../../json';
+
 
 describe(`Extract property names from a JSON path using 
          jsonParsePath(path:String)`,
         () => {
-            var lib = global.libcore;
-            
             it(`1. Should be able to extract dot notation JSON path 
                 (e.g. "grid.paging.offset")`,
                () => {
                     var subject = 'grid.paging.offset';
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid', 'paging', 'offset']);
                     
                     subject = 'grid.rows.0.label.length';
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid',
                                   'rows',
                                   '0',
@@ -26,7 +26,7 @@ describe(`Extract property names from a JSON path using
                                   'length']);
                         
                     subject = 'grid.rows.0';
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid',
                                   'rows',
                                   '0']);
@@ -37,35 +37,35 @@ describe(`Extract property names from a JSON path using
                () => {
                     var subject = 'grid["paging"].offset';
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                     
-                    expect(lib.jsonParsePath('[0]')).
+                    expect(jsonParsePath('[0]')).
                         toEqual(['0']);
                         
-                    expect(lib.jsonParsePath('[0].id')).
+                    expect(jsonParsePath('[0].id')).
                         toEqual(['0', 'id']);
                         
-                    expect(lib.jsonParsePath('items[]')).
+                    expect(jsonParsePath('items[]')).
                         toEqual(['items', '']);
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid', 'paging', 'offset']);
                     
                     
                     subject = 'grid["rows"].0.label.length';
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid',
                                   'rows',
                                   '0',
                                   'label',
                                   'length']);
                     subject = 'grid.rows[0].label.length';
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid',
                                   'rows',
                                   '0',
@@ -73,9 +73,9 @@ describe(`Extract property names from a JSON path using
                                   'length']);
                         
                     subject = 'grid["rows"][0].label.length';
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid',
                                   'rows',
                                   '0',
@@ -83,9 +83,9 @@ describe(`Extract property names from a JSON path using
                                   'length']);
                         
                     subject = '["grid"].rows[0].label.length';
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual(['grid',
                                   'rows',
                                   '0',
@@ -98,10 +98,10 @@ describe(`Extract property names from a JSON path using
                () => {
                 
                     var subject = "grid.\\n\\.o\\].offset";
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'grid',
                             'n.o]',
@@ -109,10 +109,10 @@ describe(`Extract property names from a JSON path using
                         ]);
                         
                     subject = "grid.\\n\\.o\\]['offset']";
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'grid',
                             'n.o]',
@@ -120,10 +120,10 @@ describe(`Extract property names from a JSON path using
                         ]);
                         
                     subject = "method[\"type\"].grid";
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'method',
                             'type',
@@ -131,10 +131,10 @@ describe(`Extract property names from a JSON path using
                         ]);
                         
                     subject = "method.id";
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'method',
                             'id'
@@ -147,10 +147,10 @@ describe(`Extract property names from a JSON path using
                 
                     var subject = "[].offset";
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             '',
                             'offset'
@@ -158,10 +158,10 @@ describe(`Extract property names from a JSON path using
                         
                     subject = "offset[]";
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'offset',
                             ''
@@ -170,10 +170,10 @@ describe(`Extract property names from a JSON path using
                         
                     subject = "grid[].offset";
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'grid',
                             '',
@@ -187,10 +187,10 @@ describe(`Extract property names from a JSON path using
                 
                     var subject = "[''].offset";
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             '',
                             'offset'
@@ -198,10 +198,10 @@ describe(`Extract property names from a JSON path using
                         
                     subject = '[""].offset';
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             '',
                             'offset'
@@ -215,10 +215,10 @@ describe(`Extract property names from a JSON path using
                 
                     var subject = "''.offset";
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             '',
                             'offset'
@@ -227,10 +227,10 @@ describe(`Extract property names from a JSON path using
                     
                     subject = "offset.''";
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'offset',
                             ''
@@ -238,10 +238,10 @@ describe(`Extract property names from a JSON path using
                         
                     subject = '"".offset';
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             '',
                             'offset'
@@ -250,10 +250,10 @@ describe(`Extract property names from a JSON path using
                         
                     subject = 'offset.""';
                     
-                    expect(() => lib.jsonParsePath(subject)).
+                    expect(() => jsonParsePath(subject)).
                         not.toThrow();
                         
-                    expect(lib.jsonParsePath(subject)).
+                    expect(jsonParsePath(subject)).
                         toEqual([
                             'offset',
                             ''

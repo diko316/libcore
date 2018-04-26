@@ -1,12 +1,15 @@
 'use strict';
 
+import { jsonCompare } from '../../json';
+import { clone } from '../../object';
+
+
 describe(`Compares value with [object2] where value is 
          extracted from [object1] using [path] parameter using
          jsonCompare(path:String, object1:Mixed, object2:Mixed) method`,
         () => {
             
-            var lib = global.libcore,
-                subject = {
+            var subject = {
                     "grid": {
                         "paging": {
                             "limit": 20,
@@ -33,16 +36,16 @@ describe(`Compares value with [object2] where value is
             it(`1. Should throw error if [path] parameter is not String or 
                empty String.`,
                () => {
-                    expect(() => lib.jsonCompare(null,
+                    expect(() => jsonCompare(null,
                                                  subject,
                                                  20)).toThrow();
-                    expect(() => lib.jsonCompare(/test/,
+                    expect(() => jsonCompare(/test/,
                                                  subject,
                                                  20)).toThrow();
-                    expect(() => lib.jsonCompare(1,
+                    expect(() => jsonCompare(1,
                                                  subject,
                                                  20)).toThrow();
-                    expect(() => lib.jsonCompare(new Date(),
+                    expect(() => jsonCompare(new Date(),
                                                  subject,
                                                  20)).toThrow();
                });
@@ -50,21 +53,21 @@ describe(`Compares value with [object2] where value is
             it(`2. Should return true if value in [object1] from [path]
                matches [object2].`,
                () => {
-                    var paging = lib.clone(subject.grid.paging, true);
+                    var paging = clone(subject.grid.paging, true);
                     
-                    expect(() => lib.jsonCompare('grid.paging.offset',
+                    expect(() => jsonCompare('grid.paging.offset',
                                                  subject,
                                                  0)).not.toThrow();
                     
-                    expect(lib.jsonCompare('grid.paging.offset',
+                    expect(jsonCompare('grid.paging.offset',
                                            subject,
                                            0)).toBe(true);
                     
-                    expect(lib.jsonCompare('grid.paging',
+                    expect(jsonCompare('grid.paging',
                                            subject,
                                            paging)).toBe(true);
                     
-                    expect(lib.jsonCompare('["grid"].paging',
+                    expect(jsonCompare('["grid"].paging',
                                            subject,
                                            paging)).toBe(true);
                });
@@ -72,24 +75,24 @@ describe(`Compares value with [object2] where value is
             it(`3. Should return false if value in [object1] from [path] 
                do not match [object2].`,
                () => {
-                    var paging = lib.clone(subject.grid.paging, true);
+                    var paging = clone(subject.grid.paging, true);
                     
-                    expect(lib.jsonCompare('grid.paging',
+                    expect(jsonCompare('grid.paging',
                                            subject,
                                            19)).toBe(false);
                     
-                    expect(lib.jsonCompare('grid.paging.offset',
+                    expect(jsonCompare('grid.paging.offset',
                                            subject,
                                            20)).toBe(false);
                     
-                    expect(lib.jsonCompare('grid.paging.test',
+                    expect(jsonCompare('grid.paging.test',
                                            subject,
-                                           lib.clone(subject.grid.paging,
+                                           clone(subject.grid.paging,
                                                      true))).toBe(false);
                     
-                    expect(lib.jsonCompare('["grid"].rows[0]',
+                    expect(jsonCompare('["grid"].rows[0]',
                                            subject,
-                                           lib.clone(subject.grid.paging,
+                                           clone(subject.grid.paging,
                                                      true))).toBe(false);
                });
             

@@ -1,14 +1,17 @@
 'use strict';
 
+import createRegistry from '../../registry';
+
+import { array } from '../../type';
+
 describe(`Inserts registry [value] into String json path [path] 
          relative to registry storage using 
          registryInstance.insert(path:String, value:Mixed)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
             registry.assign({
                 "name": "diko",
                 "0": [{
@@ -56,7 +59,7 @@ describe(`Inserts registry [value] into String json path [path]
                 expect(registry.find("2[0].label")).toBe(value);
                 
                 // retain "Array-ness"
-                expect(lib.array(registry.find("[2]"))).toBe(true);
+                expect(array(registry.find("[2]"))).toBe(true);
 
            });
         

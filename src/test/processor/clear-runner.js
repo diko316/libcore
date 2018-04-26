@@ -1,13 +1,18 @@
 'use strict';
 
 
+import {
+    register,
+    run,
+    clearRunner
+} from '../../processor';
+
 
 describe(`Removes ":before" or ":after" registered middleware callbacks 
          using clearRunner(name:String[, after:Boolean]]).`,
     () => {
         
-        var lib = global.libcore,
-            sampleParam = { count: 1 },
+        var sampleParam = { count: 1 },
             beforeRunName = 'before:exampleCall',
             runName = 'exampleCall',
             afterRunName = 'after:exampleCall';
@@ -31,9 +36,9 @@ describe(`Removes ":before" or ":after" registered middleware callbacks
             spyOn(registered, 'after').and.callThrough();
             spyOn(registered, 'normal').and.callThrough();
             
-            lib.register(beforeRunName, registered.before);
-            lib.register(afterRunName, registered.after);
-            lib.register(runName, registered.normal);
+            register(beforeRunName, registered.before);
+            register(afterRunName, registered.after);
+            register(runName, registered.normal);
             
         });
         
@@ -43,18 +48,18 @@ describe(`Removes ":before" or ":after" registered middleware callbacks
            and autodetect purging of "before" or "after" callbacks 
            based on [name] parameter`,
            () => {
-                expect(() => lib.clearRunner(beforeRunName)).
+                expect(() => clearRunner(beforeRunName)).
                     not.toThrow();
                 
-                expect(() => lib.run(beforeRunName, [sampleParam])).
+                expect(() => run(beforeRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).
                     not.toHaveBeenCalled();
 
-                expect(() => lib.clearRunner(afterRunName));
+                expect(() => clearRunner(afterRunName));
                 
-                expect(() => lib.run(afterRunName, [sampleParam])).
+                expect(() => run(afterRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.after).
@@ -67,13 +72,13 @@ describe(`Removes ":before" or ":after" registered middleware callbacks
         it(`2. Should accept Boolean true [after] parameter and removes all 
            "after:[name]" runners overriding [name] parameter selection.`,
            () => {
-                expect(() => lib.clearRunner(beforeRunName, true)).
+                expect(() => clearRunner(beforeRunName, true)).
                     not.toThrow();
                     
-                expect(() => lib.run(beforeRunName, [sampleParam])).
+                expect(() => run(beforeRunName, [sampleParam])).
                     not.toThrow();
                     
-                expect(() => lib.run(afterRunName, [sampleParam])).
+                expect(() => run(afterRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).
@@ -89,13 +94,13 @@ describe(`Removes ":before" or ":after" registered middleware callbacks
         it(`3. Should accept Boolean false [after] parameter and removes all 
            "before:[name]" runners overriding [name] parameter selection.`,
            () => {
-                expect(() => lib.clearRunner(afterRunName, false)).
+                expect(() => clearRunner(afterRunName, false)).
                     not.toThrow();
                     
-                expect(() => lib.run(beforeRunName, [sampleParam])).
+                expect(() => run(beforeRunName, [sampleParam])).
                     not.toThrow();
                     
-                expect(() => lib.run(afterRunName, [sampleParam])).
+                expect(() => run(afterRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).
@@ -111,13 +116,13 @@ describe(`Removes ":before" or ":after" registered middleware callbacks
         it(`4. Should accept null [after] parameter and removes all 
            "before:[name]" and "after:[name]" runners.`,
            () => {
-                expect(() => lib.clearRunner(afterRunName, null)).
+                expect(() => clearRunner(afterRunName, null)).
                     not.toThrow();
                     
-                expect(() => lib.run(beforeRunName, [sampleParam])).
+                expect(() => run(beforeRunName, [sampleParam])).
                     not.toThrow();
                     
-                expect(() => lib.run(afterRunName, [sampleParam])).
+                expect(() => run(afterRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).
@@ -133,19 +138,19 @@ describe(`Removes ":before" or ":after" registered middleware callbacks
         it(`5. Should not accept non-String or empty String [name] parameter
            and throws an exception.`,
            () => {
-                expect(() => lib.clearRunner(null)).
+                expect(() => clearRunner(null)).
                     toThrow();
-                expect(() => lib.clearRunner(undefined)).
+                expect(() => clearRunner(undefined)).
                     toThrow();
-                expect(() => lib.clearRunner(1)).
+                expect(() => clearRunner(1)).
                     toThrow();
-                expect(() => lib.clearRunner(/test/)).
+                expect(() => clearRunner(/test/)).
                     toThrow();
-                expect(() => lib.clearRunner(new Date())).
+                expect(() => clearRunner(new Date())).
                     toThrow();
-                expect(() => lib.clearRunner([])).
+                expect(() => clearRunner([])).
                     toThrow();
-                expect(() => lib.clearRunner({})).
+                expect(() => clearRunner({})).
                     toThrow();
            });
     });

@@ -1,13 +1,14 @@
 'use strict';
 
+import createRegistry from '../../registry';
+
 describe(`Inspects if String json [path] exists in registry using 
          registryInstance.pathExists(path:String)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
             registry.assign({
                 "name": "diko",
                 "0": [{

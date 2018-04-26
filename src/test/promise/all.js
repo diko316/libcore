@@ -1,13 +1,13 @@
 'use strict';
 
+import Promise from '../../promise';
 
 describe(`Creates a promise from [iterable] values or promises that resolves 
          if all items in [iterable] fulfills or rejects if all items in 
          [iterable] rejects using Promise.all(iterable:Mixed)`,
     () => {
-        var lib = global.libcore,
-            P = lib.Promise;
-            
+        var P = Promise;
+
         it(`1. Should accept [iterable] object or Objects with "length" 
            Number of items.`,
            (done) => {

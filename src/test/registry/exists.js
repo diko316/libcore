@@ -1,13 +1,14 @@
 'use strict';
 
+import createRegistry from '../../registry';
+
 describe(`Inspects the registry storage if String or Number [name] exists 
          using registryInstance(name:String)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
             registry.assign({
                 "name": "diko",
                 "0": [{

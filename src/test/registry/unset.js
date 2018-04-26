@@ -1,13 +1,14 @@
 'use strict';
 
+import createRegistry from '../../registry';
+
 describe(`Removes registry [value] indexed with [name] using 
          registryInstance.unset(name:String|Number)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
             registry.assign({
                 "name": "diko",
                 "0": [{

@@ -1,12 +1,15 @@
 'use strict';
 
+import {
+    register,
+    run
+} from '../../processor';
 
 describe(`Runs a registered middleware callback using 
          run(name:String[, args:Iterable[, scope:Mixed]]).`,
     () => {
         
-        var lib = global.libcore,
-            sampleParam = { count: 1 },
+        var sampleParam = { count: 1 },
             beforeRunName = 'before:exampleCall',
             runName = 'exampleCall',
             afterRunName = 'after:exampleCall';
@@ -30,9 +33,9 @@ describe(`Runs a registered middleware callback using
             spyOn(registered, 'after').and.callThrough();
             spyOn(registered, 'normal').and.callThrough();
             
-            lib.register(beforeRunName, registered.before);
-            lib.register(afterRunName, registered.after);
-            lib.register(runName, registered.normal);
+            register(beforeRunName, registered.before);
+            register(afterRunName, registered.after);
+            register(runName, registered.normal);
             
         });
         
@@ -40,7 +43,7 @@ describe(`Runs a registered middleware callback using
         it(`1. Should accept registered "before:[name]" middleware and run 
            all handlers that matches "before:[name]".`,
            () => {
-                expect(() => lib.run(beforeRunName, [sampleParam])).
+                expect(() => run(beforeRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).
@@ -56,7 +59,7 @@ describe(`Runs a registered middleware callback using
         it(`2. Should accept registered "after:[name]" middleware and run 
            all handlers that matches "after:[name]" and "[name]".`,
            () => {
-                expect(() => lib.run(afterRunName, [sampleParam])).
+                expect(() => run(afterRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).
@@ -72,7 +75,7 @@ describe(`Runs a registered middleware callback using
         it(`3. Should accept registered "[name]" middleware and run 
            all handlers that matches "after:[name]" and "[name]".`,
            () => {
-                expect(() => lib.run(runName, [sampleParam])).
+                expect(() => run(runName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).

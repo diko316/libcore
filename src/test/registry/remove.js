@@ -1,14 +1,15 @@
 'use strict';
 
+import createRegistry from '../../registry';
+
 describe(`Removes registry value with the given String json path [path] 
          relative to registry storage using
          registryInstance.remove(path:String)`,
     () => {
-        var lib = global.libcore;
         var registry;
         
         beforeEach(() => {
-            registry = lib.createRegistry();
+            registry = createRegistry();
             registry.assign({
                 "name": "diko",
                 "0": [{

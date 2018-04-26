@@ -10,7 +10,10 @@
     "devel-test": "export BUILD_MODE=unit-test && karma start karma.config.js --auto-watch",
     "start": "export BUILD_MODE=demo && rollup --config rollup.config.demo.js",
     "build": "export BUILD_MODE=production && rollup --config",
-    "build-optimized": "export BUILD_MODE=compressed && rollup --config"
+    "build-optimized": "export BUILD_MODE=compressed && rollup --config",
+    "prebuild-production": "npm run test",
+    "build-production": "npm run build && npm run build-optimized",
+    "postbuild-production": "bin/after-build-to-dist.sh"
   },
   "repository": {
     "type": "git",

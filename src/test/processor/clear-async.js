@@ -1,11 +1,14 @@
 'use strict';
 
+import {
+    setAsync,
+    clearAsync
+} from '../../processor';
+
 describe(`Clears an asynchronous Function call from 
          setAsync(handler:Function) call using its returned call [id] in 
          clearAsync(id:Mixed).`,
     () => {
-        
-        var lib = global.libcore;
         
         it(`1. Should accept any valid asynchrounous Function call [id] 
            parameter and removes from pending execution list.`,
@@ -20,9 +23,9 @@ describe(`Clears an asynchronous Function call from
                     };
                 spyOn(calling, 'fn');
                 
-                expect(() => id = lib.setAsync(calling.fn)).not.toThrow();
+                expect(() => id = setAsync(calling.fn)).not.toThrow();
                 
-                expect(() => lib.clearAsync(id)).not.toThrow();
+                expect(() => clearAsync(id)).not.toThrow();
                 
                 setTimeout(() => {
                     
@@ -38,10 +41,10 @@ describe(`Clears an asynchronous Function call from
         it(`2. Should accept any [id] value and do nothing if it is not 
            a valid asynchronous Function call [id].`,
            () => {
-                expect(() => lib.clearAsync(null)).not.toThrow();
-                expect(() => lib.clearAsync(1)).not.toThrow();
-                expect(() => lib.clearAsync({})).not.toThrow();
-                expect(() => lib.clearAsync([])).not.toThrow();
-                expect(() => lib.clearAsync(/test/)).not.toThrow();
+                expect(() => clearAsync(null)).not.toThrow();
+                expect(() => clearAsync(1)).not.toThrow();
+                expect(() => clearAsync({})).not.toThrow();
+                expect(() => clearAsync([])).not.toThrow();
+                expect(() => clearAsync(/test/)).not.toThrow();
            });
     });

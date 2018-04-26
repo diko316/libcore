@@ -1,10 +1,13 @@
 'use strict';
 
+import {
+    compare,
+    clone
+} from '../../object';
 
 describe(`Deep compares two Native or non-Native Javascript objects using 
          compare(object1:Mixed, object2:Mixed) method`,
     () => {
-        var lib = global.libcore;
         var objectSubject, arraySubject, regexSubject, dateSubject;
                 
         beforeEach(() => {
@@ -35,25 +38,25 @@ describe(`Deep compares two Native or non-Native Javascript objects using
            returns false otherwise.`,
            () => {
             
-                expect(lib.compare(objectSubject, arraySubject)).toBe(false);
-                expect(lib.compare(objectSubject,
-                                   lib.clone(objectSubject))).toBe(true);
-                expect(lib.compare(objectSubject,
-                                   lib.clone(objectSubject, true))).toBe(true);
+                expect(compare(objectSubject, arraySubject)).toBe(false);
+                expect(compare(objectSubject,
+                                   clone(objectSubject))).toBe(true);
+                expect(compare(objectSubject,
+                                   clone(objectSubject, true))).toBe(true);
                 
-                expect(lib.compare(arraySubject,
-                                   lib.clone(arraySubject))).toBe(true);
+                expect(compare(arraySubject,
+                                   clone(arraySubject))).toBe(true);
                 
-                expect(lib.compare(arraySubject,
-                                   lib.clone(arraySubject, true))).toBe(true);
-                expect(lib.compare(null, undefined)).toBe(false);
-                expect(lib.compare(null, null)).toBe(true);
-                expect(lib.compare(undefined, null)).toBe(false);
-                expect(lib.compare(regexSubject,
-                                   lib.clone(regexSubject))).toBe(true);
+                expect(compare(arraySubject,
+                                   clone(arraySubject, true))).toBe(true);
+                expect(compare(null, undefined)).toBe(false);
+                expect(compare(null, null)).toBe(true);
+                expect(compare(undefined, null)).toBe(false);
+                expect(compare(regexSubject,
+                                   clone(regexSubject))).toBe(true);
                 
-                expect(lib.compare(dateSubject,
-                                   lib.clone(dateSubject))).toBe(true);
+                expect(compare(dateSubject,
+                                   clone(dateSubject))).toBe(true);
             
            });
         

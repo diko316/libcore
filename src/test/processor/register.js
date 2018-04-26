@@ -1,12 +1,15 @@
 'use strict';
 
+import {
+    register,
+    run
+} from '../../processor';
 
 describe(`Registers a middleware callback using 
          register(name:String, handler:Function) method.`,
     () => {
         
-        var lib = global.libcore,
-            sampleParam = { count: 1 },
+        var sampleParam = { count: 1 },
             beforeRunName = 'before:exampleCall',
             runName = 'exampleCall',
             afterRunName = 'after:exampleCall';
@@ -36,9 +39,9 @@ describe(`Registers a middleware callback using
            prefix and Function [handler] parameter then succesfully 
            register middleware callback.`,
            () => {
-                expect(() => lib.register(runName, registered.normal)).
+                expect(() => register(runName, registered.normal)).
                     not.toThrow();
-                expect(() => lib.run(runName, [sampleParam])).
+                expect(() => run(runName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.normal).
@@ -50,10 +53,10 @@ describe(`Registers a middleware callback using
            register middleware callback.`,
            () => {
                 
-                expect(() => lib.register(beforeRunName, registered.before)).
+                expect(() => register(beforeRunName, registered.before)).
                     not.toThrow();
                 
-                expect(() => lib.run(beforeRunName, [sampleParam])).
+                expect(() => run(beforeRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.before).
@@ -65,10 +68,10 @@ describe(`Registers a middleware callback using
            register middleware callback.`,
            () => {
                 
-                expect(() => lib.register(afterRunName, registered.after)).
+                expect(() => register(afterRunName, registered.after)).
                     not.toThrow();
                 
-                expect(() => lib.run(afterRunName, [sampleParam])).
+                expect(() => run(afterRunName, [sampleParam])).
                     not.toThrow();
                     
                 expect(registered.after).
@@ -78,34 +81,34 @@ describe(`Registers a middleware callback using
         it(`4. Should not accept non-String or emtpy String [name]
            parameter and throw exception.`,
            () => {
-                expect(() => lib.register(1, registered.before)).
+                expect(() => register(1, registered.before)).
                     toThrow();
-                expect(() => lib.register(null, registered.before)).
+                expect(() => register(null, registered.before)).
                     toThrow();
-                expect(() => lib.register({}, registered.before)).
+                expect(() => register({}, registered.before)).
                     toThrow();
-                expect(() => lib.register([], registered.before)).
+                expect(() => register([], registered.before)).
                     toThrow();
-                expect(() => lib.register(() => null, registered.before)).
+                expect(() => register(() => null, registered.before)).
                     toThrow();
-                expect(() => lib.register(/test/, registered.before)).
+                expect(() => register(/test/, registered.before)).
                     toThrow();
            });
         
         it(`5. Should not accept non-Function [handler] parameter 
            parameter and throw exception.`,
            () => {
-                expect(() => lib.register(runName, null)).
+                expect(() => register(runName, null)).
                     toThrow();
-                expect(() => lib.register(afterRunName, undefined)).
+                expect(() => register(afterRunName, undefined)).
                     toThrow();
-                expect(() => lib.register(beforeRunName, /test/)).
+                expect(() => register(beforeRunName, /test/)).
                     toThrow();
-                expect(() => lib.register(runName, [])).
+                expect(() => register(runName, [])).
                     toThrow();
-                expect(() => lib.register(afterRunName, 'test')).
+                expect(() => register(afterRunName, 'test')).
                     toThrow();
-                expect(() => lib.register(beforeRunName, 1)).
+                expect(() => register(beforeRunName, 1)).
                     toThrow();
            });
         
