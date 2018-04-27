@@ -7,7 +7,7 @@ services:
     image: libcore
     container_name: "libcore-server"
     hostname: libdom
-    command: bin/run-devserver.sh
+    command: ['bin/build-bundle.sh', 'server']
 
     volumes:
      - ./bin:/opt/app/bin:ro
@@ -15,6 +15,9 @@ services:
 
     ports:
      - "3000:3000"
+    
+    networks:
+     - libcore
 
   test:
     image: libcore
@@ -25,11 +28,14 @@ services:
     volumes:
      - ./bin:/opt/app/bin:ro
      - .:/opt/app-source:ro
+
+    networks:
+     - libcore
       
   builder:
     image: libcore
     container_name: "libcore-builder"
-    command: bin/autosync-builds.sh
+    command: ['bin/build-bundle.sh', 'build-production']
     
     environment:
      - SOURCE_MOD_PATH=/opt/app-source-modification
@@ -41,4 +47,9 @@ services:
      - .:/opt/app-source:ro
      - .:/opt/app-source-modification:rw
 
+    networks:
+     - libcore
 
+networks:
+  libcore:
+    driver: bridge

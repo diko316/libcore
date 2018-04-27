@@ -19,3 +19,7 @@ devel:
 test:
 	@docker-compose down && \
 		docker-compose up test
+
+build:
+	@docker-compose down && \
+		docker-compose up builder

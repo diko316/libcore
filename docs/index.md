@@ -247,19 +247,39 @@ handler | `Function` | The callback of each iteration of "subject" object's prop
 scope   | `{*}` | "this" object to use inside the "handler" parameter
 hasown _(optional)_ | `Boolean` | performs checking to only include source object property that is overridden (Object.protototype.hasOwnProperty() returns true) when this parameter is set to true.
 
+> The `hasown` callback should contain the following arguments:
+
+Param | Type | Details
+--- | --- | ---
+property | `Mixed` | The property value of the iterated `subject` object.
+name | `String` | The property name of the iterated `subject` object.
+subject | `Object` | The `subject` argument when calling `each(subject,...)` method.
+
+> Returning boolean `false` inside `hasown` callback stops the property iteratation loop.
+
+
 **Returns**
 
 `Object` The subject parameter.
 
 ```js
-function empty() {
+var myObject = {
+        name: 'diko',
+        id: 24,
+        age: 27,
+    };
 
+function onIterateProperty(property, propertyName, subject) {
+    console.log(`${property} = ${propertyName}`);
 }
 
-var fn = function () {},
-    result = each(fn, empty, null);
+each(myObject, onIterateProperty);
 
-console.log(result === fn); // true
+// Should output:
+//
+// name = diko
+// id = 24
+// age = 27
 ```
 ___
 
@@ -287,27 +307,34 @@ var target = {},
 
 assign(target, source);
 
-console.log(source === target); // true
+console.log(target);
+
+// target should contain the following properties:
+//  prop = "A"
+//  value = 100
 
 
 // # Sample 2
-var target = {},
-    source = {
-        prop: "A",
-        value: 100
-    },
-    defaults = {
+var defaults = {
         extra: "default"
     };
 
+target = {};
+
 assign(target, source, defaults); // 3rd parameter
 
-console.log(target === { prop: "A", value: 100, extra: "default" }); // true
+console.log(target);
+
+// target should contain the following properties:
+//  prop = "A"
+//  value = 100
+//  extra = "default"
+
 ```
 ___
 
 #### `rehash(target, source, access);`
-> Remaps properties of an object into new property of another object.
+> Remaps properties of an `source` object into new property of `target` object based from mappings of property names defined in `access` argument.
 
 Param | Type | Details
 --- | --- | ---
@@ -326,15 +353,29 @@ var target = {},
         pseudoId: 'a1'
     };
 
-rehash(target, source, {
-            "name": "pseudoName",
-            "id": "pseudoId"
-        })); // { name: 'file', id: 'a1' }    
+rehash(
+    target,
+    source,
+    {
+        // schema: 
+        //  "new name": "source property name"
+        "name": "pseudoName",
+        "id": "pseudoId"
+    }
+);
+
+// Result:
+//  {
+//      name: 'file',
+//      id: 'a1'
+//  }
+
 ```
 ___
 
 #### `contains(subject, property);`
-> Inspects property exists in an object.
+> Inspects property if it exists and enumerable in an object.
+> It uses `Object.prototype.hasOwnProperty()` under the hood as part of its checking.
 
 Param | Type | Details
 --- | --- | ---

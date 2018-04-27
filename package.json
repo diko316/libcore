@@ -1,6 +1,6 @@
 {
   "name": "libcore",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Kicks-start helpers for cross-browser libraries and different versions of nodejs",
   "main": "dist/libcore.js",
   "module": "dist/libcore.es.js",

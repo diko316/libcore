@@ -12,9 +12,7 @@ auto-sync
 echo "building... ${1}";
 
 case "${1}" in
-    "start")
-        echo "watching src demo.."
-        #${APP_TOOLS}/watcher/watch.sh "${PROJECT_ROOT}/src" "${TOOLS}/build-devel.sh"
+    "server")
         npm run start || exit $?
         ;;
         
@@ -24,6 +22,10 @@ case "${1}" in
         
     "build-optimized")
         npm run build-optimized || exit $?
+        ;;
+
+    "build-production")
+        npm run build-production || exit $?
         ;;
 
     "devel-test")

@@ -116,6 +116,7 @@ var BOOLEAN = 'boolean';
 var OBJECT = Object;
 var O$1 = OBJECT.prototype;
 var toString = O$1.toString;
+var object = validSignature ? w3cIsObject : ieIsObject;
 
 /** is object **/
 function w3cIsObject(subject) {
@@ -128,177 +129,174 @@ function ieIsObject(subject) {
             toString.call(subject) === OBJECT_SIGNATURE;
 }
 
-var object = validSignature ?
-                        w3cIsObject : ieIsObject;
-
 /** is object signature **/
 function signature(subject) {
-        if (subject === undefined) {
-            return UNDEFINED_SIGNATURE;
-        }
-        
-        if (subject === null ||
-            (typeof subject === NUMBER && !isFinite(subject))) {
-            return NULL_SIGNATURE;
-        }
-        
-        return toString.call(subject);
+    if (subject === undefined) {
+        return UNDEFINED_SIGNATURE;
     }
+    
+    if (subject === null ||
+        (typeof subject === NUMBER && !isFinite(subject))) {
+        return NULL_SIGNATURE;
+    }
+    
+    return toString.call(subject);
+}
 
 /** is native object **/
 function nativeObject(subject) {
-        var O = OBJECT;
-        var constructor, result;
+    var O = OBJECT;
+    var constructor, result;
+    
+    if (signature(subject) === OBJECT_SIGNATURE) {
+        constructor = subject.constructor;
         
-        if (signature(subject) === OBJECT_SIGNATURE) {
-            constructor = subject.constructor;
-            
-            // check constructor
-            if (O.hasOwnProperty.call(subject, 'constructor')) {
-                delete subject.constructor;
-                result = subject.constructor === O;
-                subject.constructor = constructor;
-                return result;
-            }
-            return constructor === O;
+        // check constructor
+        if (O.hasOwnProperty.call(subject, 'constructor')) {
+            delete subject.constructor;
+            result = subject.constructor === O;
+            subject.constructor = constructor;
+            return result;
         }
-        
-        return false;
+        return constructor === O;
     }
+    
+    return false;
+}
     
 /** is string **/
 function string(subject, allowEmpty) {
-        return (typeof subject === STRING ||
-                O$1.toString.call(subject) === STRING_SIGNATURE) &&
-    
-                (allowEmpty === true || subject.length !== 0);
-    }
+    return (typeof subject === STRING ||
+            O$1.toString.call(subject) === STRING_SIGNATURE) &&
+
+            (allowEmpty === true || subject.length !== 0);
+}
     
 /** is number **/
 function number(subject) {
-        return typeof subject === NUMBER && isFinite(subject);
-    }
+    return typeof subject === NUMBER && isFinite(subject);
+}
     
 /** is scalar **/
 function scalar(subject) {
-        switch (typeof subject) {
-        case NUMBER: return isFinite(subject);
-        case BOOLEAN:
-        case STRING: return true;
-        }
-        return false;
+    switch (typeof subject) {
+    case NUMBER: return isFinite(subject);
+    case BOOLEAN:
+    case STRING: return true;
     }
+    return false;
+}
     
 /** is array **/
 function array(subject, notEmpty) {
-        return toString.call(subject) === ARRAY_SIGNATURE &&
-                (notEmpty !== true || subject.length !== 0);
-    }
+    return toString.call(subject) === ARRAY_SIGNATURE &&
+            (notEmpty !== true || subject.length !== 0);
+}
     
 /** is function **/
 function method(subject) {
-        return toString.call(subject) === METHOD_SIGNATURE;
-    }
+    return toString.call(subject) === METHOD_SIGNATURE;
+}
 
 
 
 /** is date **/
 function date(subject) {
-        return toString.call(subject) === DATE_SIGNATURE;
-    }
+    return toString.call(subject) === DATE_SIGNATURE;
+}
 
 /** is regexp **/
 function regex(subject) {
-        return toString.call(subject) === REGEX_SIGNATURE;
-    }
+    return toString.call(subject) === REGEX_SIGNATURE;
+}
 
 /** is promise or thenable **/
 function thenable(subject) {
-        // filter non-thenable scalar natives
-        switch (subject) {
-        case undefined:
-        case null:
-        case true:
-        case false: return false;
-        }
-
-        // filter scalar
-        switch (signature(subject)) {
-        case NUMBER_SIGNATURE:
-        case STRING_SIGNATURE:
-        case BOOLEAN_SIGNATURE:
-        case NULL_SIGNATURE:
-        case UNDEFINED_SIGNATURE: return false;
-        }
-        
-        return 'then' in subject && method(subject.then);
+    // filter non-thenable scalar natives
+    switch (subject) {
+    case undefined:
+    case null:
+    case true:
+    case false: return false;
     }
+
+    // filter scalar
+    switch (signature(subject)) {
+    case NUMBER_SIGNATURE:
+    case STRING_SIGNATURE:
+    case BOOLEAN_SIGNATURE:
+    case NULL_SIGNATURE:
+    case UNDEFINED_SIGNATURE: return false;
+    }
+    
+    return 'then' in subject && method(subject.then);
+}
     
 /** is array-like iterable **/
 function iterable(subject) {
-        var len;
-        
-        // filter non-iterable scalar natives
-        switch (subject) {
-        case undefined:
-        case null:
-        case true:
-        case false:
-        case NaN: return false;
-        }
-        
-        // try signature
-        switch (signature(subject)) {
-        case NUMBER_SIGNATURE:
-        case BOOLEAN_SIGNATURE:
-            // bogus js engines provides readonly "length" property to functions
-        case METHOD_SIGNATURE: return false;
+    var len;
     
-        case STRING_SIGNATURE:
-        case ARRAY_SIGNATURE: return true;
-        }
-    
-        return 'length' in subject &&
-                number(len = subject.length) &&
-                len > -1;
+    // filter non-iterable scalar natives
+    switch (subject) {
+    case undefined:
+    case null:
+    case true:
+    case false:
+    case NaN: return false;
     }
+    
+    // try signature
+    switch (signature(subject)) {
+    case NUMBER_SIGNATURE:
+    case BOOLEAN_SIGNATURE:
+        // bogus js engines provides readonly "length" property to functions
+    case METHOD_SIGNATURE: return false;
+
+    case STRING_SIGNATURE:
+    case ARRAY_SIGNATURE: return true;
+    }
+
+    return 'length' in subject &&
+            number(len = subject.length) &&
+            len > -1;
+}
     
 function type(subject, isType) {
-        var len;
-        switch (isType) {
-        case "scalar":
-            switch (signature(subject)) {
-            case STRING_SIGNATURE:
-            case NUMBER_SIGNATURE:
-            case BOOLEAN_SIGNATURE: return true;
-            }
-            return false;
-        
-        case "regexp":
-        case "regex":
-            isType = "RegExp";
-            break;
-        
-        case "method":
-            isType = "Function";
-            break;
-        
-        case "native":
-        case "nativeObject":
-            return nativeObject(subject);
-        }
-        
-        if (typeof isType === STRING) {
-            len = isType.length;
-            if (len) {
-                return signature(subject) === '[object ' +
-                                            isType.charAt(0).toUpperCase() +
-                                            isType.substring(1, len) +
-                                            ']';
-            }
+    var len;
+    switch (isType) {
+    case "scalar":
+        switch (signature(subject)) {
+        case STRING_SIGNATURE:
+        case NUMBER_SIGNATURE:
+        case BOOLEAN_SIGNATURE: return true;
         }
         return false;
+    
+    case "regexp":
+    case "regex":
+        isType = "RegExp";
+        break;
+    
+    case "method":
+        isType = "Function";
+        break;
+    
+    case "native":
+    case "nativeObject":
+        return nativeObject(subject);
     }
+    
+    if (typeof isType === STRING) {
+        len = isType.length;
+        if (len) {
+            return signature(subject) === '[object ' +
+                                        isType.charAt(0).toUpperCase() +
+                                        isType.substring(1, len) +
+                                        ']';
+        }
+    }
+    return false;
+}
 
 /**
  * @external libcore
@@ -708,149 +706,162 @@ function onMaxNumericIndex(value, name, context) {
 
 
 function assign(target, source, defaults, ownedOnly) {
-        var onAssign = apply,
-            is = isValidObject,
-            eachProperty = EACH,
-            len = arguments.length;
-        
-        if (!is(target)) {
-            throw new Error("Invalid [target] parameter.");
-        }
-        
-        if (!is(source)) {
-            throw new Error("Invalid [source] parameter.");
-        }
-        
-        if (typeof defaults === 'boolean') {
-            ownedOnly = defaults;
-            len = 2;
-        }
-        else {
-            ownedOnly = ownedOnly !== false;
-        }
-        
-        if (is(defaults)) {
-            eachProperty(defaults, onAssign, target, ownedOnly);
-        }
-        else if (len > 2) {
-            throw new Error("Invalid [defaults] parameter.");
-        }
-        
-        eachProperty(source, onAssign, target, ownedOnly);
-        
-        return target;
+    var onAssign = apply,
+        is = isValidObject,
+        eachProperty = EACH,
+        len = arguments.length;
+    
+    if (!is(target)) {
+        throw new Error("Invalid [target] parameter.");
     }
+    
+    if (!is(source)) {
+        throw new Error("Invalid [source] parameter.");
+    }
+    
+    if (typeof defaults === 'boolean') {
+        ownedOnly = defaults;
+        len = 2;
+    }
+    else {
+        ownedOnly = ownedOnly !== false;
+    }
+    
+    if (is(defaults)) {
+        eachProperty(defaults, onAssign, target, ownedOnly);
+    }
+    else if (len > 2) {
+        throw new Error("Invalid [defaults] parameter.");
+    }
+    
+    eachProperty(source, onAssign, target, ownedOnly);
+    
+    return target;
+}
 
 function rehash(target, source, access) {
-        var is = isValidObject,
-            context = [target, source];
-            
-        if (!is(target)) {
-            throw new Error("Invalid [target] parameter.");
-        }
+    var is = isValidObject,
+        context = [target, source];
         
-        if (!is(source)) {
-            throw new Error("Invalid [source] parameter.");
-        }
-        
-        if (!object(access)) {
-            throw new Error("Invalid [access] parameter.");
-        }
-        
-        EACH(access, applyProperties, context);
-        context = context[0] = context[1] =  null;
-        return target;
+    if (!is(target)) {
+        throw new Error("Invalid [target] parameter.");
     }
+    
+    if (!is(source)) {
+        throw new Error("Invalid [source] parameter.");
+    }
+    
+    if (!object(access)) {
+        throw new Error("Invalid [access] parameter.");
+    }
+    
+    EACH(access, applyProperties, context);
+    context = context[0] = context[1] =  null;
+    return target;
+}
 
 function contains(subject, property) {
-    
-        if (!string(property) && !number(property)) {
-            throw new Error("Invalid [property] parameter.");
-        }
-        
-        return OHasOwn.call(subject, property);
+    if (!string(property) && !number(property)) {
+        throw new Error("Invalid [property] parameter.");
     }
+    
+    return OHasOwn.call(subject, property);
+}
 
 function instantiate(Class, overrides) {
-        empty.prototype = Class.prototype;
-        
-        if (object(overrides)) {
-            return assign(new empty(), overrides);
-        }
-        return new empty();
+    empty.prototype = Class.prototype;
+    
+    if (object(overrides)) {
+        return assign(new empty(), overrides);
     }
+    return new empty();
+}
     
 function clone(data, deep) {
-        var isNative = nativeObject(data);
-        
-        deep = deep === true;
-        
-        if (isNative || array(data)) {
-            return deep ?
-                        
-                        (isNative ? cloneObject : cloneArray)(data, [], []) :
-                        
-                        (isNative ? assignAll({}, data) : data.slice(0));
-        }
-        
-        if (regex(data)) {
-            return new RegExp(data.source, data.flags);
-        }
-        else if (date(data)) {
-            return new Date(data.getFullYear(),
-                        data.getMonth(),
-                        data.getDate(),
-                        data.getHours(),
-                        data.getMinutes(),
-                        data.getSeconds(),
-                        data.getMilliseconds());
-        }
-        
-        return data;
+    var isNative = nativeObject(data);
+    
+    deep = deep === true;
+    
+    if (isNative || array(data)) {
+        return deep ?
+                    
+                    (isNative ? cloneObject : cloneArray)(data, [], []) :
+                    
+                    (isNative ? assignAll({}, data) : data.slice(0));
     }
+    
+    if (regex(data)) {
+        return new RegExp(data.source, data.flags);
+    }
+    else if (date(data)) {
+        return new Date(data.getFullYear(),
+                    data.getMonth(),
+                    data.getDate(),
+                    data.getHours(),
+                    data.getMinutes(),
+                    data.getSeconds(),
+                    data.getMilliseconds());
+    }
+    
+    return data;
+}
     
 function compare(object1, object2) {
-        return compareLookback(object1, object2, []);
-    }
-    
+    return compareLookback(object1, object2, []);
+}
+
+/**
+ * Assign properties of source Object to target Object only if property do not
+ *      exist or not overridden from the target Object.
+ * @name libcore.fillin
+ * @function
+ * @param {Object} target - the target object
+ * @param {Object} source - the source object containing properties
+ *                          to be assigned to target object
+ * @param {boolean} [hasown] - performs checking to only include
+ *                          source object property that is overridden
+ *                          (Object.protototype.hasOwnProperty() returns true)
+ *                          when this parameter is set to true.
+ * @returns {Object} subject parameter.
+ */
 function fillin(target, source, hasown) {
-        if (!isValidObject(target)) {
-            throw new Error("Invalid [target] parameter");
-        }
-        EACH(source, applyFillin, target, hasown !== false);
-        return target;
+    if (!isValidObject(target)) {
+        throw new Error("Invalid [target] parameter");
     }
+    EACH(source, applyFillin, target, hasown !== false);
+    return target;
+}
 
 function clear(subject) {
-        EACH(subject, applyClear, null, true);
-        return subject;
-    }
+    EACH(subject, applyClear, null, true);
+    return subject;
+}
     
 function maxObjectIndex(subject) {
-        var context;
-        
-        if (array(subject)) {
-            return subject.length - 1;
-        }
-        
-        if (isValidObject(subject)) {
-            
-            context = [-1];
-            EACH(subject, onMaxNumericIndex, context);
-            return context[0];
-        }
-        return false;
+    var context;
+    
+    if (array(subject)) {
+        return subject.length - 1;
     }
+    
+    if (isValidObject(subject)) {
+        
+        context = [-1];
+        EACH(subject, onMaxNumericIndex, context);
+        return context[0];
+    }
+    return false;
+}
 
 var CHAIN = null;
 
 function use(chain) {
-        CHAIN = chain;
-    }
+    CHAIN = chain;
+}
     
 function getModule() {
-        return CHAIN;
-    }
+    return CHAIN;
+}
 
 var G = global$1;
 var NAME_RE = /^(([^\.]+\.)*)((before|after)\:)?([a-zA-Z0-9\_\-\.]+)$/;
@@ -1020,116 +1031,116 @@ BaseMiddleware.prototype = {
 };
 
 function run(name, args, scope) {
-        var c, l, runners, result;
-        
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
-        }
-        
-        runners = get(name);
-        
-        if (runners) {
-            
-            if (typeof scope === 'undefined') {
-                scope = null;
-            }
-            
-            args = iterable(args) ?
-                    Array.prototype.slice.call(args, 0) : [];
-            
-            for (c = -1, l = runners.length; l--;) {
-                result = runners[++c].apply(scope, args);
-                if (result !== undefined) {
-                    args = [result];
-                }
-            }
-            
-            args.splice(0, args.length);
-            
-            return result;
-        }
-        
-        return undefined;
+    var c, l, runners, result;
+    
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
     }
+    
+    runners = get(name);
+    
+    if (runners) {
+        
+        if (typeof scope === 'undefined') {
+            scope = null;
+        }
+        
+        args = iterable(args) ?
+                Array.prototype.slice.call(args, 0) : [];
+        
+        for (c = -1, l = runners.length; l--;) {
+            result = runners[++c].apply(scope, args);
+            if (result !== undefined) {
+                args = [result];
+            }
+        }
+        
+        args.splice(0, args.length);
+        
+        return result;
+    }
+    
+    return undefined;
+}
 
 function register(name, handler) {
-        var list = RUNNERS;
-        var access, items, parsed;
-        
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
-        }
-        
-        parsed = parseName(name);
-        
-        if (!method(handler)) {
-            throw new Error(INVALID_HANDLER);
-        }
-        
-        if (parsed) {
-            
-            name = parsed[1];
-            access = ':' + name;
-            if (!(access in list)) {
-                
-                list[access] = {
-                    name: name,
-                    before: [],
-                    after: []
-                };
-            }
-            
-            items = list[access][getPositionAccess(parsed[0])];
-            
-            items[items.length] = handler;
-        }
-        
-        return getModule();
+    var list = RUNNERS;
+    var access, items, parsed;
+    
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
     }
+    
+    parsed = parseName(name);
+    
+    if (!method(handler)) {
+        throw new Error(INVALID_HANDLER);
+    }
+    
+    if (parsed) {
+        
+        name = parsed[1];
+        access = ':' + name;
+        if (!(access in list)) {
+            
+            list[access] = {
+                name: name,
+                before: [],
+                after: []
+            };
+        }
+        
+        items = list[access][getPositionAccess(parsed[0])];
+        
+        items[items.length] = handler;
+    }
+    
+    return getModule();
+}
     
 function clearRunner(name, after) {
         
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
-        }
-        
-        if (arguments.length > 1) {
-            purgeRunners(name, after);
-        }
-        else {
-            purgeRunners(name);
-        }
-        
-        return getModule();
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
     }
+    
+    if (arguments.length > 1) {
+        purgeRunners(name, after);
+    }
+    else {
+        purgeRunners(name);
+    }
+    
+    return getModule();
+}
 
 function middleware(name) {
-        var list = NAMESPACES;
-        var access, registered, proto;
-        
-        function Middleware() {
-            BaseMiddleware.apply(this, arguments);
-        }
-        
-        if (!string(name)) {
-            throw new Error(INVALID_NAME);
-        }
-
-        access = name + '.';
-        if (!(access in list)) {
-            empty$1.prototype = BaseMiddleware.prototype;
-            proto = new empty$1(access);
-            proto.constructor = Middleware;
-            proto.access = access;
-            Middleware.prototype = proto;
-            
-            list[access] = registered = new Middleware();
-            
-            return registered;
-        }
-        
-        return list[access];
+    var list = NAMESPACES;
+    var access, registered, proto;
+    
+    function Middleware() {
+        BaseMiddleware.apply(this, arguments);
     }
+    
+    if (!string(name)) {
+        throw new Error(INVALID_NAME);
+    }
+
+    access = name + '.';
+    if (!(access in list)) {
+        empty$1.prototype = BaseMiddleware.prototype;
+        proto = new empty$1(access);
+        proto.constructor = Middleware;
+        proto.access = access;
+        Middleware.prototype = proto;
+        
+        list[access] = registered = new Middleware();
+        
+        return registered;
+    }
+    
+    return list[access];
+}
 
 // motivation of set operations:
 // https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php
@@ -1193,39 +1204,39 @@ if (!indexOfSupport) {
  * @returns {Array} union of first two array parameters
  */
 function unionList(array1, array2, clone$$1) {
-        var isarray = array;
-        var subject, l, len, total;
+    var isarray = array;
+    var subject, l, len, total;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
+    }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    array1 = clone$$1 === true ? array1.slice(0) : array1;
+    
+    // apply
+    array1.push.apply(array1, array2);
+    total = array1.length;
+    
+    // apply unique
+    found: for (l = total; l--;) {
+        subject = array1[l];
         
-        if (!isarray(array1)) {
-            throw new Error(INVALID_ARRAY1);
-        }
-        
-        if (!isarray(array2)) {
-            throw new Error(INVALID_ARRAY2);
-        }
-        
-        array1 = clone$$1 === true ? array1.slice(0) : array1;
-        
-        // apply
-        array1.push.apply(array1, array2);
-        total = array1.length;
-        
-        // apply unique
-        found: for (l = total; l--;) {
-            subject = array1[l];
-            
-            // remove if not unique
-            for (len = total; len--;) {
-                if (l !== len && subject === array1[len]) {
-                    total--;
-                    array1.splice(l, 1);
-                    continue found;
-                }
+        // remove if not unique
+        for (len = total; len--;) {
+            if (l !== len && subject === array1[len]) {
+                total--;
+                array1.splice(l, 1);
+                continue found;
             }
         }
-        
-        return array1;
     }
+    
+    return array1;
+}
 
 /**
  * Creates an intersection of two arrays
@@ -1240,42 +1251,42 @@ function unionList(array1, array2, clone$$1) {
  * @returns {Array} intersection of first two array parameters
  */
 function intersectList(array1, array2, clone$$1) {
-        var isarray = array;
-        var subject, l1, l2, total1, total2;
-        
-        if (!isarray(array1)) {
-            throw new Error(INVALID_ARRAY1);
-        }
-        
-        if (!isarray(array2)) {
-            throw new Error(INVALID_ARRAY2);
-        }
-        
-        total1 = array1.length;
-        total2 = array2.length;
-            
-        // create a copy
-        array1 = clone$$1 === true ? array1.slice(0) : array1;
-        
-        found: for (l1 = total1; l1--;) {
-            subject = array1[l1];
-            foundSame: for (l2 = total2; l2--;) {
-                if (subject === array2[l2]) {
-                    // intersect must be unique
-                    for (l2 = total1; l2--;) {
-                        if (l2 !== l1 && subject === array1[l2]) {
-                            break foundSame;
-                        }
-                    }
-                    continue found;
-                }
-            }
-            array1.splice(l1, 1);
-            total1--;
-        }
-        
-        return array1;
+    var isarray = array;
+    var subject, l1, l2, total1, total2;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
     }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    total1 = array1.length;
+    total2 = array2.length;
+        
+    // create a copy
+    array1 = clone$$1 === true ? array1.slice(0) : array1;
+    
+    found: for (l1 = total1; l1--;) {
+        subject = array1[l1];
+        foundSame: for (l2 = total2; l2--;) {
+            if (subject === array2[l2]) {
+                // intersect must be unique
+                for (l2 = total1; l2--;) {
+                    if (l2 !== l1 && subject === array1[l2]) {
+                        break foundSame;
+                    }
+                }
+                continue found;
+            }
+        }
+        array1.splice(l1, 1);
+        total1--;
+    }
+    
+    return array1;
+}
 
 
 /**
@@ -1291,47 +1302,47 @@ function intersectList(array1, array2, clone$$1) {
  * @returns {Array} difference of first two array parameters
  */
 function differenceList(array1, array2, clone$$1) {
-        var isarray = array;
-        var subject, l1, l2, total1, total2;
-        
-        if (!isarray(array1)) {
-            throw new Error(INVALID_ARRAY1);
-        }
-        
-        if (!isarray(array2)) {
-            throw new Error(INVALID_ARRAY2);
-        }
-        
-        total1 = array1.length;
-        total2 = array2.length;
-            
-        // create a copy
-        array1 = clone$$1 === true ? array1.slice(0) : array1;
-        
-        found: for (l1 = total1; l1--;) {
-            subject = array1[l1];
-            
-            // remove if found
-            for (l2 = total2; l2--;) {
-                if (subject === array2[l2]) {
-                    array1.splice(l1, 1);
-                    total1--;
-                    continue found;
-                }
-            }
-            
-            // diff must be unique
-            for (l2 = total1; l2--;) {
-                if (l2 !== l1 && subject === array1[l2]) {
-                    array1.splice(l1, 1);
-                    total1--;
-                    continue found;
-                }
-            }
-        }
-        
-        return array1;
+    var isarray = array;
+    var subject, l1, l2, total1, total2;
+    
+    if (!isarray(array1)) {
+        throw new Error(INVALID_ARRAY1);
     }
+    
+    if (!isarray(array2)) {
+        throw new Error(INVALID_ARRAY2);
+    }
+    
+    total1 = array1.length;
+    total2 = array2.length;
+        
+    // create a copy
+    array1 = clone$$1 === true ? array1.slice(0) : array1;
+    
+    found: for (l1 = total1; l1--;) {
+        subject = array1[l1];
+        
+        // remove if found
+        for (l2 = total2; l2--;) {
+            if (subject === array2[l2]) {
+                array1.splice(l1, 1);
+                total1--;
+                continue found;
+            }
+        }
+        
+        // diff must be unique
+        for (l2 = total1; l2--;) {
+            if (l2 !== l1 && subject === array1[l2]) {
+                array1.splice(l1, 1);
+                total1--;
+                continue found;
+            }
+        }
+    }
+    
+    return array1;
+}
 
 var HALF_BYTE = 0x80;
 var SIX_BITS = 0x3f;
@@ -1356,216 +1367,212 @@ function applyUncamelize(all) {
 
 
 function camelize(subject) {
-        return subject.replace(CAMEL_RE, applyCamelize);
-    }
+    return subject.replace(CAMEL_RE, applyCamelize);
+}
     
 function uncamelize(subject) {
-        return subject.replace(UNCAMEL_RE, applyUncamelize);
-    }
+    return subject.replace(UNCAMEL_RE, applyUncamelize);
+}
     
 
 function utf2bin(subject) {
-        var half = HALF_BYTE,
-            sixBits = SIX_BITS,
-            code2char = fromCharCode,
-            utf8 = [],
-            ul = 0;
-        var code, c, l;
-        
-        if (!string(subject, true)) {
-            throw new Error(INVALID_SUBJECT);
-        }
-        
-        for (c = -1, l = subject.length; l--;) {
-            code = subject.charCodeAt(++c);
-            
-            if (code < half) {
-                utf8[ul++] = code2char(code);
-            }
-            else if (code < 0x800) {
-                utf8[ul++] = code2char(0xc0 | (code >> 6));
-                utf8[ul++] = code2char(half | (code & sixBits));
-            }
-            else if (code < 0xd800 || code > 0xdfff) {
-                utf8[ul++] = code2char(0xe0 | (code >> 12));
-                utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
-                utf8[ul++] = code2char(half | (code  & sixBits));
-            }
-            else {
-                l--;
-                code = 0x10000 + (((code & 0x3ff)<<10)
-                          | (subject.charCodeAt(++c) & 0x3ff));
-                
-                utf8[ul++] = code2char(0xf0 | (code >> 18));
-                utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
-                utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
-                utf8[ul++] = code2char(half | (code >> sixBits));
-                
-            }
-        }
-        
-        return utf8.join('');
+    var half = HALF_BYTE,
+        sixBits = SIX_BITS,
+        code2char = fromCharCode,
+        utf8 = [],
+        ul = 0;
+    var code, c, l;
+    
+    if (!string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
     }
+    
+    for (c = -1, l = subject.length; l--;) {
+        code = subject.charCodeAt(++c);
+        
+        if (code < half) {
+            utf8[ul++] = code2char(code);
+        }
+        else if (code < 0x800) {
+            utf8[ul++] = code2char(0xc0 | (code >> 6));
+            utf8[ul++] = code2char(half | (code & sixBits));
+        }
+        else if (code < 0xd800 || code > 0xdfff) {
+            utf8[ul++] = code2char(0xe0 | (code >> 12));
+            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+            utf8[ul++] = code2char(half | (code  & sixBits));
+        }
+        else {
+            l--;
+            code = 0x10000 + (((code & 0x3ff)<<10)
+                        | (subject.charCodeAt(++c) & 0x3ff));
+            
+            utf8[ul++] = code2char(0xf0 | (code >> 18));
+            utf8[ul++] = code2char(half | ((code >> 12) & sixBits));
+            utf8[ul++] = code2char(half | ((code >> 6) & sixBits));
+            utf8[ul++] = code2char(half | (code >> sixBits));
+            
+        }
+    }
+    
+    return utf8.join('');
+}
 
 
 // based from https://gist.github.com/weishuaiwang/4221687
 function bin2utf(subject) {
-        var code2char = fromCharCode;
-        var utf16, ul, c, l, code;
-        
-        if (!string(subject, true)) {
-            throw new Error(INVALID_SUBJECT);
-        }
-        
-        utf16 = [];
-        ul = 0;
-        for (c = -1, l = subject.length; l--;) {
-            code = subject.charCodeAt(++c);
-            switch (code >> 4) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-                // 0xxxxxxx
-                utf16[ul++] = subject.charAt(c);
-                break;
-            case 12:
-            case 13:
-                // 110x xxxx 10xx xxxx
-                l--;
-                utf16[ul++] = code2char(((code & 0x1F) << 6) |
-                                        (subject.charCodeAt(++c) & 0x3F));
-                break;
-            case 14:
-                // 1110 xxxx10xx xxxx10xx xxxx
-                utf16[ul++] = code2char(((code & 0x0F) << 12) |
-                                        ((subject.charCodeAt(++c) & 0x3F) << 6) |
-                                        ((subject.charCodeAt(++c) & 0x3F) << 0));
-                l -= 2;
-                break;
-            }
-        }
-        
-        return utf16.join("");
+    var code2char = fromCharCode;
+    var utf16, ul, c, l, code;
+    
+    if (!string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
     }
+    
+    utf16 = [];
+    ul = 0;
+    for (c = -1, l = subject.length; l--;) {
+        code = subject.charCodeAt(++c);
+        switch (code >> 4) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            // 0xxxxxxx
+            utf16[ul++] = subject.charAt(c);
+            break;
+        case 12:
+        case 13:
+            // 110x xxxx 10xx xxxx
+            l--;
+            utf16[ul++] = code2char(((code & 0x1F) << 6) |
+                                    (subject.charCodeAt(++c) & 0x3F));
+            break;
+        case 14:
+            // 1110 xxxx10xx xxxx10xx xxxx
+            utf16[ul++] = code2char(((code & 0x0F) << 12) |
+                                    ((subject.charCodeAt(++c) & 0x3F) << 6) |
+                                    ((subject.charCodeAt(++c) & 0x3F) << 0));
+            l -= 2;
+            break;
+        }
+    }
+    
+    return utf16.join("");
+}
 
 function encode64(subject) {
-        var map = BASE64_MAP,
-            buffer = [],
-            bl = 0,
-            c = -1,
-            excess = false,
-            pad = map.charAt(64);
-        var l, total, code, flag, end, chr;
-        
-        if (!string(subject, true)) {
-            throw new Error(INVALID_SUBJECT);
-        }
-
-        // decode to ascii
-        subject = utf2bin(subject);
-        l = total = subject.length;
-        
-        for (; l--;) {
-            code = subject.charCodeAt(++c);
-            flag = c % 3;
-            
-            switch (flag) {
-            case 0:
-                chr = map.charAt((code & 0xfc) >> 2);
-                excess = (code & 0x03) << 4;
-                break;
-            case 1:
-                chr = map.charAt(excess | (code & 0xf0) >> 4);
-                excess = (code & 0x0f) << 2;
-                break;
-            case 2:
-                chr = map.charAt(excess | (code & 0xc0) >> 6);
-                excess = code & 0x3f;
-            }
-            buffer[bl++] = chr;
-            
-            end = !l;
-            if ((end || flag === 2)) {
-                buffer[bl++] = map.charAt(excess);
-            }
-            
-            if (!l) {
-                l = bl % 4;
-                for (l = l && 4 - l; l--;) {
-                    buffer[bl++] = pad;
-                }
-                break;
-            }
-        }
-        
-        return buffer.join('');
-        
+    var map = BASE64_MAP,
+        buffer = [],
+        bl = 0,
+        c = -1,
+        excess = false,
+        pad = map.charAt(64);
+    var l, total, code, flag, end, chr;
+    
+    if (!string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
     }
+
+    // decode to ascii
+    subject = utf2bin(subject);
+    l = total = subject.length;
+    
+    for (; l--;) {
+        code = subject.charCodeAt(++c);
+        flag = c % 3;
+        
+        switch (flag) {
+        case 0:
+            chr = map.charAt((code & 0xfc) >> 2);
+            excess = (code & 0x03) << 4;
+            break;
+        case 1:
+            chr = map.charAt(excess | (code & 0xf0) >> 4);
+            excess = (code & 0x0f) << 2;
+            break;
+        case 2:
+            chr = map.charAt(excess | (code & 0xc0) >> 6);
+            excess = code & 0x3f;
+        }
+        buffer[bl++] = chr;
+        
+        end = !l;
+        if ((end || flag === 2)) {
+            buffer[bl++] = map.charAt(excess);
+        }
+        
+        if (!l) {
+            l = bl % 4;
+            for (l = l && 4 - l; l--;) {
+                buffer[bl++] = pad;
+            }
+            break;
+        }
+    }
+    
+    return buffer.join('');
+    
+}
 
 function decode64(subject) {
-        var map = BASE64_MAP,
-            oneByte = ONE_BYTE,
-            buffer = [],
-            bl = 0,
-            c = -1,
-            code2str = fromCharCode;
-        var l, code, excess, chr, flag;
-        
-        if (!string(subject, true) || NOT_BASE64_RE.test(subject)) {
-            throw new Error(INVALID_SUBJECT);
-        }
-        
-        subject = subject.replace(BASE64_EXCESS_REMOVE_RE, '');
-        l = subject.length;
-        
-        for (; l--;) {
-            code = map.indexOf(subject.charAt(++c));
-            flag = c % 4;
-            
-            switch (flag) {
-            case 0:
-                chr = 0;
-                break;
-            case 1:
-                chr = ((excess << 2) | (code >> 4)) & oneByte;
-                break;
-            case 2:
-                chr = ((excess << 4) | (code >> 2)) & oneByte;
-                break;
-            case 3:
-                chr = ((excess << 6) | code) & oneByte;
-            }
-            
-            excess = code;
-            
-            if (!l && flag < 3 && chr < 64) {
-                break;
-            }
+    var map = BASE64_MAP,
+        oneByte = ONE_BYTE,
+        buffer = [],
+        bl = 0,
+        c = -1,
+        code2str = fromCharCode;
+    var l, code, excess, chr, flag;
     
-            if (flag) {
-                buffer[bl++] = code2str(chr);
-            }
+    if (!string(subject, true) || NOT_BASE64_RE.test(subject)) {
+        throw new Error(INVALID_SUBJECT);
+    }
+    
+    subject = subject.replace(BASE64_EXCESS_REMOVE_RE, '');
+    l = subject.length;
+    
+    for (; l--;) {
+        code = map.indexOf(subject.charAt(++c));
+        flag = c % 4;
+        
+        switch (flag) {
+        case 0:
+            chr = 0;
+            break;
+        case 1:
+            chr = ((excess << 2) | (code >> 4)) & oneByte;
+            break;
+        case 2:
+            chr = ((excess << 4) | (code >> 2)) & oneByte;
+            break;
+        case 3:
+            chr = ((excess << 6) | code) & oneByte;
         }
         
-        return bin2utf(buffer.join(""));
+        excess = code;
+        
+        if (!l && flag < 3 && chr < 64) {
+            break;
+        }
+
+        if (flag) {
+            buffer[bl++] = code2str(chr);
+        }
     }
+    
+    return bin2utf(buffer.join(""));
+}
 
 function trim(subject) {
-        if (!string(subject, true)) {
-            throw new Error(INVALID_SUBJECT);
-        }
-
-        return subject ? subject.replace(TRIM_RE, "") : subject;
+    if (!string(subject, true)) {
+        throw new Error(INVALID_SUBJECT);
     }
 
-//TYPE = require("./type.js"),
-//    OBJECT = require("./object.js"),
-
+    return subject ? subject.replace(TRIM_RE, "") : subject;
+}
 
 var NUMERIC_RE = /^([1-9][0-9]*|0)$/;
 var ARRAY_INDEX_RE$1 = /^([1-9][0-9]*|0|)$/;
@@ -1944,137 +1951,150 @@ function existsCallback(item, last, context) {
 
 
 function jsonParsePath(path) {
-        var items = [];
-        
-        return jsonEach(path, onParsePath, items) && items.length ?
-                    items : null;
-        
-    }
+    var items = [];
+    
+    return jsonEach(path, onParsePath, items) && items.length ?
+                items : null;
+}
     
 function jsonFind(path, object$$1) {
-        var operation = [void(0), object$$1];
-        jsonEach(path, findCallback, operation);
-        operation[1] = null;
-        return operation[0];
-    }
+    var operation = [void(0), object$$1];
+    jsonEach(path, findCallback, operation);
+    operation[1] = null;
+    return operation[0];
+}
     
 function jsonCompare(path, object1, object2) {
-        return compare(jsonFind(path, object1), object2);
-    }
+    return compare(jsonFind(path, object1), object2);
+}
 
 function jsonClone(path, object$$1, deep) {
-        return clone(jsonFind(path, object$$1), deep === true);
-    }
+    return clone(jsonFind(path, object$$1), deep === true);
+}
     
 function jsonEach(path, callback, arg1, arg2, arg3, arg4, arg5) {
-        var map = STATE,
-            action = STATE_ACTION,
-            start = START,
-            start_escaped = START_ESCAPED,
-            queue = QUEUE,
-            end = END,
-            end_empty = END_EMPTY,
-            DEFAULT = "default";
-        var c, l, chr, state, stateObject, items, len, last,
-            next, actionObject, buffer, bl, buffered, pending,
-            start_queue, restart;
-        
-        if (!string(path)) {
-            throw new Error(ERROR_PATH_INVALID);
-        }
-        
-        if (!method(callback)) {
-            throw new Error("Invalid [callback] parameter");
-        }
-        
-        buffer = bl = false;
-        state = "start";
-        stateObject = map.start;
-        
-        items = [];
-        len = pending = 0;
-        
-        for (c = -1, l = path.length; l--;) {
-            buffered = false;
-            chr = path.charAt(++c);
-            last = !l;
-            
-            // find next state
-            if (chr in stateObject) {
-                next = stateObject[chr];
-            }
-            else if (DEFAULT in stateObject) {
-                next = stateObject[DEFAULT];
-            }
-            else {
-                return null;
-            }
-            
-            // check for actions
-            if (state in action) {
-                actionObject = action[state];
-                if (next in actionObject) {
-                    start_queue = restart = false;
-                    
-                    switch (actionObject[next]) {
-                    
-                    case start:
-                        start_queue = true;
-                    /* falls through */
-                    case start_escaped:
-                            if (buffer !== false) {
-                                return false;
-                            }
-                            
-                            if (start_queue && !last) {
-                                buffer = [chr];
-                                bl = 1;
-                            }
-                            else {
-                                buffer = [];
-                                bl = 0;
-                            }
-                            
-                            // exit if not last
-                            if (!last) {
-                                break;
-                            }
-                    /* falls through */
-                    case queue:
-                            if (buffer === false) {
-                                return false;
-                            }
-                            buffer[bl++] = chr;
-                            // exit if not last
-                            if (!last) {
-                                break;
-                            }
-                    /* falls through */
-                    case end:
-                            if (buffer === false) {
-                                return false;
-                            }
-                            items[len++] = buffer.join('');
-                            buffer = bl = false;
-                        break;
-                    case end_empty:
-                            if (buffer !== false) {
-                                return false;
-                            }
-                            items[len++] = '';
+    var map = STATE,
+        action = STATE_ACTION,
+        start = START,
+        start_escaped = START_ESCAPED,
+        queue = QUEUE,
+        end = END,
+        end_empty = END_EMPTY,
+        DEFAULT = "default";
+    var c, l, chr, state, stateObject, items, len, last,
+        next, actionObject, buffer, bl, buffered, pending,
+        start_queue, restart;
     
-                        break;
-                    }
+    if (!string(path)) {
+        throw new Error(ERROR_PATH_INVALID);
+    }
+    
+    if (!method(callback)) {
+        throw new Error("Invalid [callback] parameter");
+    }
+    
+    buffer = bl = false;
+    state = "start";
+    stateObject = map.start;
+    
+    items = [];
+    len = pending = 0;
+    
+    for (c = -1, l = path.length; l--;) {
+        buffered = false;
+        chr = path.charAt(++c);
+        last = !l;
+        
+        // find next state
+        if (chr in stateObject) {
+            next = stateObject[chr];
+        }
+        else if (DEFAULT in stateObject) {
+            next = stateObject[DEFAULT];
+        }
+        else {
+            return null;
+        }
+        
+        // check for actions
+        if (state in action) {
+            actionObject = action[state];
+            if (next in actionObject) {
+                start_queue = restart = false;
+                
+                switch (actionObject[next]) {
+                
+                case start:
+                    start_queue = true;
+                /* falls through */
+                case start_escaped:
+                        if (buffer !== false) {
+                            return false;
+                        }
+                        
+                        if (start_queue && !last) {
+                            buffer = [chr];
+                            bl = 1;
+                        }
+                        else {
+                            buffer = [];
+                            bl = 0;
+                        }
+                        
+                        // exit if not last
+                        if (!last) {
+                            break;
+                        }
+                /* falls through */
+                case queue:
+                        if (buffer === false) {
+                            return false;
+                        }
+                        buffer[bl++] = chr;
+                        // exit if not last
+                        if (!last) {
+                            break;
+                        }
+                /* falls through */
+                case end:
+                        if (buffer === false) {
+                            return false;
+                        }
+                        items[len++] = buffer.join('');
+                        buffer = bl = false;
+                    break;
+                case end_empty:
+                        if (buffer !== false) {
+                            return false;
+                        }
+                        items[len++] = '';
+
+                    break;
                 }
             }
-            
-            
-            state = next;
-            stateObject = map[state];
-            
-            if (pending < len - 1) {
+        }
+        
+        
+        state = next;
+        stateObject = map[state];
+        
+        if (pending < len - 1) {
+            if (callback(items[pending++],
+                        false,
+                        arg1,
+                        arg2,
+                        arg3,
+                        arg4,
+                        arg5) === false) {
+                return true;
+            }
+        }
+        // last
+        if (last) {
+            l = len - pending;
+            for (; l--;) {
                 if (callback(items[pending++],
-                            false,
+                            !l,
                             arg1,
                             arg2,
                             arg3,
@@ -2083,282 +2103,268 @@ function jsonEach(path, callback, arg1, arg2, arg3, arg4, arg5) {
                     return true;
                 }
             }
-            // last
-            if (last) {
-                l = len - pending;
-                for (; l--;) {
-                    if (callback(items[pending++],
-                                !l,
-                                arg1,
-                                arg2,
-                                arg3,
-                                arg4,
-                                arg5) === false) {
-                        return true;
-                    }
-                }
-                break;
-            }
-    
+            break;
         }
-        
-        return true;
-    
+
     }
     
+    return true;
+
+}
+    
 function jsonSet(path, subject, value, overwrite) {
-        var typeArray = ARRAY_SIGNATURE,
-            apply = assign,
-            writable = isWritable;
-        var context, name, current, valueSignature, currentSignature,
-            arrayOperation, arrayPush, canApply;
+    var typeArray = ARRAY_SIGNATURE,
+        apply = assign,
+        writable = isWritable;
+    var context, name, current, valueSignature, currentSignature,
+        arrayOperation, arrayPush, canApply;
+    
+    if (!string(path)) {
+        throw new Error(ERROR_PATH_INVALID);
+    }
+    
+    // main subject should be accessible and native object
+    context = [void(0), subject, false];
+    jsonEach(path, onPopulatePath, context);
+    name = context[2];
+    
+    if (name !== false) {
+        subject = context[1];
+        valueSignature = writable(value);
+        arrayOperation = array(subject) && NUMERIC_RE.test(name);
         
-        if (!string(path)) {
-            throw new Error(ERROR_PATH_INVALID);
+        if (name in subject) {
+            current = subject[name];
+            currentSignature = writable(current);
+        }
+        else {
+            current = undefined;
+            currentSignature = null;
         }
         
-        // main subject should be accessible and native object
-        context = [void(0), subject, false];
-        jsonEach(path, onPopulatePath, context);
-        name = context[2];
+        canApply = valueSignature && !!currentSignature;
+        arrayPush = canApply &&
+                        valueSignature === typeArray &&
+                        currentSignature === typeArray;
+                        
         
-        if (name !== false) {
-            subject = context[1];
-            valueSignature = writable(value);
-            arrayOperation = array(subject) && NUMERIC_RE.test(name);
-            
-            if (name in subject) {
-                current = subject[name];
-                currentSignature = writable(current);
+        // finalize overwrite type
+        switch (overwrite) {
+        // only available if subject is array and name is numeric index
+        case 'insert':
+            overwrite = !arrayOperation;
+            if (arrayOperation) {
+                subject.splice(name * 1, 0, value);
             }
-            else {
-                current = undefined;
-                currentSignature = null;
+            break;
+        
+        // only available if subject canApply
+        case 'apply':
+            overwrite = !canApply;
+            if (canApply) {
+                apply(current, value);
             }
-            
-            canApply = valueSignature && !!currentSignature;
-            arrayPush = canApply &&
-                            valueSignature === typeArray &&
-                            currentSignature === typeArray;
-                            
-            
-            // finalize overwrite type
-            switch (overwrite) {
-            // only available if subject is array and name is numeric index
-            case 'insert':
-                overwrite = !arrayOperation;
-                if (arrayOperation) {
-                    subject.splice(name * 1, 0, value);
-                }
-                break;
-            
-            // only available if subject canApply
-            case 'apply':
-                overwrite = !canApply;
-                if (canApply) {
-                    apply(current, value);
-                }
-                break;
-            
-            // only available if current is array and value is array
-            case 'push':
-                overwrite = !arrayPush;
+            break;
+        
+        // only available if current is array and value is array
+        case 'push':
+            overwrite = !arrayPush;
+            if (arrayPush) {
+                current.push.apply(current, value);
+            }
+            break;
+        
+        // only available if current is array and value is array
+        case 'unshift':
+            overwrite = !arrayPush;
+            if (arrayPush) {
+                current.splice.apply(current, [0, 0].concat(value));
+            }
+            break;
+        
+        // default is no overwrite if possible
+        case false:
+        /* falls through */
+        default:
+            // can apply or push only if non-scalar current and value
+            overwrite = !canApply;
+            if (canApply) {
                 if (arrayPush) {
                     current.push.apply(current, value);
                 }
-                break;
-            
-            // only available if current is array and value is array
-            case 'unshift':
-                overwrite = !arrayPush;
-                if (arrayPush) {
-                    current.splice.apply(current, [0, 0].concat(value));
-                }
-                break;
-            
-            // default is no overwrite if possible
-            case false:
-            /* falls through */
-            default:
-                // can apply or push only if non-scalar current and value
-                overwrite = !canApply;
-                if (canApply) {
-                    if (arrayPush) {
-                        current.push.apply(current, value);
-                    }
-                    else {
-                        apply(current, value);
-                    }
+                else {
+                    apply(current, value);
                 }
             }
-            
-            // plain overwrite!
-            if (overwrite === true) {
-                subject[name] = value;
-            }
-            
-            return true;
-        
         }
+        
+        // plain overwrite!
+        if (overwrite === true) {
+            subject[name] = value;
+        }
+        
+        return true;
+    
+    }
+    return false;
+}
+    
+function jsonUnset(path, subject) {
+    var context, name, returnValue;
+    
+    if (!string(path)) {
+        throw new Error(ERROR_PATH_INVALID);
+    }
+    
+    // main subject should be accessible and native object
+    context = [void(0), subject, false, false];
+    jsonEach(path, onRemovePath, context);
+    
+    name = context[2];
+    returnValue = context[3];
+    
+    // found! and must be removed
+    if (returnValue && name !== false) {
+        
+        subject = context[1];
+        
+        if (!(name in subject)) {
+            
+            returnValue = false;
+        }
+        else {
+        
+            // remove item
+            if (array(subject) && NUMERIC_RE.test(name)) {
+                subject.splice(name * 1, 1);
+                
+            }
+            else {
+                
+                delete subject[name];
+                // check if removable
+                returnValue = !(name in subject);
+                
+            }
+            
+        }
+    }
+    
+    return returnValue;
+}
+
+function jsonFill(path, subject, value) { //, overwrite) {
+    var typeArray = ARRAY_SIGNATURE,
+        getMax = maxObjectIndex,
+        apply = assign,
+        has = contains,
+        arrayIndexRe = ARRAY_INDEX_RE$1,
+        iswritable = isJSONWritable,
+        isSubjectArray = array(subject);
+        
+    var parent, c, l, item, parentIndex,
+        property, arrayIndex, writable;
+        
+    
+    
+    if (!string(path)) {
+        throw new Error(ERROR_PATH_INVALID);
+    }
+    
+    // root subject should be an object
+    if (!object(subject) && !isSubjectArray) {
         return false;
     }
     
-function jsonUnset(path, subject) {
-        var context, name, returnValue;
-        
-        if (!string(path)) {
-            throw new Error(ERROR_PATH_INVALID);
-        }
-        
-        // main subject should be accessible and native object
-        context = [void(0), subject, false, false];
-        jsonEach(path, onRemovePath, context);
-        
-        name = context[2];
-        returnValue = context[3];
-        
-        // found! and must be removed
-        if (returnValue && name !== false) {
-            
-            subject = context[1];
-            
-            if (!(name in subject)) {
-                
-                returnValue = false;
-            }
-            else {
-            
-                // remove item
-                if (array(subject) && NUMERIC_RE.test(name)) {
-                    subject.splice(name * 1, 1);
-                    
-                }
-                else {
-                    
-                    delete subject[name];
-                    // check if removable
-                    returnValue = !(name in subject);
-                    
-                }
-                
-            }
-        }
-        
-        return returnValue;
+    // unable to create items from path
+    path = jsonParsePath(path);
+    if (!path || !path.length) {
+        return false;
     }
+    
+    parent = subject;
+    parentIndex = path[0];
+    
+    // finalize parent index
+    if (!parentIndex) {
+        parentIndex = getMax(parent) + 1;
+    }
+    
+    l = path.length -1;
+    
+    for (c = 0; l--;) {
+        item = path[++c];
+        
+        // only determine if arrayIndex or not,
+        //      resolve this later if it will turn into parentIndex
+        arrayIndex = arrayIndexRe.test(item);
+        
+        // finalize property
+        if (has(parent, parentIndex)) {
+            property = parent[parentIndex];
+            writable = iswritable(property);
+            
+            // recreate array into object to support "named" property
+            if (writable === typeArray && !arrayIndex) {
+                property = apply({}, property);
+                delete property.length;
+                
+            }
+            // contain current property
+            else if (!writable) {
+                property = arrayIndex ?
+                    [property] : {"": property};
+            }
 
-function jsonFill(path, subject, value) { //, overwrite) {
-        var typeArray = ARRAY_SIGNATURE,
-            getMax = maxObjectIndex,
-            apply = assign,
-            has = contains,
-            arrayIndexRe = ARRAY_INDEX_RE$1,
-            iswritable = isJSONWritable,
-            isSubjectArray = array(subject);
-            
-        var parent, c, l, item, parentIndex,
-            property, arrayIndex, writable;
-            
-        
-        
-        if (!string(path)) {
-            throw new Error(ERROR_PATH_INVALID);
+        }
+        // error! unable to replace root object
+        else if (isSubjectArray && parent === subject && !arrayIndex) {
+            throw new Error(ERROR_NATIVE_OBJECT);
+        }
+        // populate
+        else {
+            property = arrayIndex ? [] : {};
         }
         
-        // root subject should be an object
-        if (!object(subject) && !isSubjectArray) {
-            return false;
-        }
+        parent = parent[parentIndex] = property;
+        parentIndex = item;
         
-        // unable to create items from path
-        path = jsonParsePath(path);
-        if (!path || !path.length) {
-            return false;
-        }
-        
-        parent = subject;
-        parentIndex = path[0];
-        
-        // finalize parent index
-        if (!parentIndex) {
+        // resolve empty parentIndex
+        if (!item) {
             parentIndex = getMax(parent) + 1;
         }
         
-        l = path.length -1;
-        
-        for (c = 0; l--;) {
-            item = path[++c];
-            
-            // only determine if arrayIndex or not,
-            //      resolve this later if it will turn into parentIndex
-            arrayIndex = arrayIndexRe.test(item);
-            
-            // finalize property
-            if (has(parent, parentIndex)) {
-                property = parent[parentIndex];
-                writable = iswritable(property);
-                
-                // recreate array into object to support "named" property
-                if (writable === typeArray && !arrayIndex) {
-                    property = apply({}, property);
-                    delete property.length;
-                    
-                }
-                // contain current property
-                else if (!writable) {
-                    property = arrayIndex ?
-                        [property] : {"": property};
-                }
-    
-            }
-            // error! unable to replace root object
-            else if (isSubjectArray && parent === subject && !arrayIndex) {
-                throw new Error(ERROR_NATIVE_OBJECT);
-            }
-            // populate
-            else {
-                property = arrayIndex ? [] : {};
-            }
-            
-            parent = parent[parentIndex] = property;
-            parentIndex = item;
-            
-            // resolve empty parentIndex
-            if (!item) {
-                parentIndex = getMax(parent) + 1;
-            }
-            
-        }
-        
-        // if not overwrite, then fill-in value in array or object
-        //if (overwrite !== true && has(parent, parentIndex)) {
-        //    property = parent[parentIndex];
-        //    
-        //    // append
-        //    if (T.array(property)) {
-        //        parent = property;
-        //        parentIndex = parent.length;
-        //    }
-        //    else {
-        //        parent = parent[parentIndex] = [property];
-        //        parentIndex = 1;
-        //    }
-        //}
-        
-        parent[parentIndex] = value;
-        
-        return true;
-        
     }
+    
+    // if not overwrite, then fill-in value in array or object
+    //if (overwrite !== true && has(parent, parentIndex)) {
+    //    property = parent[parentIndex];
+    //    
+    //    // append
+    //    if (T.array(property)) {
+    //        parent = property;
+    //        parentIndex = parent.length;
+    //    }
+    //    else {
+    //        parent = parent[parentIndex] = [property];
+    //        parentIndex = 1;
+    //    }
+    //}
+    
+    parent[parentIndex] = value;
+    
+    return true;
+    
+}
     
 function jsonExists(path, subject) {
-        var operation = [subject, false];
-        
-        jsonEach(path, existsCallback, operation);
-        operation[0] = null;
-        
-        return operation[1];
-    }
+    var operation = [subject, false];
+    
+    jsonEach(path, existsCallback, operation);
+    operation[0] = null;
+    
+    return operation[1];
+}
 
 var ERROR_NAME = 'Invalid [name] parameter.';
 var ERROR_PATH = 'Invalid [path] parameter.';
@@ -2760,10 +2766,8 @@ G$1 = null;
 
 
 
-var BUNDLE$1 = Object.freeze({
+var BUNDLE = Object.freeze({
 	env: detect,
-	createRegistry: create,
-	Promise: Promise,
 	each: EACH,
 	assign: assign,
 	rehash: rehash,
@@ -2822,15 +2826,15 @@ var BUNDLE$1 = Object.freeze({
 	jsonSet: jsonSet,
 	jsonUnset: jsonUnset,
 	jsonFill: jsonFill,
-	jsonExists: jsonExists
+	jsonExists: jsonExists,
+	createRegistry: create,
+	Promise: Promise
 });
 
-use(BUNDLE$1);
+use(BUNDLE);
 
-exports['default'] = BUNDLE$1;
+exports['default'] = BUNDLE;
 exports.env = detect;
-exports.createRegistry = create;
-exports.Promise = Promise;
 exports.each = EACH;
 exports.assign = assign;
 exports.rehash = rehash;
@@ -2890,6 +2894,8 @@ exports.jsonSet = jsonSet;
 exports.jsonUnset = jsonUnset;
 exports.jsonFill = jsonFill;
 exports.jsonExists = jsonExists;
+exports.createRegistry = create;
+exports.Promise = Promise;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
