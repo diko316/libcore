@@ -1,7 +1,7 @@
 # Libcore API Guide
 
 
-### Table of Contents
+## Table of Contents
 - [String](#string)
 - [Array](#array)
 - [Object](#object)
@@ -38,7 +38,7 @@ ___
 
 ## String
 
-#### `encode64(subject);`
+### `encode64(subject);`
 > Encodes String [subject] into base 64 encoded string.
 
 Param | Type | Details
@@ -54,7 +54,7 @@ encode64('MZ  ÿÿ @ €'); // TVogAyAEw7/DvyBAIOKCrA==
 ```
 ___
 
-#### `decode64(subject);`
+### `decode64(subject);`
 > Decodes a base 64 encoded String [subject] into ASCII 256 bit string.
 
 Param | Type | Details
@@ -70,7 +70,7 @@ decode64('TVogAyAEw7/DvyBAIOKCrA=='); // MZ  ÿÿ @ €
 ```
 ___
 
-#### `utf2bin(subject);`
+### `utf2bin(subject);`
 > Encodes UTF-16 characters [subject] to ASCII safe string.
 
 Param | Type | Details
@@ -86,7 +86,7 @@ utf2bin('MZ  ÿÿ @ €'); // MZ  Ã¿Ã¿ @ â¬
 ```
 ___
 
-#### `bin2utf(subject);`
+### `bin2utf(subject);`
 > Encodes ASCII in UTF-8 String [subject] to UTF-16 characters.
 
 Param | Type | Details
@@ -102,7 +102,7 @@ bin2utf('MZ  Ã¿Ã¿ @ â¬'); // MZ  ÿÿ @ €
 ```
 ___
 
-#### `camelize(subject);`
+### `camelize(subject);`
 > Converts String [subject] to Camel cased String.
 
 Param | Type | Details
@@ -120,7 +120,7 @@ camelize('ads-)(*b_%+-ds')) // 'adsBDs'
 ```
 ___
 
-#### `uncamelize(subject);`
+### `uncamelize(subject);`
 > Converts String [subject] to Snaked cased "-" delimited String.
 
 Param | Type | Details
@@ -141,7 +141,7 @@ ___
 
 ## Array
 
-#### `unionList(array1, array2, clone);`
+### `unionList(array1, array2, clone);`
 > Populates [array1] or Creates a union of Array [array1] and [array2].
 
 Param | Type | Details
@@ -172,7 +172,7 @@ console.log(result === array1); // false
 ```
 ___
 
-#### `intersectList(array1, array2, clone);`
+### `intersectList(array1, array2, clone);`
 > Populates [array1] or Creates an intersection of Array [array1] and [array2].
 
 Param | Type | Details
@@ -203,7 +203,7 @@ console.log(result === array1); // false
 ```
 ___
 
-#### `differenceList(array1, array2, clone);`
+### `differenceList(array1, array2, clone);`
 > Populates [array1] or Creates a difference of Array [array1] and [array2].
 
 Param | Type | Details
@@ -237,7 +237,7 @@ ___
 
 ## Object
 
-#### `each(subject, handler, scope, hasown);`
+### `each(subject, handler, scope, hasown);`
 > Iterates all iteratable property of an object calling "handler" parameter on each iteration.
 
 Param | Type | Details
@@ -283,7 +283,7 @@ each(myObject, onIterateProperty);
 ```
 ___
 
-#### `assign(target, source, defaults, ownedOnly);`
+### `assign(target, source, defaults, ownedOnly);`
 > Apply properties of source object to target object.
 
 Param | Type | Details
@@ -333,7 +333,7 @@ console.log(target);
 ```
 ___
 
-#### `rehash(target, source, access);`
+### `rehash(target, source, access);`
 > Remaps properties of an `source` object into new property of `target` object based from mappings of property names defined in `access` argument.
 
 Param | Type | Details
@@ -373,7 +373,7 @@ rehash(
 ```
 ___
 
-#### `contains(subject, property);`
+### `contains(subject, property);`
 > Inspects property if it exists and enumerable in an object.
 > It uses `Object.prototype.hasOwnProperty()` under the hood as part of its checking.
 
@@ -396,7 +396,7 @@ contains(person, "age"); // true
 ```
 ___
 
-#### `clone(data, deep);`
+### `clone(data, deep);`
 > Clones Native Javascript objects.
 
 Param | Type | Details
@@ -416,7 +416,7 @@ console.log(dupe) // { name: "Jane", age: 25 }
 ```
 ___
 
-#### `compare(object1, object2);`
+### `compare(object1, object2);`
 > Deep compares two Native or non-Native Javascript objects.
 
 Param | Type | Details
@@ -439,7 +439,7 @@ compare(object2, object3); // false
 ```
 ___
 
-#### `fillin(object1, object1);`
+### `fillin(object1, object1);`
 > Apply properties of [source] object to [target] object only if property in [target] do not exist or not an updated property.
 
 Param | Type | Details
@@ -469,7 +469,7 @@ ___
 
 ## Type
 
-#### `string(subject);`
+### `string(subject);`
 > Inspects if Mixed [subject] is String.
 
 Param | Type | Details
@@ -491,7 +491,7 @@ string("", true); // true
 ```
 ___
 
-#### `number(subject);`
+### `number(subject);`
 > Inspects if Mixed [subject] is Number.
 
 Param | Type | Details
@@ -509,7 +509,7 @@ number(null); // false
 ```
 ___
 
-#### `array(subject);`
+### `array(subject);`
 > Inspects if Mixed [subject] is Array.
 
 Param | Type | Details
@@ -526,7 +526,7 @@ array(['withitem']); // true
 ```
 ___
 
-#### `object(subject);`
+### `object(subject);`
 > Inspects if Mixed [subject] is Native Javascript Object.
 
 Param | Type | Details
@@ -543,7 +543,7 @@ object(null); // false
 ```
 ___
 
-#### `regex(subject);`
+### `regex(subject);`
 > Inspects if Mixed [subject] is RegExp.
 
 Param | Type | Details
@@ -562,7 +562,7 @@ regex({}); // false
 ```
 ___
 
-#### `method(subject);`
+### `method(subject);`
 > Inspects if Mixed [subject] is Function.
 
 Param | Type | Details
@@ -579,7 +579,7 @@ method(1);  // false
 ```
 ___
 
-#### `signature(subject);`
+### `signature(subject);`
 > Retrieves normalized object information.
 
 Param | Type | Details
@@ -601,7 +601,7 @@ signature({}); // '[object Object]'
 ```
 ___
 
-#### `scalar(subject);`
+### `scalar(subject);`
 > Inspects if Mixed [subject] is Scalar (String, finite Number, Boolean).
 
 Param | Type | Details
@@ -623,7 +623,7 @@ scalar(/test/); // false
 ```
 ___
 
-#### `date(subject);`
+### `date(subject);`
 > Inspects if Mixed [subject] is Date.
 
 Param | Type | Details
@@ -641,7 +641,7 @@ date({}); // false`
 ```
 ___
 
-#### `nativeObject(subject);`
+### `nativeObject(subject);`
 > Inspects if Mixed [subject] is raw Native Javascript Object.
 
 Param | Type | Details
@@ -669,7 +669,7 @@ nativeObject({}); // true
 ```
 ___
 
-#### `type(subject, type);`
+### `type(subject, type);`
 > Inspects if Mixed [subject] is an instance of simplified [type] signature.
 
 Param | Type | Details
@@ -692,7 +692,7 @@ type({}, "date")); // false
 ```
 ___
 
-#### `thenable(subject);`
+### `thenable(subject);`
 > Inspects if Mixed [subject] is thenable (Promise) object or object.
 
 Param | Type | Details
@@ -719,7 +719,7 @@ thenable(false); // false
 ```
 ___
 
-#### `iterable(subject);`
+### `iterable(subject);`
 > Inspects if Mixed [subject] is iterable object.
 
 Param | Type | Details
@@ -746,7 +746,7 @@ ___
 
 ## Registry
 
-#### `Registry.prototype.assign(value);`
+### `Registry.prototype.assign(value);`
 > Assign [value] Object properties or Array items into the registry.
 
 Param | Type | Details
@@ -769,7 +769,7 @@ registry.assign(object1);
 ```
 ___
 
-#### `Registry.prototype.exists(name);`
+### `Registry.prototype.exists(name);`
 > Inspects the registry storage if String or Number [name] exists.
 
 Param | Type | Details
@@ -796,7 +796,7 @@ registry.exists(100); // true
 ```
 ___
 
-#### `Registry.prototype.find(path);`
+### `Registry.prototype.find(path);`
 > Retrieves registry value based from String json path [path].
 
 Param | Type | Details
@@ -829,7 +829,7 @@ registry.find("[0].0.id"); // 101
 ```
 ___
 
-#### `Registry.prototype.get(name);`
+### `Registry.prototype.get(name);`
 > Retrieves registry value based from [name] index.
 
 Param | Type | Details
@@ -862,7 +862,7 @@ registry.get("0"); // object1[0]
 ```
 ___
 
-#### `Registry.prototype.insert(path, value);`
+### `Registry.prototype.insert(path, value);`
 > Inserts registry [value] into String json path [path] relative to registry storage.
 
 Param | Type | Details
@@ -897,7 +897,7 @@ registry.find("[0].0.id"); // "Common"
 ```
 ___
 
-#### `Registry.prototype.pathExists(path);`
+### `Registry.prototype.pathExists(path);`
 > Inspects if String json [path] exists in registry.
 
 Param | Type | Details
@@ -935,7 +935,7 @@ registry.pathExists("2[90].label"); // false
 ```
 ___
 
-#### `Registry.prototype.remove(path);`
+### `Registry.prototype.remove(path);`
 > Removes registry value with the given String json path [path] relative to registry storage.
 
 Param | Type | Details
@@ -1053,7 +1053,7 @@ ___
 
 ## JSON
 
-#### `jsonClone(path, object, deep);`
+### `jsonClone(path, object, deep);`
 > Clone value extracted from [object] with given [path].
 
 Param | Type | Details
@@ -1080,7 +1080,7 @@ jsonClone('grid.paging', subject); // returns a clone as grid.paging object
 ```
 ___
 
-#### `jsonCompare(path, object1, object2);`
+### `jsonCompare(path, object1, object2);`
 > Compares value with [object2] where value is extracted from [object1] using [path] parameter.
 
 Param | Type | Details
@@ -1113,7 +1113,7 @@ jsonCompare('grid.paging',
 ```
 ___
 
-#### `jsonExists(path, subject);`
+### `jsonExists(path, subject);`
 > Inspects a given Mixed [subject] if JSON [path] exists.
 
 Param | Type | Details
@@ -1143,7 +1143,7 @@ jsonExists("0[1].name", subject); // false
 ```
 ___
 
-#### `jsonFill(path, subject, value);`
+### `jsonFill(path, subject, value);`
 > Fill [subject] Object with property or array item with [value] accessed from [path].
 
 Param | Type | Details
@@ -1167,7 +1167,7 @@ jsonFill('grid.paging.offset',
 ```
 ___
 
-#### `jsonFind(path, object);`
+### `jsonFind(path, object);`
 > Retrieves Mixed value from a given JSON path.
 
 Param | Type | Details
@@ -1195,7 +1195,7 @@ jsonFind("grid['paging'].limit", subject); // 20
 ```
 ___
 
-#### `jsonParsePath(path);`
+### `jsonParsePath(path);`
 > Extract property names from a JSON path.
 
 Param | Type | Details
@@ -1218,7 +1218,7 @@ jsonParsePath(subject); // ['grid','rows','0','label','length']
 ```
 ___
 
-#### `jsonSet(path, subject, value, overwrite);`
+### `jsonSet(path, subject, value, overwrite);`
 > Set or Apply [value] into object extracted from [path].
 
 Param | Type | Details
@@ -1253,7 +1253,7 @@ jsonSet(path, subject, value); // false
 ```
 ___
 
-#### `jsonUnset(path, subject);`
+### `jsonUnset(path, subject);`
 > Removes property of non-Scalar Native Object.
 
 Param | Type | Details
@@ -1286,7 +1286,7 @@ ___
 
 A polyfill for browsers which do not use [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise).
 
-#### `Promise.protototype.constructor(resolver);`
+### `Promise.protototype.constructor(resolver);`
 > Creates a promise from [iterable] values or promises that resolves
  if all items in [iterable] fulfills or rejects if all items in
  [iterable] rejects.
@@ -1323,7 +1323,7 @@ then(resolver.goodResult,
 ```
 ___
 
-#### `Promise.all(iterable);`
+### `Promise.all(iterable);`
 > Creates a promise from [iterable] values or promises that resolves
  if all items in [iterable] fulfills or rejects if all items in
  [iterable] rejects.
@@ -1371,7 +1371,7 @@ P.all([1, 'test', P.resolve("100")]).
 ```
 ___
 
-#### `Promise.race(iterable);`
+### `Promise.race(iterable);`
 > Creates a promise from [iterable] values or promises
  then resolves or rejects if one of the item in
  [iterable] is settled.
@@ -1422,7 +1422,7 @@ ___
 
 ## Processor
 
-#### `setAsync(handler);`
+### `setAsync(handler);`
 > Runs an asynchronous Function [handler].
 
 Param | Type | Details
@@ -1450,7 +1450,7 @@ console.log(++value); // 2
 ```
 ___
 
-#### `clearAsync(id);`
+### `clearAsync(id);`
 > Clears an asynchronous Function call from setAsync(handler:Function) call.
 
 Param | Type | Details
@@ -1479,7 +1479,7 @@ clearAsync(id);
 ```
 ___
 
-#### `register(name, handler);`
+### `register(name, handler);`
 > Registers a middleware callback.
 
 Param | Type | Details
@@ -1509,7 +1509,7 @@ console.log(sampleParam.count); // 2
 ```
 ___
 
-#### `run(name, args, scope);`
+### `run(name, args, scope);`
 > Runs a registered middleware callback.
 
 Param | Type | Details
@@ -1541,7 +1541,7 @@ console.log(sampleParam.count); // 200
 ```
 ___
 
-#### `clearRunner(name, after);`
+### `clearRunner(name, after);`
 > Removes "before:" or "after:" registered middleware callbacks.
 
 Param | Type | Details
@@ -1582,7 +1582,7 @@ console.log(sampleTwo.count); // 1200
 ```
 ___
 
-#### `middleware(name);`
+### `middleware(name);`
 > Creates a Namespaced Middleware instance that can register() and run().
 
 Param | Type | Details
