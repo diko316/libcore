@@ -5,21 +5,21 @@
  */
 
 import {
-            object,
-            string,
-            number,
-            array,
-            regex,
-            date,
-            nativeObject,
-            signature as objectSignature,
-            REGEX,
-            DATE,
-            ARRAY,
-            OBJECT,
-            METHOD
-            
-        } from "./type.js";
+    object,
+    string,
+    number,
+    array,
+    regex,
+    date,
+    nativeObject,
+    signature as objectSignature,
+    REGEX,
+    DATE,
+    ARRAY,
+    OBJECT,
+    METHOD
+    
+} from "./type.js";
 
 
 var Obj = Object,

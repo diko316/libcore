@@ -2,29 +2,29 @@
 
 
 import {
-            string,
-            signature,
-            
-            STRING,
-            NUMBER,
-            OBJECT,
-            ARRAY
+    string,
+    signature,
+    
+    STRING,
+    NUMBER,
+    OBJECT,
+    ARRAY
 
-        } from "./type.js";
+} from "./type.js";
         
 import {
-            assign,
-            contains,
-            clear,
-            clone
-        } from "./object.js";
+    assign,
+    contains,
+    clear,
+    clone
+} from "./object.js";
         
 import {
-            jsonFind,
-            jsonFill,
-            jsonUnset,
-            jsonExists
-        } from "./json.js";
+    jsonFind,
+    jsonFill,
+    jsonUnset,
+    jsonExists
+} from "./json.js";
 
 
 var ERROR_NAME = 'Invalid [name] parameter.',
